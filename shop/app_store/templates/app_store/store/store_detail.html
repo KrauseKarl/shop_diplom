@@ -1,0 +1,348 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Магазин{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">
+                    {% if not message %}
+                    Каталог товаров магазина <b>{{ store.title }}</b>
+                    {% else %}
+                    сортировка по {{ message }}
+                    {% endif %}
+                </h1>
+                {% block breadcrumbs %}
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+
+                        <a href="{% url 'main_page' %}">home</a>
+                        {% if title %} &rsaquo; {{ title }}{% endif %}
+
+
+                        <!--                        <a href="index.html">home</a>-->
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Catalog</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">{{ store.title }}</strong>
+                    </header>
+                    <div class="Section-columnContent">
+                        <!--    FORM    -->
+                        <div class="form">
+                            <form>
+                                <div class="form-group">
+                                    <div class="ProductCard-title">{{ store.title }}</div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="Profile-avatar">
+                                        <div class="Profile-img">
+                                            <img class="" src="{{ store.logo.url }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>стоимость доставки</label>
+                                    <div class="Card-content Card-title Card-price Cart-total-order">
+                                        {{ store.delivery_fees }}$
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>минимальная сумма бесплатной доставки</label>
+                                    <div class="Card-content Card-title Card-price Cart-total-order">
+                                        {{ store.min_free_delivery }}$
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <a class="btn" href="{% url 'app_store:store_edit' store.pk %}">редактировать</a>
+                                </div>
+                            </form>
+                        </div>
+                        <!--    FORM    -->
+                    </div>
+
+                    <div class="Section-columnSection">
+                        <header class="Section-header">
+                            <strong class="Section-title">Статистика</strong>
+                        </header>
+                        <div class="form-group">
+                             <div class="buttons">
+                                <ul>
+                                    <li>
+                                        <a href="{% url 'app_store:add_item' store.pk %}"
+                                           class="btn btn_default btn_full">Заказы</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <span class="toggle-text">Всего позиций товаров</span>
+                            <div class=" Card-content Card-title Card-price Cart-total-order">
+                                {{store.items.count}}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="toggle-text">Продано на сумму</span>
+                            <div class="Card-content Card-title Card-price Cart-total-order">
+                                {{ total_profit }}$
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="Section-columnSection">
+                        <header class="Section-header">
+                            <strong class="Section-title">Отчет</strong>
+                        </header>
+                        <div class="form-group">
+                            <input id="start" type="date" name="start">
+                            <input id="finish" type="date" name="finish">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn_full btn_default " type="submit">Отчет</button>
+                        </div>
+                    </div>
+                    <!--     Загрузить        -->
+                    <div class="Section-columnSection">
+                        <header class="Section-header">
+                            <strong class="Section-title">Товары </strong>
+                        </header>
+                        <div class="Section-columnContent">
+                            <div class="buttons">
+                                <ul>
+                                    <li>
+                                        <a href="{% url 'app_store:add_item' store.pk %}"
+                                           class="btn btn_default btn_full">+ Добавить товар</a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'app_store:export_data' store.pk %}"
+                                           class="btn btn_default btn_full"> Выгрузить CVS</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="buttons">
+                                <ul>
+                                    <li>
+                                        <form id='import_cvs_form' method="post"
+                                              action="{% url 'app_store:import_data' store.pk %}"
+                                              enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <input class="form-input" type="file" name="file" required>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <button class="btn btn_default btn_full" form="import_cvs_form" type="submit">
+                                            Загрузить CVS
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!--     Загрузить   END     -->
+
+                    <!-- ITEM CATEGORY FILTER  -->
+
+                    <div class="Section-columnSection">
+                        <header class="Section-header">
+                            <strong class="Section-title">фильтр </strong>
+                        </header>
+                        <div class="Section-columnContent">
+                            <div class="buttons">
+                                <a href="{% url 'app_store:store_detail' pk=store.pk  %}"
+                                   class="btn btn_default btn_full">все товары</a>
+                                {% for category in categories %}
+                                <a href="{% url 'app_store:category_item' pk=store.pk slug=category.slug %}"
+                                   class="btn btn_default btn_full">{{category}}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ITEM CATEGORY FILTER  -->
+
+                </div>
+            </div>
+            <div class="Section-content">
+
+                <!--    SORT ITEMS -->
+                <div class="Sort">
+                    <div class="Sort-title">Сортировать по:</div>
+                    <div class="Sort-variants">
+                        <a class="Sort-sortBy" href="{% url 'app_store:store_detail'  pk=store.pk %}">
+                            <span>все</span>
+                        </a>
+                        <a class="Sort-sortBy" href="?order_by=stock"><span>количеству</span></a>
+                        <a class="Sort-sortBy" href="?order_by=rest"><span class="rest_label">остатки</span></a>
+                        <a class="Sort-sortBy" href="?order_by=limited_edition">
+                            <span class="limited_edition_label">ограниченный тираж</span>
+                        </a>
+                        <a class="Sort-sortBy" href="?order_by=best_seller">
+                            <span><img src="/assets/img/icons/cart.svg" width="15">продажам</span>
+                        </a>
+                        <a class="Sort-sortBy" href="?order_by=best_comment">
+                            <span><img src="/assets/img/icons/comments.svg" width="15">комментариям</span>
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% for key, val in request.GET.items %}{{ key }}={{ val }}&{% endfor %}order_by=best_view">
+                            <span>
+                                <img src="/assets/img/icons/view.svg" width="15">
+                                просмотрам
+                            </span>
+                        </a>
+
+
+                    </div>
+                </div>
+                <!--    SORT ITEMS -->
+
+                <!--    PAGINATION -->
+                <div>{% include "pagination.html" %}<br><br></div>
+                <!--    PAGINATION -->
+
+                <!--    ITEMS LIST -->
+                <div class="Orders">
+                    {% for item in object_list %}
+                    <div class="Order {% if item.stock < 6 %} Order_anons_rest
+                    {% elif item.stock < 17 %} Order_anons_limited_edit
+                    {% else %}Order_anons
+                    {% endif %}">
+                        <div class="Order-personal">
+                            <div class="row">
+
+                                <!--    ITEM ID    -->
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">
+                                            <span class="Order-infoType">{{ item.id }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--    ITEM ID    -->
+
+                                <!--    ITEM IMAGE    -->
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">
+                                            <img class="store-item-image" src="{{ item.image.first.image.url }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--    ITEM IMAGE    -->
+
+                                <!--    ITEM  TITLE    -->
+                                <div class="row-block">
+                                    <a class="Order-info" href="#">
+                                        <span class="Order-infoType">{{ item.title|truncatechars:'19' }}</span>
+                                    </a>
+                                </div>
+                                <!--    ITEM'S TITLE    -->
+
+                                <!--  ITEM PRICE -->
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Card-icon-view-and-sell">
+                                            ${{ item.price }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--  ITEM PRICE -->
+
+                                <!--    ITEM QUANTITY  -->
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Card-icon-view-and-sell
+                                            {% if item.stock < 6  %} rest_label
+                                            {% elif item.stock < 17 %} limited_edition_label
+                                            {% endif %}">
+                                            {{ item.stock }} шт.
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--    ITEM QUANTITY  -->
+
+                                <!--    COMMENTS, VIEWS & ORDERS ITEM    -->
+                                <div class="row-block">
+                                    <div class="Order-info ">
+                                        <div class="Order-infoContent">
+                                            <div class="Card-icon-view-and-sell">
+                                                <div class="Card-icon Card-icon-image">
+                                                    <img src="/assets/img/icons/comments.svg" width="20" height="20">
+                                                </div>
+                                                <div class="Card-icon Card-icon-image">{{item.item_comments.count }}
+                                                </div>
+                                                <div class="Card-icon Card-icon-image">
+                                                    <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
+                                                <div class="Card-icon Card-icon-image">{{item.total_views}}</div>
+                                                <div class="Card-icon Card-icon-image">
+                                                    <img src="/assets/img/icons/cart.svg" width="15" height="15"></div>
+                                                <div class="Card-icon Card-icon-image">{{item.cart_item.count}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--    COMMENTS, VIEWS & ORDERS ITEM    -->
+
+                                <!--  EDIT ITEM -->
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoContent">
+                                            <div class="Card-icon-view-and-sell">
+                                                <a style="color: #555555"
+                                                   href="{% url 'app_store:edit_item' item.pk %}">
+                                                    <img src="/assets/img/icons/edit.png" width="32">
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--  EDIT ITEM -->
+
+                                <!--  DELETE ITEM -->
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoContent">
+                                            <div class="Card-icon-view-and-sell">
+                                                <a href="{% url 'app_store:edit_item' item.pk %}">
+                                                    <img src="/assets/img/icons/card/delete.svg">
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--  DELETE ITEM -->
+
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="Order Order_anons">Ничего не найдено</div>
+                    {% endfor %}
+
+                </div>
+                <!--    ITEMS LIST -->
+
+                <!--    PAGINATION -->
+                <div>{% include "pagination.html" %}<br><br></div>
+                <!--    PAGINATION -->
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% load static %}
+{% load cache %}
+
+<div class="Cart-total">
+
+    <!--    TOTAL SUM OF ORDER -->
+    <div class="Cart-block Cart-block_total">
+        <strong class="Cart-title">сумма заказа:</strong>
+        <span class="Cart-price">$</span>
+        <span class="Cart-price Cart-total-price"
+              id='total_price'
+              data-value="{{ cart.get_total_price }}">
+              {{ cart.get_total_price }}
+        </span>
+    </div>
+    <!--    TOTAL SUM OF ORDER -->
+
+    <!--    DELIVERY FEES -->
+
+    <div class="Cart-block Cart-block_total">
+        <strong class="Cart-title">доставка:</strong>
+
+        <span class="Cart-price">{% if cart_dict.fees %}${% endif %}</span>
+        <span class="Cart-price Cart-total-price" id='total_fees' data-value="{{ cart_dict.fees }}">
+            {% if cart_dict.fees %}
+                {{ cart_dict.fees }}
+            {% else %}
+                <span class="seller_label">FREE</span>
+            {% endif %}
+        </span>
+
+
+    </div>
+    <!--    DELIVERY FEES -->
+
+    <!--    FINALE COST  -->
+    <div class="Cart-block Cart-block_total">
+        <strong class="Cart-title">итого:</strong>
+        <span class="Cart-price">$</span>
+        <span class="Cart-price Cart-total-price" id='total_price_with_delivery'
+              data-value="{{ cart.get_total_price }} ">
+                            {{ cart.get_total_price }}
+                        </span>
+    </div>
+    <!--    FINALE COST  -->
+
+    <!--    MAKE ORDER BUTTON -->
+    <div class="Cart-block">
+        <a href="#openModal" class="btn btn_success btn_lg">
+            <span>Оформить заказ </span>
+
+            <!--    MAKE ORDER BUTTON -->
+
+        </a>
+    </div>
+</div>

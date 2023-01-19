@@ -1,0 +1,14 @@
+<div>
+    {% if form.errors %}
+    <div class="form-error form-textarea_error" role="alert">
+        <h3>Ошибка:</h3>
+        <ul>{% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li>- {{error}}</li>
+              {% endfor %}
+            {% endfor %}
+        </ul>
+        Пожалуйста, попробуйте еще раз!
+    </div>
+    {% endif %}
+</div>

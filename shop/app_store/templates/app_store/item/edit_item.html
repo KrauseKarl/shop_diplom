@@ -1,0 +1,272 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Добавить товар{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Редактировать - <b>{{item.title}} </b>
+                </h1>
+
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Профиль</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include "app_user/navbar.html" %}
+            </div>
+            <div class="Section-content">
+                <div>{% include 'message.html' %}</div>
+
+                <div class="Profile">
+                    <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="row-block">
+                                {% include 'error_message.html' %}
+                                <div class="form-group">
+                                    <div class="form-label">
+                                        <a class="btn btn_default"
+                                           href="{% url 'app_store:store_detail' pk=item.store_items.first.pk %}">
+                                            <span>назад</span>
+                                        </a>
+                                        <button class="btn btn_success" type="submit">сохранить</button>
+                                        <a class="btn btn_danger" href="{% url 'app_store:delete_item' item.pk %}">
+                                            X
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="title">Категория</label>
+                                    <select id="category" name="category" class="form-input">
+                                        <option disabled>{{ item.category }}</option>
+                                        {% for category in categories %}
+                                            {% if category == item.category %}
+                                                <option selected="selected" value="{{ category.id }}">
+                                                    {{category.title}}
+                                                </option>
+                                            {% else %}
+                                                <option value="{{ category.id }}">
+                                                    {{category.title}}
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <div>
+                                        <a href="{% url 'app_store:category_list' %}">
+                                            + добавить категорию
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label class="form-label" for="title">Название</label>
+                                    <input class="form-input" id="title" name="title" type="text"
+                                           value="{{ item.title }}"/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="stock">Количество</label>
+                                    <input class="form-input" id="stock" name="stock" type="number"
+                                           value="{{ item.stock }}"/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="price">Цена</label>
+                                    <input class="form-input" id="price" name="price" type="number"
+                                           value="{{ item.price }}" aria-valuemin="1"/>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="is_available" id="is_available"
+                                           {% if item.is_available %} checked {% endif %}/>
+                                    <span class="toggle-box"></span>
+                                    <span class="toggle-text">Доступно для продажи</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="checkbox" name="limited_edition" id='limited_edition'
+                                           {% if item.limited_edition %} checked {% endif %}/>
+                                    <span class="toggle-box"></span>
+                                    <span class="toggle-text">Ограниченное количество</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="description">Описание</label>
+                                    <textarea class="form-input" id="description" name="description"
+                                              cols="40" rows="5"
+                                              placeholder="Описание">{{item.description}}</textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <select id="color" name="color" class="form-input" data-value="{{item.color}}">
+                                        <option value="" selected>{{item.color}}</option>
+                                        {% for color in colors %}
+                                        {% if color == item.color %}
+                                        <option selected="selected"
+                                                style="background-color:{{color}};
+                                                    font-weight: bolder;font-size: 30px;" value="{{color}}">
+                                            {% else %}
+                                        <option style="background-color:{{color}};font-weight: bolder;font-size: 30px;"
+                                                value="{{color}}">
+                                            {% endif %}
+                                            &#8195;{{ color }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+
+                                <div class="form-group">
+
+                                    {% for tg in item.tag.all %}
+                                    <div class="btn btn_default btn_sm" style="margin-bottom: 10px;">#{{tg}}
+                                        <a href="{% url 'app_store:delete_tag' tag_id=tg.pk item_id=item.pk %}"
+                                           style="color:red">&#8195;x</a>
+                                    </div>
+                                    {% endfor %}
+                                    <a href="{% url 'app_store:add_tag' item.pk %}" class="btn">+ тег
+                                    </a>
+                                </div>
+
+                            </div>
+
+                            <div class="row-block">
+                                <div class="form-group">
+                                    {% for img in item.image.all %}
+                                    <!--  IMAGE  -->
+                                    <div class="Profile-avatar">
+                                        <div class="Profile-img">
+                                            <img src="{{ img.image.url }}" alt="#.png"/>
+                                        </div>
+                                    </div>
+                                    <!--  IMAGE END -->
+                                    <div>
+                                        <a href="{% url 'app_store:delete_image' image_id=img.pk item_id=item.pk %}"
+                                           style="color:red">удалить&#8195;x</a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+
+                                <!-- ADD IMAGE FORM BEGIN -->
+                                <div id="form-container-image" class="form-group input-collect">
+                                    {{ image_formset.management_form }}
+                                    {% for form in image_formset %}
+                                    <div class="image-form Profile-avatar Profile-avatar-noimg">
+                                        <input class="form-input Profile-file"
+                                               id="output-0"
+                                               onchange="loadFile(event)"
+                                               name="image"
+                                               type="file"
+                                               data-validate="onlyImgAvatar"/>
+
+                                            <img id="im-0" src="/media/default_images/default_image.png" width="200" height="200">
+
+                                    </div>
+                                    {% endfor %}
+                                    <button id="add-form-image" class="btn" type="button">
+                                        + добавить изображение
+                                    </button>
+
+
+                                </div>
+                                <!--    ADD IMAGE FORM END      -->
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!--    MODAL FOR CREATE NEW TAG    -->
+    <div id="openModal" class="modal-my">
+        <div class="modal-dialog-my">
+            <div class="modal-content-my">
+                <div class="modal-header-my">
+                    <h1 class="modal-title-my">Добавить новый тег</h1>
+                    <a href="#close" title="Close" class="close-my">×</a>
+                </div>
+                <div class="modal-body-my">
+                    <form method="post" action="#" id="contactform" class="form Payment">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input class="form-input" id="new_tag_title" type="text" placeholder="new tag name"/>
+                        </div>
+                        <div class="form-group">
+                            <button id="flybutton" class="btn btn_primary btn_full" type="submit">Submit here</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer-my">
+                    <div id="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--    MODAL FOR CREATE NEW TAG    -->
+<script>
+
+
+let birdForm = document.querySelectorAll(".image-form")
+let container = document.querySelector("#form-container-image")
+let addButton = document.querySelector("#add-form-image")
+let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+let outPut =  document.querySelector("#output")
+let formNum = birdForm.length-1
+addButton.addEventListener('click', addForm)
+
+function addForm(e){
+    e.preventDefault()
+    let container_new = document.getElementById('form-container-image');
+    let newForm = birdForm[0].cloneNode(true)
+    newForm.setAttribute( 'scr', '/media/default_images/default_image.png ' );
+
+    let formRegex = RegExp(`form-(\\d){1}-`,'g')
+    let outputRegex = RegExp(`output-(\\d){1}`,'g')
+    let imgRegex = RegExp(`im-(\\d){1}`,'g')
+
+
+
+    formNum++
+    newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
+    newForm.innerHTML = newForm.innerHTML.replace(outputRegex, `output-${formNum}`)
+    newForm.innerHTML = newForm.innerHTML.replace(imgRegex, `im-${formNum}`)
+    container.insertBefore(newForm, addButton)
+
+    totalForms.setAttribute('value', `${formNum+1}`)
+}
+
+
+loadFile = function(event) {
+        let container_new = document.getElementById('form-container-image');
+        let nuM = container_new.querySelectorAll('.image-form').length
+        let all_elem = container_new.querySelectorAll('.image-form img')
+        let output = all_elem[all_elem.length- 1];
+        output.src = URL.createObjectURL(event.target.files[0]);
+        output.onload = function() {
+          URL.revokeObjectURL(output.src) // free memory
+        }
+
+    }
+
+</script>
+</div>
+{% endblock %}

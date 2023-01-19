@@ -1,0 +1,107 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load cache %}
+{% load url_extras %}
+{% block title %}Каталог{% endblock %}
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+{% block content %}
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+
+                <h1 class="Middle-title">
+                    Всего комментариев: {{ paginator.object_list }}
+                </h1>
+
+                {% block breadcrumbs %}
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+
+                        <a href="{% url 'main_page' %}">home</a>
+                        {% if title %} &rsaquo; {{ title }}{% endif %}
+
+
+                        <!--  <a href="index.html">home</a>-->
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Catalog</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include 'app_user/customer/sidebar_customer.html' %}
+            </div>
+
+            <!--    SORT BY     -->
+            <div class="Section-content">
+                <div class="Sort">
+                    <div class="Sort-title">Всего комментариев: </div>
+                    <div class="Sort-variants">
+                        <div class="Sort-sortBy">
+                            67
+                        </div>
+                    </div>
+                </div>
+                <!--    SORT BY END    -->
+
+                <!--       PAGINATION         -->
+                <div>{% include "pagination.html" %}<br><br></div>
+                <!--       PAGINATION         -->
+                <div class="Orders">
+                    {% for comment in object_list %}
+                    <div class="Order Order_anons">
+                        <div class="Order-personal">
+                            <div class="row">
+                                <!--  ORDER'S TITLE & DATE -->
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">дата:</div>
+                                        <div class="Order-infoContent">
+                                            {{ comment.created_at }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">товар:</div>
+                                        <div class="Order-infoContent">
+                                            <a href="{% url 'app_item:item_detail' comment.item.pk %}">
+                                                <div class="Order-infoContent" style="display:inline">
+                                                    {{ comment.item.title }}
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="Order-info ">
+                                        <div class="Order-infoType">комментарий:</div>
+                                        <div class="Order-infoContent">
+                                            <span class="Order-price">
+                                                {{ comment.review|truncatechars:100 }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="Order Order_anons">Ничего не найдено</div>
+                    {% endfor %}
+                </div>
+
+                <!--       PAGINATION         -->
+                {% include "pagination.html" %}
+                <!--       PAGINATION         -->
+
+            </div>
+            <!--    SORT BY     -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

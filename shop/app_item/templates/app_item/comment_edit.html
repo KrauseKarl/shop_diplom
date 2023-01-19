@@ -1,0 +1,70 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+{% load humanize %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Редактировать отзыв
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Product</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+    <div class="wrap">
+        <div class="Product">
+            <div class="Tabs Tabs_default">
+                <div class="Tabs-wrap">
+                    <div class="Tabs-block" id="reviews">
+                        <div class="Tabs-addComment">
+                            <header class="Section-header Section-header_product">
+                                <h3 class="Section-title">Редактировать отзыв</h3>
+                            </header>
+
+                            <form class="form" action="#" method="post">
+                                {% csrf_token %}
+                                <div class="Comment-column Comment-column_pict">
+                                        {% if comments.user.profile.avatar %}
+                                            <div>
+                                                <img class="Comment-avatar-exist"
+                                                     src="{{ comments.user.profile.avatar.url }}">
+                                            </div>
+                                        {% else %}
+                                            <div class="Comment-avatar"></div>
+                                        {% endif %}
+                                    <h3 class="Section-title">{{comments.user.get_full_name}}</h3>
+                                </div>
+
+                                <div class="form-group">
+                                    <textarea class="form-textarea" name="review" id="review"
+                                              placeholder="Review">{{comments.review}}
+                                    </textarea>
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn_muted" type="submit">Сохранить изменения</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}{{ item.title }}{% endblock %}
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">{{ item.title }}</h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_item:item_list' %}">каталог</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <a  href="{% url 'app_item:item_category' category=item.category.slug %}">
+                            <span>{{ item.category}}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <div class="{% if not item.is_available %} non_available {% endif %}Product">
+                <div class="ProductCard  ">
+                    <div class="ProductCard-look">
+                        <div class="ProductCard-photo">
+                            <img src="{{ item.image.first.image.url }}" alt="bigGoods.png"/>
+                        </div>
+                        <div class="ProductCard-picts">
+                            {% if item.image.first %}
+                                <a class="ProductCard-pict ProductCard-pict_ACTIVE"
+                                   href="{{ item.main_image }}">
+                                    <img src="{{ item.main_image }}" alt="{{ img }}"/>
+                                </a>
+                                {% for img in item.image.all|slice:"1:" %}
+                                <a class="ProductCard-pict" href="{{ img.image.url }}">
+                                    <img src="{{ img.image.url }}" alt="{{ img }}"/>
+                                </a>
+                                {% endfor %}
+                            {% else %}
+                            <a class="ProductCard-pict ProductCard-pict_ACTIVE" href="#">
+                                <img src="/media/default_images/default_item.png" alt="{{ img }}"/>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ProductCard-desc">
+                        <div class="ProductCard-header">
+                            <h2 class="ProductCard-title">{{ item.title }}
+                            </h2>
+                            <div class="ProductCard-info" id="maz">
+                                <div class="ProductCard-cost">
+                                    <div class="ProductCard-price">
+                                        {% if not item.is_available %}
+                                            Товар распродан
+                                        {% else %}
+                                            ${{ item.price }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ProductCard-text">
+                            <ul>
+                                <li>{% if item.description %}
+                                        {{ item.description }}
+                                    {% else %}
+                                        {% lorem 2 p random %}
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="ProductCard-cost">
+                            <div class="ProductCard-tagsTitle">Магазин:
+                                <strong>{{ item.store_items.first }}</strong>
+                            </div>
+                        </div>
+                        {% if item.is_available  and request.user.profile.is_customer %}
+                        <div class="ProductCard-cart">
+                            <div class="ProductCard-cartElement ProductCard-cartElement_amount">
+                                <div class="Amount Amount_product">
+                                    <button class="Amount-remove" type="button"></button>
+                                    <input class="Amount-input form-input" name="amount" type="text" value="1"/>
+                                    <button class="Amount-add" type="button">
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="ProductCard-cartElement">
+                                {% if item.cart_item.first in cart.items.all %}
+                                <a class="btn btn_primary" href="{% url 'app_cart:add_cart' pk=item.pk  %}#maz">
+                                    <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
+                                         alt="cart_white.svg"/>
+                                    <span class="btn-content">+</span></a>
+                                <a class="btn btn_danger" href="{% url 'app_cart:remove_cart' pk=item.pk  %}#maz">
+                                    <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
+                                         alt="cart_white.svg"/>
+                                    <span class="btn-content">-</span></a>
+                                {% else %}
+                                <a class="btn btn_primary" href="{% url 'app_cart:add_cart' pk=item.pk  %}#maz">
+                                    <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
+                                         alt="cart_white.svg"/>
+                                    <span class="btn-content " id="add-toast">+  в корзину</span>
+                                </a>
+                                {% endif %}
+                            </div>
+
+
+                        </div>
+                        {% endif %}
+                        <div class="ProductCard-footer">
+                            <div class="ProductCard-tags">
+                                <strong class="ProductCard-tagsTitle">Теги: </strong>
+                                {% for tag in tags %}
+                                <a href="{{ tag.url }}"># {{ tag.title }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div>{% include 'message.html' %}</div>
+                </div>
+
+                <div class="Tabs Tabs_default">
+                    <div class="Tabs-links">
+                        <a class="Tabs-link_ACTIVE Tabs-link" href="#description">
+                            <span>Описание</span>
+                        </a>
+                        <a class="Tabs-link" href="#addit">
+                            <span>Дополнительная информация</span>
+                        </a>
+                        <a class="Tabs-link" href="#reviews">
+                            <span>Reviews ({{ item.item_comments.count }})</span>
+                        </a>
+                    </div>
+                    <div class="Tabs-wrap">
+                        <div class="Tabs-block" id="description">
+                            <h2>{{ item.title }} </h2>
+                            <p>Lorem ipsum dolor sit amet, consectetuer&#32;
+                                <strong>adipiscing </strong>&#32;elit doli. Aenean commodo ligula eget dolor. Aenean
+                                massa.&#32;
+                                <a href="#">Cumtipsu</a>&#32;sociis natoque penatibus et magnis dis parturient montesti,
+                                nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eutu, pretiumem.
+                            </p>
+                            <img class="pict pict_right" src="{{ item.main_image }}" alt="bigGoods.png"/>
+                            <ul>
+                                <li>Lorem ipsum dolor sit amet, consectetuer</li>
+                                <li>adipiscing elit doli.&#32;<em>Aenean</em>&#32;commodo ligula</li>
+                                <li>eget dolor. Aenean massa. Cumtipsu sociis</li>
+                                <li>natoque penatibus et magnis dis parturient</li>
+                                <li>montesti, nascetur ridiculus mus. Donec</li>
+                                <li>quam felis, ultricies nec, pellentesque eutu</li>
+                            </ul>
+                            <div class="clearfix"></div>
+                            <div class="table">
+                                <table>
+                                    <tr>
+                                        <th>Характеристика</th>
+                                        <th>Значение</th>
+                                    </tr>
+                                    <tr>
+                                        <td>ываыв</td>
+                                        <td>llslss</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="Tabs-block" id="sellers">
+                            <div class="Categories Categories_product"></div>
+                        </div>
+                        <div class="Tabs-block" id="addit">
+                            <div class="Product-props">
+                                <div class="Product-prop">
+                                    <strong>Lorem
+                                    </strong><span> Pfizer</span>
+                                </div>
+                                <div class="Product-prop">
+                                    <strong>ipsum </strong>
+                                    <span> Lorem ipsum dolor sit</span>
+                                </div>
+                                <div class="Product-prop">
+                                    <strong>dolor sit </strong>
+                                    <span> 5 ans</span>
+                                </div>
+                                <div class="Product-prop">
+                                    <strong>psum dolo </strong>
+                                    <span> 2–3 jours</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="Tabs-block" id="reviews">
+                            <header class="Section-header">
+                                <h3 class="Section-title">
+                                    {% if item.item_comments.count != 0 %}
+                                    {{ item.item_comments.count }}
+                                    {% endif %}
+
+                                    {% if item.item_comments.count > 1 and item.item_comments.count < 5 %}
+                                    Отзыва
+                                    {% elif item.item_comments.count == 1 %}
+                                    Отзыв
+                                    {% elif item.item_comments.count > 4 %} Отзывов
+                                    {% else %} 0 отзывов
+                                    {% endif %}
+                                </h3>
+                            </header>
+                            <div class="Comments">
+
+                                {% for comment in item.item_comments.all %}
+
+                                <div class="Comment">
+                                    <div class="Comment-column Comment-column_pict">
+                                        {% if comment.user.is_authenticated and comment.user.profile.avatar %}
+                                        <div>
+                                            <img class="Comment-avatar-exist"
+                                                 src="{{ comment.user.profile.avatar.url }}">
+                                        </div>
+                                        {% else %}
+                                        <div class="Comment-avatar"></div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="Comment-column">
+                                        <header class="Comment-header">
+                                            <div>
+                                                <strong class="Comment-title">{{ comment.user.get_full_name }}</strong>
+                                                <span class="Comment-date">
+                                                {{ comment.created_at|date:'F' }}&#32;&#32;/
+                                                {{ comment.created_at|date:"j" }}&#32;&#32;/
+                                                {{ comment.created_at|date:"o" }}&#32;&#32;/
+                                                {{ comment.created_at|date:"H:i" }}
+                                                </span>
+                                            </div>
+                                        </header>
+                                        <div class="Comment-content" >{{ comment.review }}</div>
+                                        {% if request.user == comment.user %}
+                                        <a class="CommentHandleButton"
+                                           href="{% url 'app_item:comment_delete' pk=item.pk comment_id=comment.id %}">
+                                            удалить</a>&#160;&#160;
+                                        <a class="CommentHandleButton"
+                                           href="{% url 'app_item:comment_edit' pk=item.pk comment_id=comment.id %}">
+                                            редактировать</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+
+                                <div>
+                                    <button type="button" class="btn btn_danger btn_full"  id="hide_comment">Скрыть</button>
+                                    <button type="button" class="btn btn_primary btn_full" id="show_comment"
+                                            data-actions-icnt="comments-show">Показать </button>
+                                </div>
+                                <!--COMMENT FORM -->
+
+                            </div>
+                            {% if request.user.profile.is_customer %}
+                            <header class="Section-header Section-header_product" >
+                                <h3 class="Section-title">Добавить отзыв</h3>
+                            </header>
+
+                                {% if request.user.is_authenticated %}
+                                <div class="Tabs-addComment">
+
+                                    <form class="form" action="" method="post">
+                                        {% csrf_token %}
+                                        <h3 class="Section-title">{{request.user.get_full_name}}</h3>
+                                        <div class="form-group">
+                                            <textarea class="form-textarea" name="review" id="review"
+                                                      placeholder="Review">
+                                            </textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <button class="btn btn_muted" type="submit">Оставить отзыв</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                {% else %}
+                                    <h3 class="Section-title">
+
+                                        <a class="btn btn_success"
+                                           href="{% url 'app_user:login' %}?next={{ item.get_absolute_url }}">
+                                            Войдите
+                                        </a>
+                                        или
+                                        <a class="btn btn_success"
+                                               href="{% url 'app_user:register' %}?next={{ item.get_absolute_url }}">
+                                            зарегистрируйтесь
+                                        </a>
+                                        , чтобы добавить отзыв
+                                    </h3>
+                                <div class="Tabs-addComment">
+                                      <h3 class="Section-title">{{ request.user.get_full_name }}</h3>
+                                </div>
+                                {% endif %}
+                             {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

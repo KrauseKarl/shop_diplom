@@ -1,0 +1,79 @@
+{% load url_extras %}
+
+<!--       PAGINATION         -->
+{% if object_list %}
+
+<div class="Pagination">
+    <div class="Pagination-ins" id="#pag">
+        {% with last_page=object_list.paginator.num_pages %}
+        {% if object_list.has_previous %}
+        <!-- ПЕРВАЯ СТАРИНИЦА  -->
+        <a class="Pagination-element Pagination-element_prev"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page=1">1</a>
+        <!-- ПЕРВАЯ СТАРИНИЦА -->
+
+        <!-- ОДНА СТАРИНИЦА НАЗАД -->
+        <a class="Pagination-element"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{object_list.previous_page_number }}">
+            <img src="/assets/img/icons/prevPagination.svg" alt="prevPagination.svg"/>
+        </a>
+        <!-- ОДНА СТАРИНИЦА НАЗАД -->
+        {% endif %}
+
+        {% for i in object_list.paginator.page_range %}
+
+        <!-- ДВЕ СТАРИНИЦЫ НАЗАД -->
+        {% if object_list.previous_page_number|add:"-1" == i and object_list.previous_page_number|add:"-1" != 1 %}
+        <a class="Pagination-element"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+        <!-- ДВЕ СТАРИНИЦЫ НАЗАД -->
+
+        <!-- ОДНА СТАРИНИЦА НАЗАД -->
+        {% elif object_list.previous_page_number == i and object_list.previous_page_number != 1 %}
+        <a class="Pagination-element"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+        <!-- ОДНА СТАРИНИЦА НАЗАД -->
+
+        <!-- ТЕКУЩАЯ СТАРИНИЦА  -->
+        {% elif object_list.number == i %}
+        <a class="Pagination-element Pagination-element_current"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+        <!-- ТЕКУЩАЯ СТАРИНИЦА  -->
+
+        <!-- ОДНА СТАРИНИЦА ВПЕРЕД -->
+        {% elif object_list.next_page_number == i and object_list.next_page_number != last_page %}
+        <a class="Pagination-element"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+
+        <!-- ОДНА СТАРИНИЦА ВПЕРЕД -->
+
+        <!-- ДВЕ СТАРИНИЦЫ ВПЕРЕД -->
+        {% elif object_list.next_page_number|add:"1" == i and object_list.next_page_number|add:"1" != last_page %}
+        <a class="Pagination-element"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+        {% endif %}
+        <!-- ДВЕ СТАРИНИЦЫ ВПЕРЕД -->
+
+        {% endfor %}
+
+        {% if object_list.has_next %}
+        <!-- ОДНА СТАРИНИЦА ВПЕРЕД -->
+        <a class="Pagination-element Pagination-element_prev"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{ object_list.next_page_number }}">
+            <img src="/assets/img/icons/nextPagination.svg" alt="nextPagination.svg"/>
+
+        </a>
+        <!-- ОДНА СТАРИНИЦА ВПЕРЕД -->
+
+        <!-- ПОСЛЕДНЯЯ СТАРИНИЦА -->
+        <a class="Pagination-element Pagination-element_prev"
+           href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{val|urlencode}}&{% endif %}{% endfor %}page={{ last_page }}">{{ last_page }}
+        </a>
+        <!-- ПОСЛЕДНЯЯ СТАРИНИЦА -->
+
+        {% endif %}
+        {% endwith %}
+    </div>
+</div>
+{% endif %}
+<!--       PAGINATION         -->

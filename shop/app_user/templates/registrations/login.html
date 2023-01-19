@@ -1,0 +1,66 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Вход пользователя
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Вход пользователя </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Оплата</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <form method="post" class="form Payment" action="">
+                {% csrf_token %}
+                <div class="Payment-card">
+                    <div class="form-group">
+<!--                        {% if form.errors %}-->
+<!--                        {% for i, err in form.errors.items %}-->
+<!--                        <div class="form-error form-textarea_error" style="border: 4px double red; margin:10px">-->
+<!--                            {{ err }}-->
+<!--                        </div>-->
+<!--                        {% endfor %}-->
+<!--                        {% endif %}-->
+<!--                        -->
+
+                        {% include "error_message.html" %}
+                        <input class="form-input" id="username" name="username" type="text"
+                               placeholder="имя пользователя"/>
+                    </div>
+                    <div class="form-group">
+                        {% if form.errors.password %}
+                        <div class="form-error form-textarea_error" style="border: 4px double red; margin:10px">
+                            {{ form.errors.password }}
+                        </div>
+                        {% endif %}
+                        <input class="form-input" id="password" name="password" type="password"
+                               placeholder="пароль"/>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn_success btn_full">Войти</button>
+                    </div>
+                    <div class="form-group">
+                        <a href="{% url 'app_user:password_reset'%}">Забыли свой пароль?</a>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

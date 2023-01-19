@@ -1,0 +1,100 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Оплата заказа картой
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Оплата по карте
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Оплата</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+
+            <form class="form Payment" action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class=" Payment-card">
+                    <div class="form-group ">
+                        <label class="form-label">
+                            {% for ord in new_orders %}
+                            <div class="form-shadow" style="margin-bottom:20px;">
+                                <label class="Order-infoContent-right" style="margin-bottom:20px;">
+                                    номер заказа
+                                </label>
+                                <!-- ERROR MESSAGE   -->
+                                {% if form.errors %}
+                                <div class="form-error form-textarea_error" role="alert">
+                                    <ul>{% for field, errors in form.errors.items %}
+                                        {% for error in errors %}
+                                        <li>{{error}}</li>
+                                        {% endfor %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                <!-- ERROR MESSAGE   -->
+
+                                <div class="Order-infoContent-left">
+                                    <input type="checkbox" name="order" value="{{ ord.id }}" multiple>
+                                    <span class="Order-infoContent-right Cart-price">{{ ord }}</span>
+                                </div>
+                                {% for item in ord.items_is_paid.all %}
+                                <ul>
+                                    <li class="Order-infoContent-left">
+                                        <div>{{ item.item }}</div>
+                                        <span>{{ item.quantity }} шт.</span> *
+                                        <span>{{ item.total }}</span>
+                                    </li>
+                                </ul>
+                                {% endfor %}
+                                <label class="Cart-total-order form-label">сумма заказа</label>
+                                <label class="Cart-total-order form-label"><b>{{ord.total_sum}}</b></label>
+                            </div>
+                            {% endfor %}
+                        </label>
+
+                        {% for item in ord.items_is_paid.all %}
+                        <label class="Cart-total-order form-label"> {{ item.item.title }}</label>
+                        {% endfor %}
+
+                    </div>
+                    <div class="form-shadow form-group">
+                        {% if form.errors %}
+                        <div class="form-error form-textarea_error" role="alert">
+                            <ul>{% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                <li>{{error}}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        <label class="form-label">Номер карты</label>
+                        <input class="form-input Payment-bill" id="number" name="number"
+                               type="text" placeholder="9999 9999" data-mask="9999 9999"/>
+                    </div>
+                </div>
+                <div class="Payment-pay">
+                    <button class="btn btn_primary" type="submit">Оплатить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

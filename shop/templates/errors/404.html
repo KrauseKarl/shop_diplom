@@ -1,0 +1,42 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Страница не найдена
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Страница не найдена </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Оплата</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <form method="post" class="form Payment" action="">
+                {% csrf_token %}
+                <div class="Payment-card">
+                    <div class="form-group">
+                        <h2>Запрашиваемая страница не найдена</h2>
+                        <p>Возможно, неправильно указан путь в адресной строке или страница была удалена.</p>
+                        <p>Возврат на <a href="{% 'main_page' %}">главную страницу</a></p>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

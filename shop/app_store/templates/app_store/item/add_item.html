@@ -1,0 +1,210 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Добавить товар{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Добавить товар
+                    {% if form.errors %}
+                    <b style="color:red">{{ form.errors }}</b>
+                    {% endif %}
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Профиль</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include "app_user/navbar.html" %}
+            </div>
+            <div class="Section-content">
+                <div class="Profile">
+                    <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="row-block">
+                                <div class="form-group">
+                                    <select id="category" name="category" class="form-input">
+                                        <option disabled>Выберите категорию</option>
+                                        {% for category in categories %}
+                                        <option value="{{category.id}}">{{category.title}}</option>
+                                        {% endfor %}
+                                    </select>
+                                        <div>
+                                        <a href="{% url 'app_store:category_list' %}">
+                                            + добавить категорию
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="title">Название</label>
+                                    <input class="form-input" id="title" name="title" type="text"/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="stock">Количество</label>
+                                    <input class="form-input" id="stock" name="stock" type="number" value="0"/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="price">Цена</label>
+                                    <input class="form-input" id="price" name="price" type="number"
+                                           value="1" aria-valuemin="1"/>
+                                </div>
+                                <div class="form-group">
+                                    <select id="color" name="color" class="form-input">
+                                        <option value="" selected>Выберите цвет</option>
+                                        {% for color in colors %}
+                                        <option style="background-color:{{color}};font-weight: bolder;font-size: 30px;"
+                                                value="{{color}}">
+                                            &#8195;{{ color }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="is_available" id="is_available" checked="checked"/>
+                                    <span class="toggle-box"></span>
+                                    <span class="toggle-text">Доступно для продажи</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="checkbox" name="limited_edition" id='limited_edition'/>
+                                    <span class="toggle-box"></span>
+                                    <span class="toggle-text">Ограниченное количество</span>
+                                </div>
+
+
+
+                                <div id="form-container" class="form-group">
+                                    {{ tag_formset.management_form }}
+                                        {% for form in tag_formset %}
+                                        <select name="tag" id="tag" class="bird-form form-input">
+                                            <option value="" selected>Выберите тег</option>
+                                            {% for tag in tags %}
+                                            <option value="{{tag.id}}">{{tag}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% endfor %}
+                                    <button id="add-form" class="btn btn_primary"
+                                            style="margin-top:10px;"
+                                            type="button">+ тег
+                                    </button>
+
+                                    <a href="#openModal"
+                                       id="p_create_tag"
+                                       class="btn btn_success"
+                                       style="margin-top:10px; "
+                                       type="button">создать тег</a>
+                                </div>
+
+                            </div>
+
+                            <div class="row-block">
+                                 <!-- ADD IMAGE FORM BEGIN -->
+                                <div  class="form-group">
+                                      <div class="form-group">
+                                    <div class="image-form Profile-avatar Profile-avatar_noimg">
+                                        <div class="Profile-img" >
+                                            <img src="/assets/img/default/default_item.png" alt="#.png"/>
+                                        </div>
+                                        <label class="Profile-fileLabel" for="image">Выберите изображение товара</label>
+                                        <input class="Profile-file form-input" id="image" multiple  name="image" type="file"
+                                               data-validate="onlyImgAvatar"/>
+                                    </div>
+                                </div>
+
+                                <!--    ADD IMAGE FORM END      -->
+
+
+
+
+                                <div class="form-group">
+                                    <label class="form-label" for="description">Описание</label>
+                                    <textarea class="form-input" id="description" name="description"
+                                              placeholder="Описание"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <div class="Profile-btn">
+                                        <button class="btn btn_success" type="submit">Сохранить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+
+<!--    MODAL FOR CREATE NEW TAG    -->
+    <div id="openModal" class="modal-my">
+        <div class="modal-dialog-my">
+            <div class="modal-content-my">
+                <div class="modal-header-my">
+                    <h1 class="modal-title-my">Добавить новый тег</h1>
+                    <a href="#close" title="Close" class="close-my">×</a>
+                </div>
+                <div class="modal-body-my">
+                    <form method="post" action="" id="contactform" class="form Payment">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input class="form-input" id="new_tag_title" type="text" placeholder="new tag name"/>
+                        </div>
+                        <div class="form-group">
+                            <button id="flybutton" class="btn btn_primary btn_full" type="submit">Submit here</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer-my">
+                    <div id="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--    MODAL FOR CREATE NEW TAG    -->
+
+</div>
+
+<script>
+
+        let birdForm = document.querySelectorAll(".bird-form")
+        let container = document.querySelector("#form-container")
+        let addButton = document.querySelector("#add-form")
+        let createButton = document.querySelector("#create-tag")
+        let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+
+        let formNum = birdForm.length-1 //Get the number of the last form on the page with zero-based indexing
+        addButton.addEventListener('click', addForm)
+
+        function addForm(e){
+            e.preventDefault()
+
+            let newForm = birdForm[0].cloneNode(true) //Clone the bird form
+            let formRegex = RegExp(`form-(\\d){1}-`,'g') //Regex to find all instances of the form number
+
+            formNum++ //Increment the form number
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`) //Update the new form to have the correct form number
+            container.insertBefore(newForm, addButton, createButton ) //Insert the new form at the end of the list of forms
+
+            totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the form management
+        }
+
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'seller_index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Создать новый тег
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top"># Теги
+    </div>
+</div>
+<div class="Section Section_column Section_columnRight Section_columnWide Order">
+    <div class="wrap">
+        <div class="Section-column">
+
+            <!--  Прогресс заполнения   -->
+
+            <div class="Section-columnSection">
+                <header class="Section-header">
+                    <strong class="Section-title">{{ item }}</strong>
+                </header>
+                <div class="Section-columnContent">
+                    <ul class="menu menu_vt Order-navigate">
+                        {% for tag in item.tag.all %}
+                        <li class="menu-item ">
+                            <div class="btn btn_default">#{{ tag }}</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--  Прогресс заполнения   -->
+
+
+        <div class="Section-content">
+
+            <!--    Шаг 3. Способ оплаты     -->
+
+            <div class="Order-block Order-block_OPEN" id="step1">
+                <header class="Section-header Section-header_sm">
+                    <h2 class="Section-title">Теги </h2>
+                </header>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <div class="form-group">
+                        {% csrf_token %}
+                        {% for tag in item.tag.all %}
+                        <input name="tag" type="hidden" value="{{ tag.id }}">
+                        {% endfor %}
+                        <div>
+                            {% for letter, tag in tag_book.items %}
+                            <div class="form-group">
+                                {% if tag|length > 0 %}
+                                <b class="btn btn_default">{{ letter }}</b>
+                                    {% for t in tag %}
+                                    <label>
+                                        <input type="checkbox" name="tag" id="tag" value="{{t.id}}"/>
+                                        <span class="toggle-box"></span>
+                                        <span class="toggle-text" id="online"># {{t.title}}</span>
+                                    </label>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="Order-footer">
+                        <button type="submit" class="btn btn_success">Добавить тег</button>
+                        <a href="#openModal"
+                           id="p_create_tag"
+                           class="btn btn_primary"
+                           style="margin-top:10px; "
+                           type="button">создать тег</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--    MODAL FOR CREATE NEW TAG    -->
+    <div id="openModal" class="modal-my">
+        <div class="modal-dialog-my">
+            <div class="modal-content-my">
+                <div class="modal-header-my">
+                    <h1 class="modal-title-my">Добавить новый тег</h1>
+                    <a href="#close" title="Close" class="close-my">×</a>
+                </div>
+                <div class="modal-body-my">
+
+                    <form method="post" action="{% url 'app_store:create_tag' %}" id="tagCreateForm" class="form Payment">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input class="form-input" id="new_tag_title" name="title" type="text" placeholder="название нового тега"/>
+                        </div>
+                        <div class="form-group">
+                            <button id="flybutton" class="btn btn_primary btn_full" type="submit">Добавить тег</button>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer-my">
+                    <div id="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--    MODAL FOR CREATE NEW TAG    -->
+</div>
+{% endblock %}

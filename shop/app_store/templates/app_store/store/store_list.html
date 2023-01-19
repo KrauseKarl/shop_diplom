@@ -1,0 +1,121 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Магазин{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Catalog Megano </h1>
+                {% block breadcrumbs %}
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+
+                        <a href="{% url 'main_page' %}">home</a>
+                        {% if title %} &rsaquo; {{ title }}{% endif %}
+
+
+                        <!--                        <a href="index.html">home</a>-->
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Catalog</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <div class="Section-columnSection">
+                    {% include 'app_user/seller/sidebar_seller.html' %}
+                </div>
+
+            </div>
+            <div class="Section-content">
+
+                <div class="Orders">
+
+                    {% for store in stores %}
+                    <div class="Order Order_anons">
+                        <a class="Order-personal" href="{% url 'app_store:store_detail' store.pk %}">
+                            <div class="row">
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_delivery">
+                                        <div class="Order-title" >
+                                            <span class="Order-numberOrder">{{store.title}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoType">Статус:
+                                        </div>
+                                        <div class="Order-infoContent">
+                                            {% if store.is_active %}
+                                            <span class="seller_label">активный</span>
+                                            {% else %}
+                                            <span class="rest_label">не активный</span>
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+
+                                    <div class="Order-info Order-info_delivery">
+                                        <div class="Order-infoType">Позиций товаров:
+                                        </div>
+                                        <div class="Order-infoContent">{{ store.items.count }}
+                                        </div>
+                                    </div>
+                                     <div class="Order-info Order-info_pay">
+                                        <div class="Order-infoType">
+                                            Описание:
+                                        </div>
+                                        <div class="Order-infoContent">
+                                            {{ store.description|truncatechars:54 }}
+                                        </div>
+                                    </div>
+
+
+
+
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_delivery">
+                                        <img src="{{ store.logo.url }}" width="200" height="200">
+                                    </div>
+                                </div>
+                                <div class="row-block">
+
+
+                                    <div class="Order-info">
+                                        <div>
+                                            {% for item in store.items.all|slice:":3" %}
+                                            <ul>
+                                                <li>
+                                                    <img src="{{ item.image.first.image.url }}" width="35" height="35">
+                                                    {{item.title|truncatechars:19}}
+                                                </li>
+                                            </ul>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <!--       PAGINATION         -->
+                {% include "pagination.html" %}
+                <!--       PAGINATION         -->
+
+
+            </div>
+        </div>
+        {% endblock %}

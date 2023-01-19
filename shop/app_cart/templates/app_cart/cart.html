@@ -1,0 +1,301 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Корзина</h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="#">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Корзина</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="Section">
+        <div class="wrap">
+            <div>{% include 'message.html' %}</div>
+            <div>{% include 'error_message.html' %}</div>
+            <div class="form Cart">
+
+                <!--  ITEM CARD    -->
+
+                {% for shop, book in cart_dict.book.items %}
+                {% for value in book.items.values %}
+                {% with item=value.product  fees=value.fees %}
+                <div class="Cart-product">
+                    <div class="Cart-block Cart-block_row">
+                        <div class="Cart-block Cart-block_pict">
+                            <a class="Cart-pict" href="{% url 'app_item:item_detail' item.item.pk %}">
+                                {% if item.item.image.first %}
+                                <img class="Cart-img {% if not item.item.is_available %}Cart-img-not_available{% endif %}"
+                                     src="{{ item.item.image.first.image.url }}"
+                                     alt="{{ item.item.title }}_image"/>
+                                {% else %}
+                                <img class="Cart-img" src="/media/default_images/default_item.png"
+                                     alt="{{ item.item.title }}_image"/>
+                                {% endif %}
+
+                            </a>
+                        </div>
+                        <div class="Cart-block Cart-block_info">
+                             {% if value.is_not_enough %}
+                            <div class="rest_label" style="padding:5px; width:22rem; margin-bottom:5px">
+                                недостаточно товара на складе - <strong>всего {{ value.is_not_enough }} шт.</strong>
+                            </div>
+                            {% endif %}
+                            <!--   ITEM'S TITLE    -->
+                            <a class="Cart-title {% if not item.item.is_available %}Cart-title-not_available{% endif %}"
+                               href="{% url 'app_item:item_detail' item.item.pk %}">
+                                {{ item.item.title }}
+                            </a>
+                            <!--   ITEM'S TITLE    -->
+
+                            <!-- ITEM QUANTITY IS NOT ENOUGH TO MAKE ORDER       -->
+
+
+                            <!-- ITEM QUANTITY IS NOT ENOUGH TO MAKE ORDER       -->
+                            <!-- ITEM'S DESCRIPTION -->
+                            {% if item.item.is_available %}
+                            <div class="Cart-desc">
+                                {% if item.item.description %}
+                                {{ item.item.description|truncatechars:100 }}
+                                {% endif %}
+
+                            </div>
+                            {% else %}
+                            <div class="Cart-message-not_available">
+                                <span>товар закончился</span>
+                            </div>
+                            {% endif %}
+                            <!-- ITEM'S DESCRIPTION -->
+
+                            {% if  book.fees != 0 %}
+                             <div class="Cart-desc">
+                                <div style="width:10rem" class="seller_label">
+                                 + {{ book.fees }}$ доставка
+                            </div>
+                                <span class="Cart-desc-delivery-conditions">
+                                при заказе свыше $<b>{{ shop.min_free_delivery }}</b> доставка бесплатна
+                         (иначе $ {{ shop.delivery_fees }})</span>
+                             </div>
+                            {% endif %}
+
+                        </div>
+                        <div class="Cart-block Cart-block_price">
+                            <div class="Cart-price {% if not item.item.is_available %}Cart-title-not_available{% endif %}"
+                                 id="total_price_{{item.id}}" data-value="{{ item.total_price }}">
+                                {{ item.total_price }}$
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="Cart-block Cart-block_row">
+                        <div class="Cart-block Cart-block_seller">
+                            <!-- - var options = setOptions(items, ['value', 'selected', 'disabled']);-->
+
+                        </div>
+
+                        <!--    Добавление или удаление единиц товара  -->
+                        <div class="Cart-block Cart-block_amount">
+                            <div class="Cart-amount">
+                                <!--  ADD & REMOVE ITEM FORM  -->
+                                <form class="Amount" id="{{shop}}_{{ item.id }}" method="post"
+                                      action="{% url 'app_cart:update' pk=cart.pk item_id=item.pk %}">
+                                    {% csrf_token %}
+                                    <a type="button" id="update-button-remove" data-index="{{item.id}}"
+                                       class="Amount-remove update-button">
+
+                                    </a>
+                                    <input class="Amount-input form-input" id="input{{item.id}}" readonly name="quantity"
+                                           type="text" value="{{ item.quantity }}"/>
+                                    <input id="update{{ item.id }}" name="update" type="hidden" value="1"/>
+                                    <a type="button" id="update-button-add" data-index="{{item.id}}"
+                                       class="Amount-add update-button ">
+
+                                    </a>
+                                </form>
+                                <!--  ADD & REMOVE ITEM FORM  -->
+                            </div>
+                        </div>
+                        <!--    Добавление или удаление единиц товара     -->
+
+                        <!--    UPDATE ITEM AMOUNT   -->
+                        <div class="Cart-block Cart-block_delete">
+                            <button class="Cart-delete" form="{{shop}}_{{ item.id }}">
+                                <img src="/assets/img/icons/update.svg" width="35">
+                            </button>
+                        </div>
+                        <!--    UPDATE ITEM AMOUNT   -->
+
+                        <!--   REMOVE ITEM FROM CART   -->
+                        <div class="Cart-block Cart-block_delete">
+                            <a class="Cart-delete" href="{% url 'app_cart:remove_cart' pk=item.pk  %}">
+                                <img src="/assets/img/icons/card/delete.svg" alt="delete.svg"/>
+                            </a>
+                        </div>
+                        <!--   REMOVE ITEM FROM CART   -->
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+
+                <!--   ITEM CARD  -->
+
+                <!--    EMPTY CART  -->
+                {% empty %}
+                <div class="Middle Middle_top">
+                    <div class="Section">
+                        <div class="wrap">
+                            <div class="ProgressPayment">
+                                <div class="ProgressPayment-title">Ваша корзина пуста</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <!--    EMPTY CART  -->
+
+                <!-- TOTAL SUM AND TOTAL QUANTITY OF THE CART -->
+                {% if not cart.is_empty %}
+                    {% include 'app_cart/cart_summary_string.html' %}
+                {% endif %}
+                <!-- TOTAL SUM AND TOTAL QUANTITY OF THE CART END-->
+            </div>
+        </div>
+    </div>
+    <!-- AVAILABLE ITEMS -->
+
+
+    <!-- SOLD OUT  OR UNAVAILABLE ITEMS   -->
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Cart">
+                <!--  ITEM CARD    -->
+
+                {% for item in cart_dict.cart.items.all %}
+                {% if not item.item.is_available or item.item.stock < 1 %}
+                <div class="Cart-product">
+                    <div class="Cart-block Cart-block_row">
+                        <div class="Cart-block Cart-block_pict">
+                            <a class="Cart-pict" href="{% url 'app_item:item_detail' item.item.pk %}">
+                                {% if item.item.image.first %}
+                                <img class="Cart-img Cart-img-not_available"
+                                     src="{{ item.item.image.first.image.url }}" alt="card.jpg"/>
+                                {% else %}
+                                <img class="Cart-img" src="/media/default_images/default_item.png" alt="card.jpg"/>
+                                {% endif %}
+
+                            </a>
+                        </div>
+                        <div class="Cart-block Cart-block_info">
+                            <a class="Cart-title Cart-title-not_available"
+                               href="{% url 'app_item:item_detail' item.item.pk %}">
+                                {{ item.item.title }}
+                            </a>
+                            {% if not item.item.is_available %}
+                            <div class="Cart-message-not_available">
+                                <span>товар временно не доступен</span>
+                            </div>
+                            {% elif item.item.stock < 1 %}
+                            <div class="Cart-message-not_available">
+                                <span>товар распродан</span>
+                            </div>
+                            {% endif %}
+
+                        </div>
+                        <div class="Cart-block Cart-block_price">
+                            <div class="Cart-price Cart-title-not_available">
+                                {{ item.total_price }}$
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="Cart-block Cart-block_row">
+                        <div class="Cart-block Cart-block_seller">
+                            <!-- - var options = setOptions(items, ['value', 'selected', 'disabled']);-->
+
+                        </div>
+
+                        <!--   REMOVE ITEM FROM CART   -->
+                        <div class="Cart-block Cart-block_delete">
+                            <a class="Cart-delete" href="{% url 'app_cart:remove_cart' pk=item.pk  %}">
+                                <img src="/assets/img/icons/card/delete.svg" alt="delete.svg"/>
+                            </a>
+                        </div>
+                        <!--   REMOVE ITEM FROM CART   -->
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <!--   ITEM CARD  -->
+                <!-- SOLD OUT  OR UNAVAILABLE ITEMS   -->
+
+
+            </div>
+        </div>
+    </div>
+    <!-- SOLD OUT  OR UNAVAILABLE ITEMS   -->
+</div>
+
+<!--    MODAL   -->
+<div id="openModal" class="modal-my">
+    <div class="modal-dialog-my">
+        <div class="modal-content-my">
+            <div class="modal-header-my">
+                <h2 class="modal-title-my">Оформить заказ</h2>
+                <a href="#close" title="Close" class="close-my">×</a>
+            </div>
+            <div class="modal-body-my">
+                {% for item in cart.items.all|slice:":5" %}
+                {% if item.item.is_available or item.item.stock > 0 %}
+                <div class="modal-body-img_block">
+                    <span class="Order-modal-count-label">{{ item.quantity }} шт.</span>
+                    <img class="modal-body-img" src="{{ item.item.image.first.image.url}}">
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <div class="modal-body-my">
+                <div class="Cart-block ">
+                    <strong class="Cart-title">Количество товаров:</strong>
+                    <span class="Cart-price Cart-total-price">
+                            {{ cart.get_total_quantity }}шт.
+                        </span>
+
+                    <strong class="Cart-title">доставка:</strong>
+                    <span class="Cart-price Cart-total-price">
+                          ${{ cart_dict.fees }}
+                        </span>
+
+                    <strong class="Cart-title">доставка:</strong>
+                    <span class="Cart-price Cart-total-price" id='modal_total_price'
+                          data-value="{{ cart.get_total_price }}">
+                          $ {{ cart.get_total_price }}
+                        </span>
+                </div>
+            </div>
+
+            <div class="modal-footer-my">
+
+
+                   <a href="{% url 'app_order:order_create'  %}" class="btn  btn_primary btn_full">
+                    <span>Оформить заказ</span></a>
+                {%endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<!--    MODAL   -->
+{% endblock %}

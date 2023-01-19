@@ -1,0 +1,64 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Ошибка
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Произошла ошибка</h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Оплата</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Payment form-shadow">
+                <div class="Payment-card">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <img src="/assets/img/icons/error.svg" width="100">
+                            <span class="form-label" style="font-size:16px">Произошла ошибка</span>
+                        </label>
+                    </div>
+                </div>
+
+                    <div class="form-group" style="margin-top:50px">
+                        <div class="btn-inline">
+                            <a class="btn btn_default btn_small"
+                               href="{%if cart %}{% url 'app_cart:cart'  cart.pk %}{% endif %}">
+                                <span>Вернуться в корзину</span>
+                            </a>
+                        </div>
+                        <div class="btn-inline">
+                            {% if pay == 'online' %}
+                            <a class="btn btn_success btn_small"
+                               href="{% url 'app_order:pay_by_card' %}">
+                                <span>Оплатить<br>заказ</span>
+                            </a>
+                            {% elif pay == 'someone' %}
+                            <a class="btn btn_success btn_small"
+                               href="{% url 'app_order:pay_by_account' %}">
+                                <span>Оплатить<br>заказ</span>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

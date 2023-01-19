@@ -1,0 +1,133 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Редактировать магазин{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Редактировать магазин
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Профиль</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include "app_user/navbar.html" %}
+            </div>
+            <div class="Section-content">
+                <div class="Profile">
+                    <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="row-block">
+                                <!--    TITLE FIELD  -->
+                                <div class="form-group">
+                                    {% include 'error_message.html' %}
+                                    <label class="form-label" for="title">название магазина</label>
+                                    <input class="form-input" id="title" name="title" type="text"
+                                           value="{{ store.title }}"/>
+                                </div>
+                                <!--    TITLE FIELD  -->
+
+                                <!--  IS_ACTIVE FIELD -->
+                                <div class="form-group">
+                                    {% include 'error_message.html' %}
+                                    <label class="form" for="is_active">магазин </label>
+                                    <div style="display:block">
+                                        {% if store.is_active %} <span class="store-status-active">активный</span>
+                                        {% else %} <span class="store-status-non_active">не активен</span>
+                                        {% endif %}
+                                        <input class="form-input" id="is_active" name="is_active" type="checkbox"
+                                           value="{{ store.is_active }}"/>
+                                    </div>
+                                </div>
+                                <!--  IS_ACTIVE FIELD -->
+
+                                <!--    DELIVERY FEES FIELD  -->
+                                <div class="form-group">
+                                    {% include 'error_message.html' %}
+                                    <label class="form-label" for="delivery_fees">минимальная сумма бесплатной доставки</label>
+                                    <input class="form-input" id="delivery_fees" name="delivery_fees" type="text"
+                                           value="{{ store.delivery_fees }}"/>
+                                </div>
+                                <!--    DELIVERY FEES FIELD   -->
+                                <!--    MINIMUM FREE DELIVERY  FIELD  -->
+                                <div class="form-group">
+                                    {% include 'error_message.html' %}
+                                    <label class="form-label" for="min_free_delivery">стоимость доставки</label>
+                                    <input class="form-input" id="min_free_delivery" name="min_free_delivery"
+                                           type="text" value="{{ store.min_free_delivery }}"/>
+                                </div>
+                                <!--    MINIMUM FREE DELIVERY  FIELD  -->
+                                <!--    TITLE DESCRIPTION  -->
+                                <div class="form-group">
+                                    {% include 'error_message.html' %}
+                                    <label class="form-label" for="description">описание</label>
+                                    <textarea class="form-input" id="description" name="description"
+                                              placeholder="Описание"> {{ store.description }}</textarea>
+                                </div>
+                                <!--    TITLE DESCRIPTION  -->
+
+
+                            </div>
+                            <div class="row-block">
+                                <!--    LOGO FIELD  -->
+                                <div class="form-group">
+                                    {% include 'error_message.html' %}
+                                    <label class="form-label" for="logo">Логотип</label>
+                                    <div class="Profile-avatar Profile-avatar">
+                                        <div class="Profile-img">
+<!--                                            {% if store.logo %}-->
+                                            <img src="{{ store.logo.url }}" alt="#.png"/>
+<!--                                            {% else %}-->
+<!--                                            <img src="/assets/img/default/default_item.png" alt="#.png"/>-->
+<!--                                            {% endif %}-->
+                                        </div>
+
+                                        <label class="Profile-fileLabel" for="logo">Выберите логотип</label>
+                                        <input class="Profile-file form-input" id="logo" name="logo"
+                                               data-validate="onlyImgAvatar" type="file"/>
+                                    </div>
+
+                                </div>
+                                <!--    LOGO FIELD  -->
+
+                                <!--    OWNER FIELD  -->
+                                <div class="form-group">
+                                    {% include 'error_message.html' %}
+                                    <label class="form-label" for="owner">Собственник</label>
+                                    <input class="form-input" id="owner" name="owner" type="text"
+                                           value="{{ store.owner.get_full_name }}"/>
+                                </div>
+                                <!--    OWNER FIELD  -->
+
+
+                                <div class="form-group">
+
+                                    <div class="Profile-btn">
+                                        <button class="btn btn_success" type="submit">Сохранить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
