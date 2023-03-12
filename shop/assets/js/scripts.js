@@ -292,12 +292,12 @@ var range = function(){
             $line.ionRangeSlider({
                 onStart: function(data){
                     $('.rangePrice').text(
-                        '$' + data.from + ' - $' + data.to
+                        'от $' + data.from + ' - до $' + data.to
                     )
                 },
                 onChange: function(data){
                     $('.rangePrice').text(
-                        '$' + data.from + ' - $' + data.to
+                        'от $' + data.from + ' - до $' + data.to
                     )
                 }
             });

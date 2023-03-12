@@ -1,35 +1,39 @@
+from celery import Celery
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
-from django import forms
-from django.core import serializers
-from django.http import HttpResponse
-from django.http.response import HttpResponseBase, JsonResponse
-
-from django.shortcuts import render, redirect
-from django.utils.timezone import now
-from django.views.decorators import csrf
-from django.views.generic import TemplateView, ListView, UpdateView, DetailView, FormView, CreateView
+from django.shortcuts import redirect
+from django.views.generic import TemplateView, UpdateView, DetailView, CreateView
 
 from app_cart.context_processors import get_cart
 from app_cart.forms import AmountForm
 from app_cart.models import Cart, CartItem
-from app_cart.services.cart_services import add_item_in_cart, update_quantity_item_in_cart, remove_from_cart, \
-    create_cart
-from app_item.services.item_services import ItemHandler
-from app_user.models import Profile
-from app_user.services.user_services import get_user
+from app_cart.services.cart_services import *
+from shop.settings import CELERY_RESULT_BACKEND, CELERY_BROKER_URL
+app = Celery('tasks', backend=CELERY_RESULT_BACKEND, broker=CELERY_BROKER_URL)
 
 
-class AddItemToCart(TemplateView):
+class AddItemToCart(CreateView):
     """Класс-представление для добавления товара в корзину."""
     model = Cart
     template_name = 'app_item/item_detail.html'
+    form_class = AmountForm
 
     def get(self, request, *args, **kwargs):
         item_id = kwargs['pk']
         path = add_item_in_cart(request, item_id)
         return path
+
+    def post(self, request, *args, **kwargs):
+        form = AmountForm(request.POST)
+        item_id = kwargs['pk']
+        if form.is_valid():
+            quantity = form.cleaned_data.get('quantity')
+            update = form.cleaned_data.get('update')
+            path = add_item_in_cart(request, item_id, quantity)
+
+            return path
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
 
 
 class RemoveItemFromCart(TemplateView):
@@ -37,7 +41,7 @@ class RemoveItemFromCart(TemplateView):
 
     def get(self, request, *args, **kwargs):
         item_id = kwargs['pk']
-        remove_from_cart(request, item_id, **kwargs)
+        remove_from_cart(request, item_id)
         path = request.META.get('HTTP_REFERER')
         return redirect(path)
 

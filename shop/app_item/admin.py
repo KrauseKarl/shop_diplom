@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from app_item.forms import ItemForm
 from app_store.models import Store
-from app_item.models import Item, Category, Tag, Comment, Image
+from app_item.models import Item, Category, Tag, Comment, Image, Feature, FeatureValue
 
 EMPTY_VALUE = 'незаполнен'
 BLANK_CHOICE_DASH = [("", "выберите действие")]
@@ -12,6 +12,11 @@ class ItemTagsInline(admin.TabularInline):
     model = Item.tag.through
     raw_id_fields = ['tag', ]
     extra = 1
+
+
+class ItemFeatureInline(admin.TabularInline):
+    model = Item.feature_value.through
+    extra = 3
 
 
 class ItemImageInline(admin.TabularInline):
@@ -24,10 +29,10 @@ class ItemAdmin(admin.ModelAdmin):
     form = ItemForm
     fields = (
         ('title', 'slug'), ('price', 'stock', 'is_available', 'limited_edition'),
-        ('category','store'), 'color')
-    list_display = ['title', 'category','store', 'price', 'stock', 'set_colors']
+        ('category', 'store'), 'color')
+    list_display = ['title', 'category', 'store', 'price', 'stock', 'set_colors']
     prepopulated_fields = {'slug': ('title',)}
-    inlines = [ItemImageInline, ItemTagsInline, ]
+    inlines = [ItemImageInline, ItemTagsInline, ItemFeatureInline ]
     radio_fields = {'color': admin.VERTICAL}
     list_filter = ('is_available', 'limited_edition', 'category', 'store')
     raw_id_fields = ['category', 'tag']
@@ -74,8 +79,21 @@ class ImageAdmin(admin.ModelAdmin):
     list_display = ('title', 'created', 'updated', 'image')
 
 
+class FeatureAdmin(admin.ModelAdmin):
+    list_display = ['title', 'slug', 'widget_type', 'is_active']
+    prepopulated_fields = {'slug': ('title',)}
+    empty_value_display = EMPTY_VALUE
+
+
+class FeatureValueAdmin(admin.ModelAdmin):
+    list_display = ['feature', 'value', ]
+    empty_value_display = EMPTY_VALUE
+
+
 admin.site.register(Item, ItemAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(Image, ImageAdmin)
+admin.site.register(Feature, FeatureAdmin)
+admin.site.register(FeatureValue, FeatureValueAdmin)

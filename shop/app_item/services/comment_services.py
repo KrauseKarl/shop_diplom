@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 
 from app_item.forms import CommentForm
 from app_item.models import Item, Comment
@@ -34,6 +34,22 @@ class CommentHandler:
         return Comment.objects.select_related('item', 'user').filter(id=comment_id)[0]
 
     @staticmethod
+    def set_comment_approved(comment_id):
+        """Функция для подтверждения комментария."""
+        comment = CommentHandler.get_comment(comment_id)
+        comment.is_published = True
+        comment.save()
+        return comment
+
+    @staticmethod
+    def set_comment_reject(comment_id):
+        """Функция для отклонения  комментария."""
+        comment = CommentHandler.get_comment(comment_id)
+        comment.is_published = False
+        comment.save()
+        return comment
+
+    @staticmethod
     def get_comment_list_by_user(request) -> QuerySet[Comment]:
         """Функция возвращает список всех комментариев пользователя. """
         comments = Comment.objects.select_related('item').filter(user=request.user)
@@ -42,7 +58,7 @@ class CommentHandler:
     @staticmethod
     def get_comment_cont(item_id):
         """Функция возвращает общее количество комментариев товара. """
-        return Comment.objects.filter(item_id=item_id).count()
+        return Comment.objects.filter(Q(item_id=item_id) & Q(is_published=True)).count()
 
     @staticmethod
     def add_comment(user, item_id, data):

@@ -1,5 +1,20 @@
 /* АВТОЗАПОЛЕНИЕ ПОЛЕ ЗАКАЗА */
 
+
+$(function getAddress() {
+ $("#post_address").on("change", function () {
+    var post_address = $('#post_address').val()
+    if (typeof post_address != "undefined") {
+    var wholeAddress  = new String(post_address)
+    var addressArray =  wholeAddress.split(';')
+    var city = addressArray[0];
+    var address = addressArray[1];
+    $('#city').val(city);
+    $('#address').val(address);
+    }
+    });
+});
+
 $(document).ready( function() {
     $('#step_4').on('click', function () {
             var deliveryValue = $('input[name="delivery"]:checked').val();
@@ -7,51 +22,68 @@ $(document).ready( function() {
             var payValue = $('input[name="pay"]:checked').val();
             var pay = $('span[id="'+payValue+'"]').text()
             var name = $('#name').val()
-            var t = $('#telephone').val()
+            var telephone = $('#telephone').val()
             var email = $('#email').val()
+            var post_address = $('#post_address').val()
             var city = $('#city').val()
             var address = $('#address').val()
             var total_cost = $('#total_cost').text()
-            var deliveryFees = $('#delivery_normal_cost').text()
+            var deliveryFees = $('#express_delivery_price').val()
+            var comment = $('#comment').val()
+            console.log($('#express_delivery_price').val())
+            console.log(deliveryValue)
+            console.log(delivery)
+            console.log(total_cost)
+            var total = $('#total_sum').val(parseFloat(total_cost)+parseFloat($('#express_delivery_price').val())+parseFloat($('#fees').text()))
+            console.log(total.val())
 
-            if (delivery == 'Экспресс доставка') {
-                $('#delivery_cost').text('20')
-                $('#total_sum').val(parseFloat(total_cost)+parseFloat($('#delivery_cost').text())+parseFloat($('#fees').text()))
-                $('#total_cost').text(parseFloat(total_cost)+parseFloat($('#delivery_cost').text())+parseFloat($('#fees').text()))
+            if (deliveryValue == 'express') {
+                $('#delivery_cost').html($('#express_delivery_price').val())
+                console.log($('#delivery_cost').text())
+                $('#delivery_cost_span').addClass("express_delivery_label")
+
+                $('#total_sum').val(total)
+                $('#total_cost').text(parseFloat(total_cost)+parseFloat($('#express_delivery_price').val())+parseFloat($('#fees').text()))
             } else {
+                $('#delivery_express_block').css("display", "none");
                 $('#total_sum').val(parseFloat(total_cost)+parseFloat($('#fees').text()))
                 $('#total_cost').text(parseFloat(total_cost)+parseFloat($('#fees').text()))
             }
-            var telephone = '+7 ('+`${t[0]}`+`${t[1]}`+`${t[3]}`+') '+
-                                   `${t[4]}`+`${t[4]}`+`${t[5]}`+'-'+
-                                   `${t[6]}`+`${t[7]}`+'-'+
-                                   `${t[8]}`+`${t[9]}`
+
             $('#name_result').text($('#name').val());
             $('#telephone_result').html(telephone);
             $('#email_result').html($('#email').val());
             $('#city_result').text($('#city').val());
             $('#address_result').html($('#address').val());
-            $('#delivery_result').html(delivery)
-            $('#pay_result').html(pay)
+            $('#delivery_result').html(delivery);
+            $('#pay_result').html(pay);
+            $('#comment_result').html($('#comment').val())
+
         }
     )
     }
 );
 /* АВТОЗАПОЛЕНИЕ ПОЛЕ ЗАКАЗА END */
 
+$(document).ready(function() {
+    var tel = $('#phone_formatter').text()
+    var telephone = '+7 ('+`${tel[0]}`+`${tel[1]}`+`${tel[3]}`+') '+
+                           `${tel[4]}`+`${tel[4]}`+`${tel[5]}`+'-'+
+                           `${tel[6]}`+`${tel[7]}`+'-'+
+                           `${tel[8]}`+`${tel[9]}`
+
+    $('#phone_formatter').html(telephone);
+});
 
 //
 $(document).ready(function() {
     var totalPrice = parseFloat($('#total_price').data('value'))
-    console.log('totalPrice=', $('#total_price'))
     var totalFees = parseFloat($('#total_fees').data('value'))
 
-     console.log(totalFees)
     $('#order_button').text(totalPrice+totalFees)
     $('#modal_total_price').text(totalPrice+totalFees)
     $('#total_price_with_delivery').text(totalPrice+totalFees)
-    $('#total_price_with_delivery').value(totalPrice+totalFees)
-     console.log($('#total_price_with_delivery'))
+    $('#total_price_with_delivery').val(totalPrice+totalFees)
     }
 )
 //
@@ -98,48 +130,6 @@ $( document ).ready(function() {
     );
 });
 //  РАССКРЫТИЕ КОММЕНТАРИЕВ END
-
-// ПАГИНАЦИЯ
-//function ajaxPagination() {
-//    $('.Pagination.Pagination-ins a.Pagination-element').each((index, el) =>
-//        $(el).click(e) => {
-//        e.preventDefault()
-//        let page_url = $(e).attr('href')
-//        console.log( page_url )
-//
-//        $.ajax({
-//            url: page_url,
-//            type: 'GET',
-//            success: (data) => {
-//            $('.Cards').empty()
-//            $('.Cards').append($(data).filter('.Cards').html() )
-//
-//            $('.Pagination').empty()
-//            $('.Pagination').append($(data).filter('.Pagination').html() )
-//            alert('Pagination is working!')
-//            }
-//        })
-//        }
-//    )
-//}
-//$(document).ready(function() {
-//    ajaxPagination()
-//})
-//
-//$(document).ajaxStop(function() {
-//    ajaxPagination()
-//})
-
-// ПАГИНАЦИЯ END
-
-
-//
-//$('#p_create_tag').on('click', function () {
-//    const addTag = $('#p_create_tag')
-//    const href = $('#p_create_tag').attr('href')
-//    const win = window.open('/store/add_tag/', '_blank', 'left=450,top=150,height=480,width=640,resizable=yes,scrollbars=yes');
-//    win.focus();
-//})
 
 // POST-запрос из модального окна
 var tagForm = $('#tagCreateForm');
@@ -260,3 +250,54 @@ tagForm.submit(function () {
 //document.getElementById("close-button").addEventListener("click", function () {
 //        toast.slideDown.remove()
 //        });
+function getStatus(orderID, taskID) {
+  $.ajax({
+    url: `/order/get_status_payment/${taskID}/${orderID}/`,
+    method: 'GET'
+  })
+  .done((response) => {
+    const taskStatus = response.task_status;
+    if (taskStatus === 'ERROR' || taskStatus === 'FAILURE'){
+        console.log(`FAILURE WINDOW`)
+        window.location.href = response.failed_url
+    }
+    else if (taskStatus === 'SUCCESS') {
+        console.log(`SUCCESS WINDOW`)
+        window.location.href = response.success_url
+    }
+    else {
+       console.log(`STATUS = ${taskStatus}`)
+       setTimeout(function() {
+            getStatus(response.task_id, response.order_id);
+            }, 1000);
+       }  return false;
+  })
+  .fail((err) => {
+    console.log(err)
+  });
+}
+
+
+$('#form').submit(function () {
+    $('#spinner').attr('style', 'display:block');
+    $('#form').attr('style', 'display:none');
+    $.ajax({
+        data: $(this).serialize(),
+        url: `/order/validate_username/`,
+        method: "POST",
+        success: function (response) {
+                console.log(`START`)
+                console.log(`task_status = ${response.task_status}`)
+                console.log(`task_result = ${response.task_result}`)
+                console.log(response.task_id)
+                console.log(`FINISH`)
+            setTimeout(function() {
+                    getStatus(response.task_id, response.order_id);
+                    }, 1000);
+                },
+        error: function (response) {
+            console.log(response.responseJSON.errors)
+        }
+    });
+    return false;
+});

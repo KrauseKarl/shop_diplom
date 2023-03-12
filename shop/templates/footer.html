@@ -12,17 +12,17 @@
                 </p>
                 <ul class="menu menu_img menu_smallImg Footer-menuSoc">
                     <li class="menu-item">
-                        <a class="menu-link" href="#">
+                        <a class="menu-link" href="{{ site_settings.facebook }}">
                             <img src="/assets/img/icons/socialFooter/fb.svg" alt="fb.svg"/>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a class="menu-link" href="#">
+                        <a class="menu-link" href="{{ site_settings.twitter }}">
                             <img src="/assets/img/icons/socialFooter/tw.svg" alt="tw.svg"/>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a class="menu-link" href="#">
+                        <a class="menu-link" href="{{ site_settings.linkedIn }}">
                             <img src="/assets/img/icons/socialFooter/in.svg" alt="in.svg"/>
                         </a>
                     </li>
@@ -31,7 +31,7 @@
                             <img src="/assets/img/icons/socialFooter/pt.svg" alt="pt.svg"/>
                         </a>
                     </li>
-                    <li class="menu-item"><a class="menu-link" href="#">
+                    <li class="menu-item"><a class="menu-link" href="{{ site_settings.support_email }}">
                         <img src="/assets/img/icons/socialFooter/mail.svg" alt="mail.svg"/>
                     </a>
                     </li>
@@ -100,11 +100,11 @@
             <div class="row-block">
                 <strong class="Footer-title">Contacts
                 </strong>
-                <p>Phone: 8.800.200.600<br>
-                    Email: Support@ninzio.com<br>
-                    Skype: techno<br>
-                    Address: New York, north<br>
-                    Avenue 26/7<br>0057
+                <p>Phone: {{ site_settings.phone }}<br>
+                    Email: {{ site_settings.support_email }}<br>
+                    Skype: {{ site_settings.skype }}<br>
+                    Address: {{ site_settings.address }}<br>
+
                 </p>
             </div>
         </div>

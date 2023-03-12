@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from urllib.parse import quote
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, update_session_auth_hash
@@ -18,14 +17,15 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, TemplateView, ListView
 from django.contrib.auth.models import User, Group
 
-from app_order.services.order_services import get_last_user_order
+from app_item.services.item_services import ItemHandler
+
 from app_user.services.user_services import is_customer
 from utils.my_utils import MixinPaginator
 from app_cart.models import Cart
-from app_cart.services.cart_services import get_current_cart, merge_anon_cart_with_user_cart, delete_cart_cookies
+from app_cart.services.cart_services import get_current_cart, merge_anon_cart_with_user_cart, delete_cart_cookies, \
+    get_items_in_cart
 from app_item.models import Comment
 from app_item.services.comment_services import CommentHandler
-from app_order.models import Order
 from app_user.forms import RegisterUserForm, UpdateUserForm, UpdateProfileForm, RegisterUserFormFromOrder
 from app_user.models import Profile
 from app_user.services.register_services import SendVerificationMail, GroupHandler, ProfileHandler
@@ -147,7 +147,8 @@ class DetailAccount(DetailView):
         context = super().get_context_data(**kwargs)
         user = self.get_object()
         if is_customer(user):
-            context['order'] = get_last_user_order(user)
+            from app_order.services.order_services import CustomerOrderHandler
+            context['last_order'] = CustomerOrderHandler.get_last_customer_order(user)
         return context
 
     def get_template_names(self):
@@ -169,10 +170,20 @@ class DetailProfile(DetailView):
 
 class DetailHistoryView(DetailView):
     """Класс-представление список просмотренных товаров."""
-    pass
-    # model = User
-    # template_name = 'app_user/customer/history_view.html'
-    # context_object_name = 'user'
+    model = User
+    template_name = 'app_user/customer/history_view.html'
+    context_object_name = 'user'
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        user = self.get_object()
+        already_in_cart = get_items_in_cart(self.request)
+        queryset = ItemHandler.get_history_views(user)
+        context = {
+            'object_list': queryset,
+            'already_in_cart': already_in_cart
+        }
+        return render(request, self.template_name, context=context)
 
 
 class CommentList(ListView, MixinPaginator):

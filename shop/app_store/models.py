@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 from app_store.managers.app_store_managers import StoreIsActiveManager
 from utils.my_utils import slugify_for_cyrillic_text
 
 
 class Store(models.Model):
-    # TODO Store(models.Model) description
+    """  Модель магазина."""
     title = models.CharField(
         max_length=200,
         db_index=True,
@@ -18,29 +19,38 @@ class Store(models.Model):
         allow_unicode=False,
         verbose_name='slug'
     )
-    delivery_fees = models.SmallIntegerField(default=0,
-                                             verbose_name='стоимость доставки')
-    min_free_delivery = models.IntegerField(default=0,
-                                            verbose_name='минимальная сумма бесплатной доставки')
-    owner = models.ForeignKey(User,
-                              on_delete=models.SET_NULL,
-                              null=True,
-                              related_name='store',
-                              verbose_name='собственник'
-                              )
-    created = models.DateTimeField(auto_now_add=True,
-                                   verbose_name='дата создания'
-                                   )
-    updated = models.DateTimeField(auto_now_add=True,
-                                   verbose_name='дата обновления'
-                                   )
-    description = models.TextField(default='',
-                                   blank=True,
-                                   verbose_name='Описание магазина')
-    logo = models.ImageField(upload_to='store/logo/',
-                             default='default_images/default_store.jpg',
-                             blank=True
-                             )
+    delivery_fees = models.SmallIntegerField(
+        default=0,
+        verbose_name='стоимость доставки'
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='store',
+        verbose_name='собственник'
+    )
+    min_free_delivery = models.IntegerField(
+        default=0,
+        verbose_name='минимальная сумма бесплатной доставки'
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='дата создания'
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='дата обновления'
+    )
+    description = models.TextField(
+        default='',
+        blank=True,
+        verbose_name='Описание магазина')
+    logo = models.ImageField(
+        upload_to='store/logo/',
+        default='default_images/default_store.jpg',
+        blank=True
+    )
     is_active = models.BooleanField(default=False)
 
     objects = models.Manager()
@@ -64,3 +74,14 @@ class Store(models.Model):
     def get_active(self):
         self.is_active = True
         return self.is_active
+
+    def get_absolute_url(self):
+        return reverse("app_item:store_list", kwargs={'slug': self.slug})
+
+    @property
+    def store_items(self):
+        return self.items.all()
+
+    @property
+    def all_orders(self):
+        return self.orders.count()

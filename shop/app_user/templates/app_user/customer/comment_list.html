@@ -1,9 +1,11 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load cache %}
-{% load url_extras %}
+
 {% block title %}Каталог{% endblock %}
+
 {% block heard %} {% include 'search_string.html' %} {% endblock %}
+
 {% block content %}
 
 <div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
@@ -33,6 +35,7 @@
             </div>
         </div>
     </div>
+    {% include 'message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
@@ -45,7 +48,7 @@
                     <div class="Sort-title">Всего комментариев: </div>
                     <div class="Sort-variants">
                         <div class="Sort-sortBy">
-                            67
+                            {{ object_list|length }}
                         </div>
                     </div>
                 </div>
@@ -68,6 +71,16 @@
                                         </div>
                                     </div>
                                     <div class="Order-info">
+                                        <div class="Order-infoType">модерация:</div>
+                                        <div class="Order-infoContent">
+                                            {% if  comment.is_published %}
+                                            <span class="seller_label">ОПУБЛИКОВАН</span>
+                                            {% else %}
+                                              <span class="rest_label">НА МОДЕРАЦИИ</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
                                         <div class="Order-infoType">товар:</div>
                                         <div class="Order-infoContent">
                                             <a href="{% url 'app_item:item_detail' comment.item.pk %}">
@@ -81,8 +94,52 @@
                                         <div class="Order-infoType">комментарий:</div>
                                         <div class="Order-infoContent">
                                             <span class="Order-price">
-                                                {{ comment.review|truncatechars:100 }}
+                                                {{ comment.review|truncatechars:200 }}
                                             </span>
+                                        </div>
+                                    </div>
+                                        <div class="Order-info ">
+                                        <div class="Order-infoType"></div>
+                                        <div class="Order-infoContent">
+                                            <div class="Order-price">
+                                                <a class="btn btn_square  btn_dark btn_narrow"
+                                                   href="{% url 'app_item:comment_edit' pk=comment.item.pk comment_id=comment.pk %}">
+                                                    редактировать
+                                                </a>
+
+                                                <a class="btn btn_square btn_danger btn_narrow"
+                                                   href="#commentDeleteModal">
+                                                    удалить
+                                                </a>&#160;&#160;
+
+                                                <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+                                                <div id="commentDeleteModal" class="modal-my">
+                                                    <div class="modal-dialog-my">
+                                                        <div class="modal-content-my">
+                                                            <div class="modal-header-my">
+                                                                <a href="#close" title="Close" class="close-my">×</a>
+                                                            </div>
+                                                            <div class="modal-body-my">
+                                                                <div class="form Payment">
+                                                                    <div class="form-group">
+                                                                        <h3>Удалить комментарий</h3>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <a href="{% url 'app_item:comment_delete' pk=comment.item.pk comment_id=comment.pk %}"
+                                                                           class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                                        <a href="#close" title="Close"
+                                                                           class="btn btn_square btn_dark btn_narrow">отмена</a>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer-my"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

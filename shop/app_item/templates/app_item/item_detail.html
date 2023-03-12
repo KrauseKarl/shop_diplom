@@ -9,44 +9,39 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">{{ item.title }}</h1>
+                <h1 class="Middle-title">{{     item.title     }}</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'app_item:item_list' %}">каталог</a>
+                        <a href="{% url 'main_page' %}">главная страница</a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <a  href="{% url 'app_item:item_category' category=item.category.slug %}">
-                            <span>{{ item.category}}</span>
+                            <span>{{ item.category }}</span>
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
+    {% include 'message.html' %}
     <div class="Section">
         <div class="wrap">
-            <div class="{% if not item.is_available %} non_available {% endif %}Product">
+            <div class="{% if not item.is_available %} non_available {% endif %} Product">
                 <div class="ProductCard  ">
                     <div class="ProductCard-look">
                         <div class="ProductCard-photo">
-                            <img src="{{ item.image.first.image.url }}" alt="bigGoods.png"/>
+                            <img src="{{ item.main_image }}" alt="{{ item.title }}.png"/>
                         </div>
                         <div class="ProductCard-picts">
-                            {% if item.image.first %}
                                 <a class="ProductCard-pict ProductCard-pict_ACTIVE"
                                    href="{{ item.main_image }}">
                                     <img src="{{ item.main_image }}" alt="{{ img }}"/>
                                 </a>
-                                {% for img in item.image.all|slice:"1:" %}
+                                {% for img in item.other_images %}
                                 <a class="ProductCard-pict" href="{{ img.image.url }}">
                                     <img src="{{ img.image.url }}" alt="{{ img }}"/>
                                 </a>
                                 {% endfor %}
-                            {% else %}
-                            <a class="ProductCard-pict ProductCard-pict_ACTIVE" href="#">
-                                <img src="/media/default_images/default_item.png" alt="{{ img }}"/>
-                            </a>
-                            {% endif %}
                         </div>
                     </div>
 
@@ -68,62 +63,91 @@
                         </div>
                         <div class="ProductCard-text">
                             <ul>
-                                <li>{% if item.description %}
-                                        {{ item.description }}
-                                    {% else %}
-                                        {% lorem 2 p random %}
+                                <li>{% if item.description %}{{ item.description }}
+                                    {% else %}{% lorem 2 p random %}
                                     {% endif %}
                                 </li>
                             </ul>
                         </div>
                         <div class="ProductCard-cost">
                             <div class="ProductCard-tagsTitle">Магазин:
-                                <strong>{{ item.store_items.first }}</strong>
+                                <strong><a href="{{ item.get_store_url }}">{{ item.store| upper}}</a></strong>
                             </div>
                         </div>
-                        {% if item.is_available  and request.user.profile.is_customer %}
-                        <div class="ProductCard-cart">
-                            <div class="ProductCard-cartElement ProductCard-cartElement_amount">
-                                <div class="Amount Amount_product">
-                                    <button class="Amount-remove" type="button"></button>
-                                    <input class="Amount-input form-input" name="amount" type="text" value="1"/>
-                                    <button class="Amount-add" type="button">
+
+
+                        {% if item.is_available  and not request.user.profile.is_seller %}
+                            <div class="ProductCard-cart">
+
+                                {% if item in already_in_cart %}
+                                    <!-- UPDATE ITEM IN CART FORM & BUTTON -->
+                                    {% for cart_item in cart_dict.cart.items.all %}
+                                        {% if cart_item.item == item%}
+                                            <div class="ProductCard-cartElement ProductCard-cartElement_amount">
+                                    <form class="Amount Amount_product" id="update_form" method="post"
+                                          action="{% url 'app_cart:update' pk=cart_dict.cart.pk item_id=cart_item.pk %}">
+                                        {% csrf_token %}
+                                        <a class="Amount-remove" type="button" id="_update-button-remove"
+                                           data-index="{{ item.id }}"></a>
+                                        <input id="update{{ item.id }}" name="update" type="hidden" value="1"/>
+                                        <input class="Amount-input form-input" id="_input{{ item.id }}" readonly
+                                               name="quantity" value="{{ cart_item.quantity }}" type="text"/>
+                                        <a class="Amount-add" type="button" id="_update-button-add"
+                                           data-index="{{ item.id }}"></a>
+                                    </form>
+                                </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                        <div class="ProductCard-cartElement">
+                                    <button class="btn btn_dark btn_narrow" form="update_form">
+                                        <img src="/assets/img/icons/update.svg">
+
                                     </button>
                                 </div>
-                            </div>
-
-                            <div class="ProductCard-cartElement">
-                                {% if item.cart_item.first in cart.items.all %}
-                                <a class="btn btn_primary" href="{% url 'app_cart:add_cart' pk=item.pk  %}#maz">
-                                    <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
-                                         alt="cart_white.svg"/>
-                                    <span class="btn-content">+</span></a>
-                                <a class="btn btn_danger" href="{% url 'app_cart:remove_cart' pk=item.pk  %}#maz">
-                                    <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
-                                         alt="cart_white.svg"/>
-                                    <span class="btn-content">-</span></a>
+                                        <div class="ProductCard-cartElement">
+                                    <a class="btn  btn_success btn_narrow"
+                                       href="{% url 'app_cart:cart' pk=cart_dict.cart.pk  %}">{{ already_in_cart_count }} шт.
+                                        в корзине
+                                    </a>
+                                </div>
+                                    <!-- UPDATE ITEM IN CART FORM & BUTTON -->
                                 {% else %}
-                                <a class="btn btn_primary" href="{% url 'app_cart:add_cart' pk=item.pk  %}#maz">
-                                    <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
-                                         alt="cart_white.svg"/>
-                                    <span class="btn-content " id="add-toast">+  в корзину</span>
-                                </a>
+                                    <!-- ADD ITEM IN CART FORM & BUTTON -->
+                                        <div class="ProductCard-cartElement ProductCard-cartElement_amount">
+                                            <form class="Amount Amount_product" id="add_form" method="post"
+                                                  action="{% url 'app_cart:add_cart' pk=item.pk  %}">
+                                                {% csrf_token %}
+                                                <a type="button" id="update-button-remove" data-index="{{ item.id }}"
+                                                   class="Amount-remove"></a>
+                                                <input id="add_{{ item.id }}" name="update" type="hidden" value="1"/>
+                                                <input class="Amount-input form-input" id="input_{{ item.id }}" readonly
+                                                       name="quantity" value="1" type="text"/>
+                                                <a type="button" id="update-button-add" data-index="{{ item.id }}"
+                                                   class="Amount-add"></a>
+                                            </form>
+                                        </div>
+                                        <div class="ProductCard-cartElement">
+                                            <button class="btn btn_primary" form="add_form">
+                                                <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
+                                                     alt="cart_white.svg"/>
+                                                <span class="btn-content">добавить в корзину</span>
+                                            </button>
+                                        </div>
+                                    <!-- ADD ITEM IN CART FORM & BUTTON -->
                                 {% endif %}
                             </div>
-
-
-                        </div>
                         {% endif %}
+
                         <div class="ProductCard-footer">
                             <div class="ProductCard-tags">
                                 <strong class="ProductCard-tagsTitle">Теги: </strong>
                                 {% for tag in tags %}
-                                <a href="{{ tag.url }}"># {{ tag.title }}</a>
+                                <a href="{{ tag.get_absolute_url  }}"># {{ tag.title }}</a>
                                 {% endfor %}
                             </div>
                         </div>
                     </div>
-                    <div>{% include 'message.html' %}</div>
+
                 </div>
 
                 <div class="Tabs Tabs_default">
@@ -135,19 +159,24 @@
                             <span>Дополнительная информация</span>
                         </a>
                         <a class="Tabs-link" href="#reviews">
-                            <span>Reviews ({{ item.item_comments.count }})</span>
+                            <span>Reviews ({{ comments_count }})</span>
                         </a>
                     </div>
                     <div class="Tabs-wrap">
                         <div class="Tabs-block" id="description">
                             <h2>{{ item.title }} </h2>
                             <p>Lorem ipsum dolor sit amet, consectetuer&#32;
-                                <strong>adipiscing </strong>&#32;elit doli. Aenean commodo ligula eget dolor. Aenean
+                                <strong><a href="{{ item.get_category_url }}">
+                                    {{ item.category| lower }}</a> </strong>&#32;elit doli. Aenean commodo ligula eget dolor. Aenean
                                 massa.&#32;
-                                <a href="#">Cumtipsu</a>&#32;sociis natoque penatibus et magnis dis parturient montesti,
+                                <a href="{{ item.get_store_url }}">
+                                    <b>{{ item.store.title| upper }}</b>
+                                </a>&#32;
+                                sociis natoque penatibus et magnis dis parturient montesti,
                                 nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eutu, pretiumem.
                             </p>
-                            <img class="pict pict_right" src="{{ item.main_image }}" alt="bigGoods.png"/>
+
+                            <img class="pict pict_right" src="{{ item.main_image }}" alt="{{ item.title }}"/>
                             <ul>
                                 <li>Lorem ipsum dolor sit amet, consectetuer</li>
                                 <li>adipiscing elit doli.&#32;<em>Aenean</em>&#32;commodo ligula</li>
@@ -163,10 +192,12 @@
                                         <th>Характеристика</th>
                                         <th>Значение</th>
                                     </tr>
+                                    {% for value in  features  %}
                                     <tr>
-                                        <td>ываыв</td>
-                                        <td>llslss</td>
+                                        <td>{{ value.feature| lower }}</td>
+                                        <td>{{ value }}</td>
                                     </tr>
+                                    {% endfor %}
                                 </table>
                             </div>
                         </div>
@@ -175,50 +206,39 @@
                         </div>
                         <div class="Tabs-block" id="addit">
                             <div class="Product-props">
+                                {% for value in features %}
                                 <div class="Product-prop">
-                                    <strong>Lorem
-                                    </strong><span> Pfizer</span>
+                                    <strong>{{ value.feature| lower }}
+                                    </strong><span> {{ value }}</span>
                                 </div>
-                                <div class="Product-prop">
-                                    <strong>ipsum </strong>
-                                    <span> Lorem ipsum dolor sit</span>
-                                </div>
-                                <div class="Product-prop">
-                                    <strong>dolor sit </strong>
-                                    <span> 5 ans</span>
-                                </div>
-                                <div class="Product-prop">
-                                    <strong>psum dolo </strong>
-                                    <span> 2–3 jours</span>
-                                </div>
+                                {% endfor %}
+
+
                             </div>
                         </div>
                         <div class="Tabs-block" id="reviews">
                             <header class="Section-header">
                                 <h3 class="Section-title">
-                                    {% if item.item_comments.count != 0 %}
-                                    {{ item.item_comments.count }}
+                                    {% if comments_count != 0 %}
+                                    {{ comments_count }}
                                     {% endif %}
-
-                                    {% if item.item_comments.count > 1 and item.item_comments.count < 5 %}
+                                    {% if comments_count > 1 and comments_count < 5 %}
                                     Отзыва
-                                    {% elif item.item_comments.count == 1 %}
+                                    {% elif comments_count == 1 %}
                                     Отзыв
-                                    {% elif item.item_comments.count > 4 %} Отзывов
-                                    {% else %} 0 отзывов
+                                    {% elif comments_count > 4 %} Отзывов
+                                    {% else %} пока нет отзывов
                                     {% endif %}
                                 </h3>
                             </header>
                             <div class="Comments">
-
                                 {% for comment in item.item_comments.all %}
-
+                                {% if comment.is_published %}
                                 <div class="Comment">
                                     <div class="Comment-column Comment-column_pict">
                                         {% if comment.user.is_authenticated and comment.user.profile.avatar %}
                                         <div>
-                                            <img class="Comment-avatar-exist"
-                                                 src="{{ comment.user.profile.avatar.url }}">
+                                            <img class="Comment-avatar-exist" src="{{ comment.user.profile.avatar.url }}">
                                         </div>
                                         {% else %}
                                         <div class="Comment-avatar"></div>
@@ -239,7 +259,7 @@
                                         <div class="Comment-content" >{{ comment.review }}</div>
                                         {% if request.user == comment.user %}
                                         <a class="CommentHandleButton"
-                                           href="{% url 'app_item:comment_delete' pk=item.pk comment_id=comment.id %}">
+                                           href="#commentDeleteModal">
                                             удалить</a>&#160;&#160;
                                         <a class="CommentHandleButton"
                                            href="{% url 'app_item:comment_edit' pk=item.pk comment_id=comment.id %}">
@@ -247,6 +267,32 @@
                                         {% endif %}
                                     </div>
                                 </div>
+                                  <!--     MODAL FOR CONFIRM DELETE ITEM    -->
+                                    <div id="commentDeleteModal" class="modal-my">
+                                        <div class="modal-dialog-my">
+                                            <div class="modal-content-my">
+                                                <div class="modal-header-my">
+                                                    <a href="#close" title="Close" class="close-my">×</a>
+                                                </div>
+                                                <div class="modal-body-my">
+                                                    <div class="form Payment">
+                                                        <div class="form-group">
+                                                            Удалить комментарий
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <a href="{% url 'app_item:comment_delete' pk=item.pk comment_id=comment.id %}"
+                                                               class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                            <a href="#close" title="Close"
+                                                               class="btn btn_square btn_dark btn_narrow">отмена</a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer-my"> </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--     MODAL FOR CONFIRM DELETE ITEM    -->
+                                {% endif %}
                                 {% endfor %}
 
                                 <div>

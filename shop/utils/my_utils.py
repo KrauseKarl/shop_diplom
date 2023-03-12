@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.template.defaultfilters import slugify as django_slugify
+from django.db import connection
 
 alphabet = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g',
@@ -37,3 +38,27 @@ class MixinPaginator(Paginator):
         except EmptyPage:
             queryset = paginator.page(paginator.num_pages)
         return queryset
+
+
+def query_counter(func):
+    """Декоратор для подсчета запросов к БД."""
+
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        func_name = func.__name__
+        class_name = func.__qualname__.split(".")[0]
+        file_name = func.__module__.split(".")[-1]
+        try:
+            folder_name = func.__module__.split(".")[-2]
+            app_name = func.__module__.split(".")[-3]
+        except:
+            folder_name = '__'
+            app_name = func.__module__.split(".")[-2]
+
+        print('\n===========================================================================================')
+        print('ЗАПРОСОВ = ', len(connection.queries), '|',
+              f'FUNC - {func_name} | {class_name} | {file_name} | {folder_name} | {app_name}')
+        print('=============================================================================================\n')
+        return result
+
+    return wrapper

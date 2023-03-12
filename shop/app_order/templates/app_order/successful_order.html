@@ -38,22 +38,15 @@
                 <div class="form-group" style="margin-top:50px">
                     <div class="btn-inline">
                         <a class="btn btn_default btn_small"
-                           href="{% url 'app_item:item_list' %}">
-                            <span>Вернуться <br>к покупкам</span>
+                           href="{% url 'main_page' %}">
+                            <span>к покупкам</span>
                         </a>
                     </div>
                     <div class="btn-inline">
-                        {% if pay == 'online' %}
                         <a class="btn btn_success btn_small"
-                           href="{% url 'app_order:pay_by_card' %}">
-                            <span>Оплатить<br>заказ</span>
+                           href="{% url 'app_order:order_list' %}">
+                            <span>заказы</span>
                         </a>
-                        {% elif pay == 'someone' %}
-                        <a class="btn btn_success btn_small"
-                           href="{% url 'app_order:pay_by_account' %}">
-                            <span>Оплатить<br>заказ</span>
-                        </a>
-                        {% endif %}
                     </div>
                 </div>
 

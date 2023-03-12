@@ -50,54 +50,31 @@
                 </div>
                 {% include 'pagination.html' %}
                 <div class="Orders">
-                    {{ paginator  }}
+                    {{ paginator }}
                     {% for invoice in object_list %}
                     <div class="Order Order_anons">
                         <div class="Order-personal">
                             <div class="row">
                                 <div class="row-block">
-                                    <a class="Order-title" href="#">
+                                    <a class="Order-title" href="{% url 'app_order:invoices_detail' invoice.id %}">
                                         <span class="Order-numberOrder">{{ invoice }} | {{ invoice.id }} </span>
-
                                     </a>
                                     <span class="Order-infoType ">&#32;от&#32;{{ invoice.created|date:"j F o" }}</span>
                                     <div style="margin-top:30px; display:flex; justify-contents:center">
-
                                     </div>
                                 </div>
                                 <div class="row-block">
                                     <div class="Order-info Order-info_delivery">
-                                        <div class="Order-infoType">Номер заказа:
-                                        </div>
-                                        <div class="Order-infoContent">{{ invoice.order }}
-                                        </div>
+                                        <div class="Order-infoType">Номер заказа: </div>
+                                        <div class="Order-infoContent">{{ invoice.order }} </div>
                                     </div>
                                     <div class="Order-info Order-info_pay">
                                         <div class="Order-infoType">Общая стоимость: </div>
-                                        <div class="Order-infoContent"><span>$</span>{{ invoice.order.total_sum }}
-
+                                        <div class="Order-infoContent">
+                                            <span>$</span>{{ invoice.order.total_sum }}
                                         </div>
                                     </div>
-
-                                    <div class="Order-info Order-info_status">
-                                        <div class="Order-infoType">Способ оплаты</div>
-                                        <div class="Order-infoContent">{{ invoice.order.get_pay_display|truncatechars:'25 ' }}</div>
-                                    </div>
-
-
-
-
-                                    <div class="Order-info ">
-                                        <div class="Order-infoType">Номер карты(счета) :
-                                        </div>
-                                        <div class="Order-infoContent">**** {{ invoice.number|slice:"5:" }}
-                                        </div>
-                                    </div>
-
                                 </div>
-
-
-
                             </div>
                         </div>
                     </div>

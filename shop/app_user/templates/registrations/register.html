@@ -13,9 +13,11 @@
             <div class="Middle-header">
                 <h1 class="Middle-title">Регистрация пользователя </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
                     </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>Оплата</span>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Оплата</span>
                     </li>
                 </ul>
             </div>
@@ -35,7 +37,7 @@
                         </div>
                         {% endif %}
                         <input class="form-input" id="username" name="username" type="text"
-                               placeholder="имя пользователя" value="{{request.POST.username}}" required/>
+                               placeholder="имя пользователя" value="{{ request.POST.username }}" required/>
                     </div>
                     <!--    USERNAME FIELDS REQUIRED    -->
 

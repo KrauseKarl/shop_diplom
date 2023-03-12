@@ -41,54 +41,37 @@
                         <a class="Sort-sortBy" href="{% url 'app_order:order_list'  %}">
                             <span>Все</span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_order:order_progress' status='deactivated' %}">
-                            <span>
-                                Отменен&#160;
-                                <span class="Order-progress-bar Order-progress-bar-deactivated"></span>
-                            </span>
+                        <a class="Sort-sortBy" href="{% url 'app_order:order_list'  %}?status=deactivated">
+                                <span class="{% if request.GET.status == 'deactivated' %}
+                                progress-bar_width Order-progress-bar-deactivated
+                                {% endif %}">Отменен&#160;</span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_order:order_progress' status='new' %}">
-                            <span>
-                                Новый&#160;
-                                <span class="Order-progress-bar Order-progress-bar-new"></span>
-                                <span class="Order-progress-bar Order-progress-bar-new"></span>
-                            </span>
+                        <a class="Sort-sortBy" href="{% url 'app_order:order_list'   %}?status=new">
+                             <span class="{% if request.GET.status == 'new' %}
+                                progress-bar_width Order-progress-bar-new
+                                {% endif %}">Новый&#160;</span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_order:order_progress' status='in_progress' %}">
-                            <span>
-                                В обработке&#160;
-                                <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
-                                <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
-                                <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
-                            </span>
+                        <a class="Sort-sortBy" href="{% url 'app_order:order_list'   %}?status=in_progress">
+                            <span class="{% if request.GET.status == 'in_progress' %}
+                                    progress-bar_width Order-progress-bar-in_progress
+                                {% endif %}">В обработке&#160;</span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_order:order_progress' status='is_ready' %}">
-                            <span>
-                                Готов&#160;
-                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                            </span>
+                        <a class="Sort-sortBy" href="{% url 'app_order:order_list'   %}?status=is_ready">
+                            <span class="{% if request.GET.status ==  'is_ready' %}
+                                progress-bar_width Order-progress-bar-is_ready
+                            {% endif %}">Готов&#160;</span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_order:order_progress' status='completed' %}">
-                            <span>
-                                Выполнен&#160;
-                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-
-                            </span>
+                        <a class="Sort-sortBy" href="{% url 'app_order:order_list'   %}?status=completed">
+                             <span class="{% if request.GET.status == 'completed'  %}
+                                progress-bar_width Order-progress-bar-completed
+                             {% endif %}"> Выполнен&#160;</span>
                         </a>
-
                     </div>
                 </div>
                 <!--       PAGINATION         -->
                 <div>{% include "pagination.html" %}<br><br></div>
                 <!--       PAGINATION         -->
-                <div class="Orders">
+                <div class="Orders ">
                     {% for order in object_list %}
                     <div class="Order Order_anons {% if order.status == 'deactivated' %}Order_anons_rest{% endif %}">
                         <div class="Order-personal">
@@ -102,40 +85,7 @@
                                     <div class="Order-info">
                                         <span class="Order-infoType">{{ order.created|date:"j M o" }}</span>
                                     </div>
-                                     <div class="Order-info ">
 
-                                            {% if order.status == 'deactivated' %}
-                                            <div class="Order-infoContent">
-                                                <span class="Order-progress-bar Order-progress-bar-deactivated"></span>
-                                            </div>
-                                            {% elif order.status == 'new' %}
-                                            <div class="Order-infoContent">
-                                                <span class="Order-progress-bar Order-progress-bar-new"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-new"></span>
-                                            </div>
-                                            {% elif order.status == 'in_progress' %}
-                                            <div class="Order-infoContent">
-                                                <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
-                                            </div>
-                                            {% elif order.status == 'is_ready' %}
-                                            <div class="Order-infoContent">
-                                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
-                                            </div>
-                                            {% elif order.status == 'completed' %}
-                                            <div class="Order-infoContent">
-                                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                                <span class="Order-progress-bar Order-progress-bar-completed"></span>
-                                            </div>
-                                            {% endif %}
-                                        </div>
                                 </div>
                                 <!--  ORDER'S TITLE & DATE -->
 
@@ -144,8 +94,7 @@
                                     {% for item in order.items_is_paid.all|slice:":5" %}
                                     <div class="Order-info">
                                         <div class="Order-infoType">
-                                            <img src="{{ item.item.main_image }}"
-                                                 width="30" height="30">
+                                            <img src="{{ item.item.main_image }}"  width="30" height="30">
                                         </div>
                                         <div class="Order-infoContent">
                                             <span class="Order-infoType">{{ item.item.title|truncatechars:'15' }}</span>
@@ -157,7 +106,17 @@
 
                                 <!--  PROGRESS BAR -->
                                 <div class="row-block">
-
+                                     <!-- STATUS -->
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoType">
+                                            {% if order.is_paid %}
+                                            <span style="color: #3cb878;">оплачено</span>
+                                            {% else %}
+                                            <span style="color: #f26d7d;">не оплачено</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <!-- STATUS -->
                                 </div>
                                 <!--  PROGRESS BAR -->
 
@@ -175,31 +134,27 @@
                                     <!-- STATUS -->
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoType">статус:</div>
-                                        <div class="Order-infoContent">{{order.get_status_display }}</div>
+                                        <div class="Order-infoContent">
+                                            {{ order.get_status_display }}
+                                        </div>
 
                                     </div>
-
-
-                                    <div class="Order-info Order-info_status">
-
-                                    </div>
-
+                                    <div class="Order-info Order-info_status"></div>
                                     <!-- STATUS -->
+
+
                                     <!--   PAY BOTTOM -->
                                     {% if not order.is_paid and order.status == 'new' %}
                                     <div class="Order-info Order-button-set">
                                         <div class="Order-infoType">
                                             <div class="Order-infoContent">
                                                 <a class="btn btn_success Order-pay-button"
-                                                   href="{% if order.pay == 'online' %}{% url 'app_order:pay_by_card' %}
-                                                   {% else %}{% url 'app_order:pay_by_account' %}
-                                                   {% endif %}">оплатить </a>
+                                                   href="{% url 'app_order:progress_payment' order.id %}">оплатить </a>
                                             </div>
                                         </div>
                                         <div class="Order-infoContent">
                                             <div class="Order-infoContent">
-                                                <form method="post"
-                                                      action="{% url 'app_order:order_cancel' order_id=order.pk  %}">
+                                                <form method="post" action="{% url 'app_order:order_cancel' order_id=order.pk  %}">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="status" value="deactivated"
                                                            id="form_{{ order.id }}">

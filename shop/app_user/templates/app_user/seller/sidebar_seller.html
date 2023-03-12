@@ -11,16 +11,22 @@
                 <a class="menu-link" href="{% url 'app_store:create_store'  %}">
                    + Создать магазин</a>
             </li>
-            <li class="menu-item">
+             <li class="menu-item">
                 <div class="menu-link">Мои магазины:</div>
             </li>
             {% for store in user.store.all %}
-            <li class="menu-item" style="margin-left: 10px">
-                <a class="menu-link" href="{% url 'app_store:store_detail' store.pk %}">
-                    <img src="{{store.logo.url}}" width="25" height="25" style="border-radius: 4px; margin-right:10px">{{ store.title }}
+            <li class="menu-item"
+                 style="{% if request.GET.store == store.title %} Order-side-bar-chosen-store {% endif %}">
+                <a class=" Order-side-bar-store"
+                   href="{% url 'app_store:store_detail'  store.pk %}">
+                    <div>
+                        <img src="{{store.logo.url}}" width="25" height="25" style="border-radius: 4px; margin-right:10px">
+                        {{ store.title }}
+                    </div>
                 </a>
             </li>
             {% endfor %}
+
         </ul>
     </div>
 </div>

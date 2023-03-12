@@ -7,6 +7,7 @@ from shop.views import MainPage
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('settings/', include(('app_settings.urls', 'app_settings'), namespace='app_settings')),
     path('', MainPage.as_view(), name='main_page'),
     path('accounts/', include(('app_user.urls', 'app_user'), namespace='app_user')),
     path('cart/', include(('app_cart.urls', 'app_cart'), namespace='app_cart')),

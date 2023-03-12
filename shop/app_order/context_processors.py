@@ -1,44 +1,40 @@
 from app_cart.models import CartItem
-from app_item.models import Item
+from app_item.models import Item, Comment
 from app_order.models import Order
 from django.core.exceptions import ObjectDoesNotExist
 
+from app_order.services.order_services import CustomerOrderHandler, SellerOrderHAndler
 from app_store.models import Store
 
 
-def order_list(request):
-    # TODO order_list description
-    try:
-        order = Order.objects.filter(user=request.user, status='new').order_by('-created').first()
-        return {'order': order}
-    except ObjectDoesNotExist:
+def customer_order_list(request) -> dict:
+    """
+    Функция возвращает словарь где значение
+    это список всех заказов пользователя
+    :param request:request
+    :return: словарь
+    """
+    if request.user.is_authenticated and request.user.profile.is_customer:
+        orders = CustomerOrderHandler.get_customer_order_list(request)
+        return {'order': orders}
+    else:
         return {'order': None}
 
 
-def all_store_order(request):
-    # TODO all_store_order description
-    try:
-        # собственник
-        owner = request.user
+def seller_order_list(request) -> dict:
+    """
+       Функция возвращает словарь где ['orders']
+       это список всех заказов продавца,
+       ['all_order_amount']
+       это кол-во  всех заказов продавца со статусом 'НОВЫЙ',
+       :param request:request
+       :return: словарь
+       """
+    if request.user.is_authenticated and request.user.profile.is_seller:
+        all_order_list = SellerOrderHAndler.get_seller_order_list(request)
+        order_total_amount = SellerOrderHAndler.get_order_total_amount(request)
+        reviews = SellerOrderHAndler.get_seller_comment_new_amount(request)
+        return {'orders': all_order_list, 'all_new_order_amount': order_total_amount, 'reviews': reviews}
+    else:
+        return {'orders': None, 'all_new_order_amount': 0, 'reviews': None}
 
-        # все магазины собственника
-        stores = Store.objects.select_related('owner').filter(owner=owner)
-
-        # все товары в магазинах собственника
-        items = Item.objects.select_related('store').filter(store__in=stores)
-
-        # все заказанные товары из магазинов
-        items_in_cart = CartItem.objects.select_related('item').filter(item_id__in=items)
-
-        # all sold product
-        items_my_store = items.filter(cart_item__in=items_in_cart)
-
-        # все заказы в магазинах собственника
-        all_orders = Order.objects.select_related('user', 'store').filter(items_is_paid__in=items_in_cart)
-
-        # кол-во всех заказов со статусами ('new', 'in_progress')
-        all_order_amount = all_orders.values_list('status').filter(status__in=('new', 'in_progress')).count()
-
-        return {'all_order': all_orders, 'all_order_amount': all_order_amount, 'orders': all_orders}
-    except (ObjectDoesNotExist, TypeError):
-        return {'all_order': None, 'all_order_amount': 0, 'orders': None}

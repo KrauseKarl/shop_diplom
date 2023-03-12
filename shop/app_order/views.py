@@ -1,37 +1,38 @@
-import time
+from time import sleep
 
+from celery.result import AsyncResult
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
 from django.core.cache import cache
-from django.core.management import call_command
 from django.db import transaction
-from django.db.models import F, Q
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.shortcuts import render, redirect
-from django.views.generic import CreateView, TemplateView, ListView, DetailView, UpdateView, RedirectView
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse, reverse_lazy
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import CreateView, TemplateView, ListView, DetailView, UpdateView, DeleteView
 
 from app_cart.context_processors import get_cart
-from app_cart.models import Cart, CartItem
-# from app_cart.services.cart_services import
+from app_cart.models import CartItem
 from app_cart.services.cart_services import get_current_cart
 from app_item.models import Item
+from app_settings.models import SiteSettings
+from app_user.services.register_services import ProfileHandler
 from utils.my_utils import MixinPaginator
-from app_store.models import Store
 
-from app_order.forms import OrderForm, PaymentForm
-from app_order.models import Order, Invoice
-from app_order.services.order_services import get_order, Payment
+from app_order.forms import OrderCreateForm, AddressForm, PaymentForm
+from app_order.models import Order, Invoice, Address
+from app_order.services.order_services import CustomerOrderHandler, AddressHandler, Payment
 from app_store.form import UpdateOrderStatusForm
 from app_store.models import Store
-from app_user.services.user_services import get_user
+from app_order.models import Order
+from app_order.tasks import pay_order
 
 
 class OrderCreate(CreateView):
     model = Order
-    form_class = OrderForm
+    form_class = OrderCreateForm
+    extra_context = {'type_of_delivery': SiteSettings.DELIVERY, 'type_of_payment': SiteSettings.PAY_TYPE}
 
     def get_template_names(self):
         super(OrderCreate, self).get_template_names()
@@ -44,19 +45,28 @@ class OrderCreate(CreateView):
         return name
 
     def form_valid(self, form):
-        user = get_user(self.request.user)
+        user = self.request.user
         cart = get_current_cart(self.request).get('cart')
         stores = get_cart(self.request).get('cart_dict').get('book')
 
         # 3 create order (user, cart, form) # TODO service def _create_order(user, cart, form)
         name = form.cleaned_data.get('name')
         email = form.cleaned_data.get('email')
-        telephone = form.cleaned_data.get('telephone')
+        telephone = ProfileHandler.telephone_formatter(form.cleaned_data.get('telephone'))
         delivery = form.cleaned_data.get('delivery')
+        # if delivery == 'express':
+
         pay = form.cleaned_data.get('pay')
-        city = form.cleaned_data.get('city')
-        address = form.cleaned_data.get('address')
-        # total_sum = int(form.cleaned_data.get('total_sum'))
+        comment = form.cleaned_data.get('comment')
+        post_address = form.cleaned_data.get('post_address')
+        if not post_address:
+            city = form.cleaned_data.get('city')
+            address = form.cleaned_data.get('address')
+            AddressHandler.get_post_address(self.request, city, address)
+        else:
+            city = post_address.split(';')[0]
+            address = post_address.split(';')[1]
+
         order_list = []
         with transaction.atomic():
             for store_title, values in stores.items():
@@ -74,6 +84,7 @@ class OrderCreate(CreateView):
                     status='new',
                     total_sum=total_amount,
                     store=store,
+                    comment=comment,
                 )
                 order_list.append(order)
                 items = cart.items.filter(
@@ -121,15 +132,11 @@ class OrderList(ListView, MixinPaginator):
     def get(self, request, status=None, **kwargs):
         super().get(request, **kwargs)
         if self.request.user.is_authenticated:
-            queryset = cache.get(f'order_list_{request.user.get_full_name()}')
-            if not queryset:
-                queryset = get_order(user=self.request.user)
-                cache.set(f'order_list_{request.user.get_full_name()}', queryset, 10000)
+            delivery_status = self.request.GET.get('status')
 
-            if status:
-                queryset = queryset.filter(status=status)
+            queryset = CustomerOrderHandler.get_customer_order_list(self.request, delivery_status)
+
             object_list = self.my_paginator(queryset, self.request, self.paginate_by)
-
             context = {'object_list': object_list}
         else:
             context = {'object_list': None}
@@ -151,13 +158,81 @@ class OrderDetail(UserPassesTestMixin, DetailView):  # UserPassesTestMixin Permi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['items_is_paid'] = CartItem.objects.filter(order=self.get_object())  # TODO service def _get_has_paid_items
+        context['items_is_paid'] = CartItem.objects.filter(
+            order=self.get_object())  # TODO service def _get_has_paid_items
         return context
 
 
+class AddressList(ListView):
+    model = Address
+    template_name = 'app_user/customer/address_list.html'
+    context_object_name = 'addresses'
+
+    def get(self, request, *args, **kwargs):
+        super(AddressList, self).get(request, *args, **kwargs)
+        object_list = AddressHandler.get_address_list(self.request)
+        form = AddressForm
+        context = {'form': form, 'object_list': object_list}
+        return render(request, self.template_name, context=context)
+
+
+class AddressCreate(AddressList, CreateView):
+    model = Address
+    form_class = AddressForm
+
+    def form_valid(self, form):
+        address = form.save(commit=False)
+        address.city = form.cleaned_data.get('city').title()
+        address.user = self.request.user
+        address.save()
+        messages.add_message(self.request, messages.INFO, f"Новый адрес доставки сохранен")
+        return redirect('app_order:address_list')
+
+    def form_invalid(self, form):
+        return redirect('app_order:address_list')
+
+
+class AddressUpdate(AddressList, UpdateView):
+    model = Address
+    form_class = AddressForm
+
+    def get_success_url(self):
+        messages.add_message(self.request, messages.INFO, f"Данные адреса доставки изменены")
+        return redirect('app_order:address_list')
+
+
+class AddressDelete(DeleteView):
+    model = Address
+
+    def get(self, request, *args, **kwargs):
+        address_id = kwargs['pk']
+        AddressHandler.delete_address(request, address_id)
+        messages.add_message(self.request, messages.INFO, f"Адрес  успешно удален")
+        return redirect('app_order:address_list')
+
+
 class SuccessPaid(TemplateView):
-   pass
-   # template_name = 'app_order/successful_pay.html'
+    template_name = 'app_order/successful_pay.html'
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        order = Order.objects.get(id=kwargs['order_id'])
+        context['order'] = order
+        context['invoice'] = order.invoices.first
+        return self.render_to_response(context)
+
+
+class FailedPaid(TemplateView):
+    template_name = 'app_order/failed_pay.html'
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        context['order'] = kwargs['order_id']
+        order = Order.objects.get(id=kwargs['order_id'])
+        context['error'] = order.error
+        return self.render_to_response(context)
 
 
 class ConfirmReceiptPurchase(UpdateView):
@@ -219,91 +294,73 @@ class InvoicesList(ListView, MixinPaginator):
         }
         return render(request, self.template_name, context=context)
 
-class PaymentCardView(CreateView):
-    pass
-    # model = Invoice
-    # template_name = 'app_order/order_pay_card.html'
-    # form_class = PaymentForm
-    # extra_context = {'new_orders': Order.objects.filter(is_paid=False)}
-    #
-    # def form_valid(self, form):
-    #     orders_id = self.request.POST.getlist('order')
-    #     orders = Order.objects.filter(id__in=orders_id)
-    #     number = form.cleaned_data['number']
-    #
-    #     with transaction.atomic():
-    #         for order in orders:
-    #             store = Store.objects.get(orders=order)
-    #             # order.status = 'in_progress'
-    #             # order.is_paid = True
-    #             # order.save()
-    #             for product in order.items_is_paid.all():
-    #                 item = Item.objects.get(cart_item=product.id)
-    #                 item.stock -= product.quantity
-    #                 item.save()
-    #             invoice = Invoice.objects.create(
-    #                 order=order,
-    #                 number=number,
-    #                 recipient=store,
-    #             )
-    #             # Payment.add_order_to_job(invoice.id)
-    #             call_command('pay_command', invoice.id)
-    #
-    #     return redirect('app_order:progress_payment')
-    #
-    # def form_invalid(self, form):
-    #     return super().form_invalid(form)
+
+class InvoicesDetail(DetailView):
+    model = Invoice
+    template_name = 'app_user/customer/invoice_detail.html'
+    context_object_name = 'invoice'
 
 
-class PaymentAccountView(TemplateView):
-    pass
-    # model = Invoice
-    # template_name = 'app_order/order_pay_account.html'
-    # extra_context = {'new_orders': Order.objects.filter(is_paid=False)}
+class PaymentView(DetailView, CreateView):
+    model = Order
+    form_class = PaymentForm
+    success_url = reverse_lazy('app_order:progress_payment')
+
+    def get_template_names(self):
+        super(PaymentView, self).get_template_names()
+        templates_dict = {
+            'online': 'app_order/order_pay_card.html',
+            'someone': 'app_order/order_pay_account.html'
+        }
+        order = self.get_object()
+        name = templates_dict[order.pay]
+        return name
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        order_id = self.kwargs['pk']
+        context['order'] = Order.objects.get(id=order_id)
+        return context
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 
-class PaymentOrderView(CreateView):
-    pass
-    # model = Invoice
-    # form_class = PaymentForm
-    #
-    # def form_valid(self, form):
-    #     orders_id = self.request.POST.getlist('order')
-    #     orders = Order.objects.filter(id__in=orders_id)
-    #     number = form.cleaned_data['number']
-    #
-    #     with transaction.atomic():
-    #         for order in orders:
-    #             store = Store.objects.get(orders=order)
-    #             order.status = 'in_progress'
-    #             order.is_paid = True
-    #             order.save()
-    #             for product in order.items_is_paid.all():
-    #                 item = Item.objects.get(cart_item=product.id)
-    #                 item.stock -= product.quantity
-    #                 item.save()
-    #             Invoice.objects.create(
-    #                 order=order,
-    #                 number=number,
-    #                 recipient=store,
-    #             )
-    #
-    #     return redirect('app_order:progress_payment')
+def validate_username(request):
+    order_id = request.POST.get('order', None)
+    number = int(str(request.POST.get('number', None)).replace(' ', ''))
+
+    task = pay_order.delay(order_id, number)
+    response = {
+        "task_id": task.id,
+        "task_status": task.status,
+        "task_result": task.result,
+        "success_url": redirect('app_order:success_pay', order_id).url,
+        "failed_url": redirect('app_order:failed_pay', order_id).url,
+        "order_id": order_id,
+    }
+    if task.result == 'error':
+        error_dict = {'task_status': 'ERROR'}
+        response.update(error_dict)
+    return JsonResponse(response, status=202)
+
+
+def get_status_payment(request, task_id, order_id):
+    task_result = AsyncResult(task_id)
+    response = {
+        "task_id": task_id,
+        "task_status": task_result.status,
+        "task_result": task_result.result,
+        "success_url": redirect('app_order:success_pay', order_id).url,
+        "failed_url": redirect('app_order:failed_pay', order_id).url,
+        "order_id": order_id,
+    }
+    if task_result.result == 'error':
+        error_dict = {'task_status': 'ERROR'}
+        response.update(error_dict)
+    return JsonResponse(response)
 
 
 class PaymentProgress(TemplateView):
-    pass
-    # template_name = 'app_order/progress_payment.html'
-    # def get(self, request, *args, **kwargs):
-    #     print('1#')
-    #     time.sleep(5)
-    #     print('2#')
-    #     result = Payment.init_payment()
-    #     print('3#', result)
-    #     context = self.get_context_data(**kwargs)
-    #     return self.render_to_response(context)
-    #     # result = False
-    #     # while result != True:
-    #     #     result =
-    #     # return self.render_to_response(context)
-    #     # return redirect('app_order:success_pay')
+    template_name = 'app_order/progress_payment.html'

@@ -1,9 +1,11 @@
 {% extends 'seller_index.html' %}
 {% load static %}
 {% load cache %}
-{% load url_extras %}
+
 {% block title %}Каталог{% endblock %}
+
 {% block heard %} {% include 'search_string.html' %} {% endblock %}
+
 {% block content %}
 
 <div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
@@ -100,12 +102,12 @@
                 <div class="Sort">
                     <div class="Sort-title">Найти по алфавиту:</div>
                     <div class="Sort-variants">
-                         <a class="Sort-sortBy"
+                         <a class="Pagination-element Tag-alphabet_letter"
                            href="{% url 'app_store:category_list' %}">
-                            Все категории
+                            все
                         </a>
                         {% for letter in alphabet %}
-                        <a class="Sort-sortBy"
+                        <a class="Pagination-element"
                            href="?sort_by_letter={{letter}}">
                             {{ letter }}
                         </a>
@@ -125,7 +127,7 @@
                                 <!--  ORDER'S TITLE & DATE -->
                                 <div class="row-block">
                                     <div class="Order-title">
-                                        <span class="Order-numberOrder">{{ cat.title }}</span>
+                                        <a href="{% url 'app_store:feature_list' slug=cat.slug %}" class="Order-numberOrder">{{ cat.title }}</a>
                                     </div>
                                     {% if cat.parent_category %}
                                     <div class="Order-info Order-info_status">

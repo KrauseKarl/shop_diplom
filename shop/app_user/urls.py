@@ -7,10 +7,11 @@ urlpatterns = [
     path('logout/', UserLogoutView.as_view(), name='logout'),
     path('register/', CreateProfile.as_view(), name='register'),
     path('account/<int:pk>/', DetailAccount.as_view(), name='account'),
+    path('history_view/<int:pk>/', DetailHistoryView.as_view(), name='history_view'),
     path('profile/<int:pk>/', DetailProfile.as_view(), name='profile'),
     path('profile/<int:pk>/comment_list', CommentList.as_view(), name='comment_list'),
     path('profile/<int:pk>/edit/', UpdateProfile.as_view(), name='profile_edit'),
-    path('history_view/<int:pk>/', DetailHistoryView.as_view(), name='history_view'),
+
     path('profile_edit/<int:pk>/', UpdateProfile.as_view(), name='profile_edit'),
     path("activate/<slug:uidb64>/<slug:token>/", account_activate, name="activate"),
     path("activate/account_activated/", ActivatedAccount.as_view(), name="activated_success"),

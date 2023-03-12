@@ -24,6 +24,40 @@
 
 </head>
 <body class="Site" style="background-color: transparent">
+
+<!--   ONLY FOR DEBUG    -->
+<div class="row-block seller_label" style="background-color: #F4CA16;  color:black; padding: 0 10px">
+   <b>только для тестирования</b>
+   {% if request.user.is_authenticated %}
+    <span class="seller_label">ROLE  - <b style="color:black; font-size:19px;">{{ request.user.profile.get_role_display  }}</b></span>
+    {% endif %}
+    <span style="background-color: {% if request.session.session_key %}blue{% else %}red{% endif %};" class="seller_label">
+        SESSION_KEY -   {% if request.COOKIES.cart %}
+            <b style="color:black; font-size:19px;">{{ request.session.session_key|truncatechars:5 }}</b>
+        {% else %}
+            <b style="color:black; font-size:19px;">NONE</b>
+        {% endif %}
+    </span>
+    <span style="background-color: {% if request.COOKIES.cart %} orange {% else %}red{% endif %};" class="seller_label">
+        COOKIES  -  {% if request.COOKIES.cart %}
+            <b style="color:black; font-size:19px;">{{ request.COOKIES.cart|truncatechars:5 }}</b>
+        {% else %}
+            <b style="color:black; font-size:19px;">NONE</b>
+        {% endif %}
+    </span>
+    <span style="background-color: {% if cart_dict.cart %} green {% else %}red{% endif %};" class="seller_label">КОРЗИНА
+        {% if cart_dict.cart %}
+        <b style="color:black; font-size:19px;"> {{ cart_dict.cart }}</b>
+        {% else %}
+        <b style="color:black; font-size:19px;">CART NONE</b>
+        {% endif %}
+    </span>
+    <span style="background-color: {% if request.user.is_authenticated %} coral {% else %}red{% endif %};" class="seller_label">
+        USER   <b style="color:black; font-size:19px;">{{ request.user }}</b>
+    </span>
+</div>
+<!--   ONLY FOR DEBUG    -->
+
 <header class="Header">
     <div class="ControlPanel">
         <div class="wrap">
@@ -70,26 +104,7 @@
                 {% endcache %}
                 <nav class="row-block">
                     <div class="row ControlPanel-rowSplit">
-                        <!--   ONLY FOR DEBUG    -->
-                        <div class="row-block">
 
-                           {% if request.user.is_authenticated %}
-                            <span class="seller_label">ROLE  покупатель</span>
-                            {% endif %}
-                            <span style="background-color: {% if request.session.session_key %}lightblue{% else %}red{% endif %};" class="seller_label">
-                                session_key  {% if request.COOKIES.cart %}{{ request.session.session_key|truncatechars:5 }}{% else %}NONE{% endif %}
-                            </span>
-                            <span style="background-color: {% if request.COOKIES.cart %} orange {% else %}red{% endif %};" class="seller_label">
-                                COOKIES  {% if request.COOKIES.cart %}{{ request.COOKIES.cart|truncatechars:5 }}{% else %}NONE{% endif %}
-                            </span>
-                            <span style="background-color: {% if cart_dict.cart %} lightgreen {% else %}red{% endif %};" class="seller_label">
-                                {% if cart_dict.cart %}{{ cart_dict.cart }}{% else %}CART NONE{% endif %}
-                            </span>
-                            <span style="background-color: {% if request.user.is_authenticated %} coral {% else %}red{% endif %};" class="seller_label">
-                                USER  {{ request.user }}
-                            </span>
-                        </div>
-                        <!--   ONLY FOR DEBUG    -->
                         <div class="row-block">
                             {% if request.user.profile.avatar %}
                             <img src="{{ request.user.profile.avatar.url }}"
@@ -128,7 +143,7 @@
             <!--    CART  -->
             <div class="row-block">
                 <div class="CartBlock">
-                    <a class="CartBlock-block"
+                    <a class="CartBlock-block" id="index_cart"
                        href="{% if cart_dict.cart %}
                        {% url 'app_cart:cart' pk=cart_dict.cart.pk  %}
                        {% else %}
@@ -153,11 +168,15 @@
                                </span>
                     </div>
                     <!--  ITEM'S COST COUNTER OF THE CART   -->
+
                     <!--    ORDERS  -->
+                    {% if order %}
                     <a class="CartBlock-block" href="{% url 'app_order:order_list'   %}">
                         <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"
                              alt="order.svg"/>
                     </a>
+                       {% endif %}
+
                     <!--    ORDERS  END-->
                 </div>
             </div>
@@ -175,7 +194,7 @@
                         <img class="CartBlock-img" src="/assets/img/icons/delivery.svg" alt="delivery"/>
                         <!--  ORDER'S COUNTER FOR DELIVERY  -->
                         {% if all_order_amount %}
-                        <span class="CartBlock-amount">{{ all_order_amount  }}</span>
+                            <span class="CartBlock-amount">{{ all_order_amount  }}</span>
                         {% endif %}
                         <!--  ORDER'S COUNTER FOR DELIVERY    -->
                     </a>

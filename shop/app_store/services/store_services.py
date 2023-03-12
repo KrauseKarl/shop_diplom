@@ -32,7 +32,7 @@ class StoreHandler:
     @classmethod
     def get_all_story_by_owner(cls, owner):
         """
-        Функция возвращает  магазины (экземпляр класса Store).
+        Функция возвращает  все магазины собственника.
         :param owner - собственник магазина,
         :return my_stores - все магазины собственника.
         """

@@ -1,27 +1,30 @@
 from django import forms
-from django.forms import modelformset_factory, ModelChoiceField, Select
+from django.forms import modelformset_factory
 
-from app_item.models import Item, Tag, Image, Category
+from app_item.models import Item, Tag, Image, Category, FeatureValue, Feature
 from app_order.models import Order
 from app_store.models import Store
 
 
 class CreateStoreForm(forms.ModelForm):
-    # TODO CreateStoreForm description
+    """Форма для создания магазина."""
+
     class Meta:
         model = Store
         fields = ('title', 'logo', 'delivery_fees', 'min_free_delivery')
 
 
 class UpdateStoreForm(forms.ModelForm):
-    # TODO UpdateStoreForm description
+    """Форма для редактирования магазина."""
+
     class Meta:
         model = Store
         fields = ('title', 'logo', 'delivery_fees', 'min_free_delivery', 'is_active')
 
 
-class AddForm(forms.ModelForm):
-    # TODO AddForm description
+class AddItemForm(forms.ModelForm):
+    """Форма для создания товара."""
+
     class Meta:
         model = Item
         fields = (
@@ -37,19 +40,20 @@ class AddForm(forms.ModelForm):
         )
 
 
-class AddItemForm(forms.ModelForm):
-    # TODO AddItemForm description
+class AddItemImageForm(forms.ModelForm):
+    """Форма для создания изображения товара."""
     image = forms.ImageField(
         widget=forms.ClearableFileInput(attrs={'multiple': True}),
         label='Изображения',
         required=False)
 
-    class Meta(AddForm.Meta):
-        fields = AddForm.Meta.fields + ('image',)
+    class Meta(AddItemForm.Meta):
+        fields = AddItemForm.Meta.fields + ('image',)
 
 
-class UpdateForm(forms.ModelForm):
-    # TODO UpdateForm description
+class UpdateItemForm(forms.ModelForm):
+    """Форма для редактирования товара."""
+
     class Meta:
         model = Item
         fields = (
@@ -60,19 +64,19 @@ class UpdateForm(forms.ModelForm):
             'is_available',
             'limited_edition',
             'color',
-            'category'
+            'category',
         )
 
 
-class UpdateItemForm(forms.ModelForm):
-    # TODO UpdateItemForm description
+class UpdateItemImageForm(forms.ModelForm):
+    """Форма для редактирования изображения товара."""
     image = forms.ImageField(
         widget=forms.ClearableFileInput(attrs={'multiple': True}),
         label='Изображения',
         required=False)
 
-    class Meta(UpdateForm.Meta):
-        fields = UpdateForm.Meta.fields + ('image',)
+    class Meta(UpdateItemForm.Meta):
+        fields = UpdateItemForm.Meta.fields + ('image',)
 
 
 TagFormSet = modelformset_factory(
@@ -85,24 +89,31 @@ ImageFormSet = modelformset_factory(
     fields=("image",),
     extra=1
 )
-
-
-class AddTagForm(forms.ModelForm):
-    # TODO AddTagForm description
-    class Meta:
-        model = Item
-        fields = ('tag',)
+FeatureFormSet = modelformset_factory(
+    FeatureValue,
+    fields=("value",),
+    extra=1
+)
 
 
 class CreateTagForm(forms.ModelForm):
-    # TODO CreateTagForm description
+    """Форма для создания тега."""
+
     class Meta:
         model = Tag
         fields = ('title',)
 
 
+class AddTagForm(forms.ModelForm):
+    """Форма для добавления тега в карточку товара."""
+
+    class Meta:
+        model = Item
+        fields = ('tag',)
+
+
 class CreateCategoryForm(forms.ModelForm):
-    # TODO CreateCategoryForm description
+    """Форма для создания категории товаров."""
     my_default_errors = {
         'required': 'Это поле является обязательным',
         'invalid': 'Категория с таким названием уже существует'
@@ -114,13 +125,31 @@ class CreateCategoryForm(forms.ModelForm):
         fields = ('parent_category', 'title', 'description',)
 
 
+class CreateFeatureForm(forms.ModelForm):
+    """Форма для создания характеристики."""
+    category = forms.CharField(max_length=200)
+
+    class Meta:
+        model = Feature
+        fields = ('title', 'category')
+
+
+class CreateValueForm(forms.ModelForm):
+    """Форма для создания характеристики."""
+
+    class Meta:
+        model = FeatureValue
+        fields = ('value', 'feature',)
+
+
 class ImportDataFromCVS(forms.Form):
-    # TODO ImportDataFromCVS description
+    """Форма для импорта данных."""
     file = forms.FileField()
 
 
 class UpdateOrderStatusForm(forms.ModelForm):
-    # TODO UpdateOrderStatusForm description
+    """Форма для экспорта данных."""
+
     class Meta:
         model = Order
         fields = ('status',)
