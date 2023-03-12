@@ -6,9 +6,9 @@
 <div class="Middle">
     <div class="Section">
         <div class="wrap">
+            <!-- FAVORITE CATEGORIES -->
             <div class="BannersHome">
-                {% for category in favorites|slice:'3' %}
-
+                {% for category in favorites %}
                 <a class="BannersHomeBlock" href="{% url 'app_item:item_category' category.category.slug %}">
                     <div class="BannersHomeBlock-row">
                         <div class="BannersHomeBlock-block">
@@ -26,73 +26,40 @@
                         </div>
                     </div>
                 </a>
-
                 {% endfor %}
             </div>
+            <!-- FAVORITE CATEGORIES -->
         </div>
     </div>
-
-
+      {% include 'message.html' %}
     <div class="Section Section_column Section_columnDesktop">
         <div class="wrap">
+            <!-- POPULAR ITEMS -->
             <div class="Section-content">
                 <header class="Section-header">
-                    <h2 class="Section-title">Popular Products
-                    </h2>
+                    <h2 class="Section-title">популярные товары</h2>
                 </header>
                 <div class="Cards">
                     {% for item in popular %}
-                    <!--    MODAL   -->
-                    <div id="openModal{{item.pk}}" class="modal-my">
-                        <div class="modal-dialog-my">
-                            <div class="modal-content-my">
-                                <div class="modal-header-my">
-                                    <h1 class="modal-title-my">Добавить товар в корзину</h1>
-                                    <a href="#close" title="Close" class="close-my">×</a>
-                                </div>
-                                <div class="modal-body-my">
-                                    <div style="display:inline;  margin:10px;">
-                                        {%  if item.image.first %}
-                                        <img src="{{ item.image.first.image.url }}" width=150" height="150px"
-                                             style="border-radius: 12px; box-shadow: 0 0 6px; padding: 5px">
-                                        {% else %}
-                                        <img src="/media/default_images/default_item.png" width=150" height="150px"
-                                             style="border-radius: 12px; box-shadow: 0 0 6px; padding: 5px">
-                                        {% endif %}
-
-                                    </div>
-                                    <div class="modal-body-my modal-price-my">
-                                        <strong class="Card-title">{{item.title}}</strong>
-                                        <div class="Card-cost">
-                                            <span class="Card-price">${{item.price}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer-my">
-                                    <a class="btn btn_success btn_full"
-                                       href="{% url 'app_cart:add_cart' pk=item.pk %} ">
-                                        <span>Добавить в корзину</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!--    MODAL  END -->
-
-
-                    <div class="{% if forloop.counter < 5 %} Card
-                                {% elif forloop.counter < 7 %} Card hide_md
-                                {% else %} Card hide_md hide_1450
-                                {% endif %}">
-                        <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}">
+                        <div class="Card">
+                        <a class="Card-picture {% if not item.is_available %} non_available {% endif %}" href="{% url 'app_item:item_detail' item.pk %}">
                             <img src="{{item.image.first.image.url}}" alt="card.jpg"/></a>
+                        {% if not item.is_available %}
+                            <div class="sold_out">
+                                <span style="padding-top:20px">РАЗОБРАЛИ</span>
+                            </div>
+                        {% endif %}
                         <div class="Card-content">
                             <strong class="Card-title">
-                                <a href="{% url 'app_item:item_detail' item.pk %}">{{item.title}}</a>
+                                <a href="{% url 'app_item:item_detail' item.pk %}">{{ item.title }}</a>
                             </strong>
                             <div class="Card-description">
                                 <div class="Card-cost">
-                                    <span class="Card-price">${{item.price}}</span>
+                                    {% if item.is_available %}
+                                    <span class="Card-price">${{ item.price }}</span>
+                                    {% else %}
+                                    <span class="Card-price ">SOLD OUT</span>
+                                    {% endif %}
                                 </div>
                                 <div class="Card-icon-view-and-sell">
                                     <div class="Card-icon Card-icon-image">
@@ -111,7 +78,7 @@
                                     {% endif %}
                                 </div>
                                 <div class="Card-hover">
-                                    <a class="Card-btn" href="#openModal{{item.pk}}">
+                                    <a class="Card-btn"  href="{% url 'app_cart:add_cart' pk=item.pk %} ">
                                         <img src="/assets/img/icons/card/cart.svg" alt="cart.svg"/>
                                     </a>
                                 </div>
@@ -121,6 +88,7 @@
                     {% endfor %}
                 </div>
             </div>
+            <!-- POPULAR ITEMS -->
         </div>
     </div>
     <div class="Section Section_column Section_columnRight">
@@ -147,10 +115,8 @@
                                  alt="moneyBack.svg"/>
                         </div>
                         <div class="media-content">
-                            <strong class="media-title">Money Back
-                            </strong>
-                            <p class="media-text">Guaranted payments
-                            </p>
+                            <strong class="media-title">Money Back</strong>
+                            <p class="media-text">Guaranted payments</p>
                         </div>
                     </div>
                 </div>
@@ -160,10 +126,8 @@
                             <img src="/assets/img/icons/advantages/support.svg" alt="support.svg"/>
                         </div>
                         <div class="media-content">
-                            <strong class="media-title">Support Policy
-                            </strong>
-                            <p class="media-text">Fast support team
-                            </p>
+                            <strong class="media-title">Support Policy</strong>
+                            <p class="media-text">Fast support team</p>
                         </div>
                     </div>
                 </div>
@@ -173,8 +137,7 @@
                             <img src="/assets/img/icons/advantages/quality.svg" alt="quality.svg"/>
                         </div>
                         <div class="media-content">
-                            <strong class="media-title">Quality Guarantee
-                            </strong>
+                            <strong class="media-title">Quality Guarantee</strong>
                             <p class="media-text">Best guaranted items</p>
                         </div>
                     </div>
@@ -185,7 +148,7 @@
             <div class="Section-content">
                 <div class="Slider Slider_carousel">
                     <header class="Section-header Section-header_close">
-                        <h2 class="Section-title">Limited edition
+                        <h2 class="Section-title">ограниченный тираж
                         </h2>
                         <div class="Section-control">
                             <div class="Slider-navigate">
@@ -194,62 +157,31 @@
                     </header>
                     <div class="Slider-box Cards">
                         {% for itemLE in limited_edition_items %}
-                        <!--    MODAL START  LIMITED EDITION ITEM  -->
-                        <div id="openModal{{itemLE.pk}}" class="modal-my">
-                            <div class="modal-dialog-my">
-                                <div class="modal-content-my">
-                                    <div class="modal-header-my">
-                                        <h1 class="modal-title-my">Добавить товар в корзину</h1>
-                                        <a href="#close" title="Close" class="close-my">×</a>
-                                    </div>
-                                    <div class="modal-body-my">
-                                        <div style="display:inline;  margin:10px;">
-                                            <img src="{{itemLE.image.first.image.url}}" width=150" height="150px"
-                                                 style="border-radius: 12px; box-shadow: 0 0 6px; padding: 5px">
-                                        </div>
-                                        <div class="modal-body-my modal-price-my">
-                                            <strong class="Card-title">{{itemLE.title}}</strong>
-                                            <div class="Card-cost">
-                                                <span class="Card-price">${{itemLE.price}}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer-my">
-                                        <a class="btn btn_success btn_full"
-                                           href="{% url 'app_cart:add_cart' pk=itemLE.pk %} ">
-                                            <span>Добавить в корзину</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--    MODAL  FINISH LIMITED EDITION ITEM    -->
-
                         <div class="Slider-item">
                             <div class="Slider-content">
                                 <div class="Card">
-                                    <a class="Card-picture" href="#">
-                                        <img src="{{itemLE.image.first.image.url}}" alt="card.jpg"/>
+                                    <a class="Card-picture" href="{{ itemLE.get_absolute_url }}">
+                                        <img src="{{ itemLE.image.first.image.url }}" alt="card.jpg"/>
                                     </a>
                                     <div class="Card-content">
                                         <strong class="Card-title">
-                                            <a href="{% url 'app_item:item_detail' itemLE.pk %}">{{itemLE.title}}</a>
+                                            <a href="{{ itemLE.get_absolute_url }}">{{ itemLE.title }}</a>
                                         </strong>
                                         <div class="Card-description">
                                             <div class="Card-cost">
-                                                <span class="Card-price">${{itemLE.price}}</span>
+                                                <span class="Card-price">${{ itemLE.price }}</span>
                                             </div>
                                                <div class="Card-icon-view-and-sell">
                                                 <div class="Card-icon Card-icon-image">
                                                     <img src="/assets/img/icons/comments.svg" width="20" height="20">
                                                 </div>
-                                                <div class="Card-icon">{{itemLE.item_comments.count }}</div>
+                                                <div class="Card-icon">{{ itemLE.item_comments.count }}</div>
                                                 <div class="Card-icon Card-icon-image">
                                                     <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
-                                                <div class="Card-icon">{{itemLE.total_views}}</div>
+                                                <div class="Card-icon">{{ itemLE.total_views }}</div>
                                                 <div class="Card-icon Card-icon-image">
                                                     <img src="/assets/img/icons/cart.svg" width="15" height="15"></div>
-                                                <div class="Card-icon">{{itemLE.cart_item.count}}</div>
+                                                <div class="Card-icon">{{ itemLE.cart_item.count }}</div>
                                             </div>
                                             <div class="Card-category">{% if itemLE.category.parent_category %}
                                                 {{itemLE.category.parent_category}} / {{itemLE.category}}
@@ -257,8 +189,8 @@
                                                 {% endif %}
                                             </div>
                                             <div class="Card-hover">
-                                                <a class="Card-btn" href="#openModal{{itemLE.pk}}">
-                                                    <img src="/assets/img/icons/card/cart.svg" alt="cart.svg"/>
+                                                <a class="Card-btn" href="{% url 'app_cart:add_cart' pk=itemLE.pk %}">
+                                                    <img src="/assets/img/icons/card/cart.svg" alt="{{ itemLE }}"/>
                                                 </a>
                                             </div>
                                         </div>
@@ -270,6 +202,7 @@
                     </div>
                 </div>
             </div>
+            <!--     LIMITED EDITION FINISH -->
         </div>
     </div>
 </div>

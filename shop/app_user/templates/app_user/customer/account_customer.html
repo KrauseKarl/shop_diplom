@@ -69,7 +69,8 @@
 
                         </div>
                     </div>
-                   {% if order %}
+                   {% if last_order %}
+                    {% with order=last_order %}
                     <div class="Account-group">
                         <div class="Account-column Account-column_full">
                             <div class="Order Order_anons">
@@ -117,6 +118,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endwith %}
                     {% endif %}
                 </div>
         </div>

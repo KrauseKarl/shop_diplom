@@ -66,17 +66,17 @@
                                 <div class="form-group">
                                     <label class="form-label" for="name">ФИО</label>
                                     <input class="form-input" id="name" name="name" type="text"
-                                           value="{{request.user.get_full_name}}"/>
+                                           value="{{ request.user.get_full_name }}"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="telephone">Телефон</label>
                                     <input class="form-input" id="telephone" name="telephone" type="text"
-                                           value="{{request.user.profile.telephone}}"/>
+                                           value="{{ request.user.profile.telephone }}" data-mask="+7 (999) 999 99 99"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="email">E-mail</label>
                                     <input class="form-input" id="email" name="email" type="text"
-                                           value="{{request.user.email}}"
+                                           value="{{ request.user.email }}"
                                            data-validate="require"/>
                                 </div>
                             </div>
@@ -97,34 +97,53 @@
                         <header class="Section-header Section-header_sm">
                             <h2 class="Section-title">Шаг 2. Способ доставки</h2>
                         </header>
-                        <div class="form-group">
-                            <div>
-                                <label class="toggle">
-                                    <input type="radio"  name="delivery" id='delivery_standard' value="standard" checked="checked"/>
-                                    <span class="toggle-box"></span>
-                                    <span class="toggle-text" id="standard">Обычная доставка</span>
-                                </label>
-                            </div>
-                            <div>
-                                <label class="toggle">
-                                    <input type="radio"  name="delivery" id="delivery_express" value="express" />
-                                    <span class="toggle-box"></span>
-                                    <span class="toggle-text" id="express">Экспресс доставка</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="city">Город
-                            </label>
-                            <input class="form-input" id="city" name="city" type="text" data-validate="require"/>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="address">Адрес
-                            </label>
-                            <textarea class="form-textarea" name="address" id="address" data-validate="require">
 
-                            </textarea>
+                        <div class="form-group">
+                            {% for type in type_of_delivery %}
+                            <div>
+                                <label class="toggle">
+                                    <input type="radio" name="delivery" id="delivery_{{ type.0|lower }}"
+                                           value="{{ type.0|lower}}"
+                                           {% if forloop.counter == 1 %} checked="checked" {% endif %}/>
+
+                                    <span class="toggle-box"></span>
+                                    <span class="toggle-text" id="{{ type.0|lower }}"> {{ type.1|capfirst }} </span>
+                                </label>
+                                 <input type="hidden" name="express_delivery_price"
+                                        value="{{ site_settings.express_delivery_price }}" id="express_delivery_price">
+                            </div>
+                            {% endfor %}
                         </div>
+
+
+
+
+                    <div class="form-group">
+                            <label class="form-label" for="post_address">Выбрать адрес</label>
+                             <select onInput='getAddress()' id="post_address" name="post_address" class="form-input">
+                                 <option disabled>Выбрать адрес</option>
+                                 <option selected value="">---</option>
+                                 {% for address in request.user.address.all %}
+                                 <option value="{{ address.city }}; {{ address.address }}">{{ address }}</option>
+                                 {% endfor %}
+                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="city">Город</label>
+                            <input class="form-input" id="city" name="city" type="text"
+                                   placeholder="введите город доставки" data-validate="require"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="address">Адрес</label>
+                            <input class="form-input" name="address" id="address" data-validate="require"
+                                   placeholder="введите адрес доставки">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="comment">Комментарий к заказу</label>
+                            <textarea class="form-textarea" id="comment" name="comment"
+                                      placeholder="введите город доставки"></textarea>
+                        </div>
+
                         <div class="Order-footer">
                             <a class="btn btn_success Order-next" href="#step3">Дальше</a>
                         </div>
@@ -138,20 +157,17 @@
                             <h2 class="Section-title">Шаг 3. Способ оплаты</h2>
                         </header>
                         <div class="form-group">
+                            {% for type_pay in type_of_payment %}
                             <div>
                                 <label class="toggle">
-                                    <input type="radio" name="pay" id="pay_by_card" value="online" checked="checked"/>
+                                    <input type="radio" name="pay" id="pay_{{ type_pay.0|lower }}"
+                                           value="{{ type_pay.0|lower}}"
+                                           {% if forloop.counter == 1 %} checked="checked"{% endif %}/>
                                     <span class="toggle-box"></span>
-                                    <span class="toggle-text" id="online">Онлайн картой</span>
+                                    <span class="toggle-text" id="{{ type_pay.0|lower }}">{{ type_pay.1|lower }}</span>
                                 </label>
                             </div>
-                            <div>
-                                <label class="toggle">
-                                    <input type="radio" name="pay" id="pay_by_account" value="someone"/>
-                                    <span class="toggle-box"></span>
-                                    <span class="toggle-text" id="someone">Онлайн со случайного чужого счета</span>
-                                </label>
-                            </div>
+                            {% endfor %}
                         </div>
                         <div class="Order-footer">
                             <a class="btn btn_success Order-next" id="step_4" href="#step4">Дальше</a>
@@ -187,6 +203,12 @@
                                             <div class="Order-infoType">E-mail:
                                             </div>
                                             <div class="Order-infoContent" id="email_result">
+                                            </div>
+                                        </div>
+                                        <div class="Order-info">
+                                            <div class="Order-infoType">Комментарий к заказу:
+                                            </div>
+                                            <div class="Order-infoContent" id="comment_result">
                                             </div>
                                         </div>
                                     </div>
@@ -234,7 +256,7 @@
                                             </div>
                                         </div>
                                         <div class="Cart-block Cart-block_price">
-                                            <div class="Cart-price">${{ item.item.get_price }}
+                                            <div class="Cart-price">${{ item.item.price }}
                                             </div>
                                         </div>
                                     </div>
@@ -257,17 +279,20 @@
                                 </div>
                                 <div class="Cart-total-order">
                                     <div class="Cart-title-order">
-                                        <span class="Cart-title-order">  доставка:</span>
+                                        <span class="Cart-title-order">доставка:</span>
                                         <span class="Cart-price">$</span>
-                                        <strong id='fees' class=" Cart-price Cart-total-quantity">{{ cart_dict.fees }}</strong>
+                                        <strong id='fees' class=" Cart-price Cart-total-quantity">
+                                            {{ cart_dict.fees }}
+                                        </strong>
                                         </div>
                                 </div>
-                                <div class="Cart-total-order">
-                                    <div class="Cart-title-order">
-                                        <span class="Cart-title-order"> экспресс доставка:</span>
+                                <div class="Cart-total-order" id="delivery_express_block">
+                                    <div class="Cart-title-order ">
+                                        <span class="Cart-title-order" id="delivery_cost_span">
+                                            экспресс доставка:
+                                        </span>
                                         <span class="Cart-price">$</span>
-                                        <strong id='delivery_cost'
-                                              class=" Cart-price Cart-total-quantity">0</strong>
+                                        <strong id='delivery_cost' class=" Cart-price Cart-total-quantity">0</strong>
                                         </div>
                                 </div>
                                 <div class="Cart-total Cart-total-order ">

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'app_store.apps.AppStoreConfig',
     'app_order.apps.AppOrderConfig',
     'app_cart.apps.AppCartConfig',
+    'app_settings.apps.AppSettingsConfig',
 ]
 
 MIDDLEWARE = [
@@ -56,16 +57,24 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
                 # app_item
                 'app_item.context_processors.categories',
                 'app_item.context_processors.tags',
+
                 # app_cart
                 'app_cart.context_processors.get_cart',
+                'app_cart.context_processors.in_cart',
+
                 # app_order
-                'app_order.context_processors.all_store_order',
+                'app_order.context_processors.customer_order_list',
+                'app_order.context_processors.seller_order_list',
+
+                # app_settings
+                'app_settings.context_processors.load_settings',
             ],
             'libraries': {
-                'my_customer_tags': 'app_item.templatetags.url_extras',
+
             }
         },
     },
@@ -127,7 +136,7 @@ TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -164,3 +173,16 @@ USE_CACHE = True
 # SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 # SESSION_COOKIE_HTTPONLY = True
 # SESSION_COOKIE_AGE = 31536000
+
+
+# Celery settings
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+CELERY_TIMEZONE = 'Europe/Moscow'
+# CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TASK_TRACK_STARTED = True
+# CELERY_TASK_TIME_LIMIT = 30 * 60

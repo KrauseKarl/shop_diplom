@@ -8,7 +8,7 @@ from app_item.models import Item
 
 
 def profile_directory_path(path):
-    # TODO profile_directory_path description
+    """Функция для переименования файла с изображением аватара пользователя."""
     def wrapper(instance, filename):
         ext = filename.split('.')[-1]
         filename = 'user_id_{}.{}'.format(instance.user.id, ext)
@@ -18,14 +18,14 @@ def profile_directory_path(path):
 
 
 def user_dir_path(instance, filename):
-    # TODO user_dir_path description
+    """Функция для переименования файла с изображением аватара пользователя."""
     ext = filename.split('.')[-1]
     filename = 'user_id_{}.{}'.format(instance.user.id, ext)
     return f'avatar/{filename}'
 
 
 class Profile(models.Model):
-    # TODO Profile(models.Model) description
+    """Модель пользователя."""
     ROLE = (
         ('ADM', 'администратор'),
         ('SLR', 'продавец'),

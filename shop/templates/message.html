@@ -1,10 +1,10 @@
 {% if messages %}
     {% for message in messages %}
-        <div class="{{ message.tags }} message_general " id="message">
-            <div>{{ message }}
+        <ul class="messagelist">
+            <li class="{{ message.tags }}"  id="message">{{ message }}
                 <button class="close-button" id="close-button">✖</button>
-            </div>
-        </div>
+            </li>
+        </ul>
     {% endfor %}
 {% endif %}
 <script>
@@ -27,5 +27,5 @@
         }
     }, time);
 }
-fadeOutEffect(1000)
+fadeOutEffect(800)
 </script>

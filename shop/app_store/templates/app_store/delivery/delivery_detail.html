@@ -1,4 +1,4 @@
-{% extends 'index.html' %}
+{% extends 'seller_index.html' %}
 {% load static  %}
 {% load cache %}
 {% block title %}
@@ -17,7 +17,7 @@
                         <a href="index.html">home</a>
                     </li>
                     <li class="breadcrumbs-item">
-                        История заказов</a>
+                        История заказов
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>{{ order }}</span>
@@ -26,6 +26,8 @@
             </div>
         </div>
     </div>
+
+
     <div class="Section">
         <div class="wrap">
             <div class="Section-content">
@@ -51,7 +53,7 @@
                                     <div class="Order-info">
                                         <div class="Order-infoType">Телефон:
                                         </div>
-                                        <div class="Order-infoContent">{{ order.telephone }}
+                                        <div class="Order-infoContent" id="phone_formatter">{{ order.telephone }}
                                         </div>
                                     </div>
                                     <div class="Order-info">
@@ -60,6 +62,16 @@
                                         <div class="Order-infoContent">{{ order.email }}
                                         </div>
                                     </div>
+                                    <div class="Order-info">
+                      <div class="Order-infoType">Комментарий к заказу
+                      </div>
+                      <div class="Order-infoContent">
+                          {% if order.comment%}
+                          {{ order.comment }}
+                          {% else %} отсутствует
+                          {% endif %}
+                      </div>
+                    </div>
                                 </div>
                                 <div class="row-block">
                                     <div class="Order-info Order-info_delivery">
@@ -86,7 +98,7 @@
                                         <div class="Order-infoType">Инвойс:</div>
                                         <div class="Order-infoContent">
                                             {% if order.invoices.first %}
-                                            <a href="#">{{ order.invoices.first }}</a>
+                                            <a class="seller_label" href="#">{{ order.invoices.first }}</a>
                                             {% else %}
                                                 ожидает оплаты
                                             {% endif %}
@@ -97,53 +109,135 @@
                                         <div class="Order-infoContent">{{ order.get_status_display }}</div>
                                     </div>
                                     <div class="Order-info Order-info_status">
-                          <div class="Order-infoType"></div>
-                          <div class="Order-infoContent">
-                              {% if order.status == 'deactivated' %}
-                              <div class="Order-infoContent">
-                                  <span class="Order-progress-bar_width Order-progress-bar-deactivated Order-progress-bar_width"></span>
-                              </div>
-                              {% elif order.status == 'new' %}
-                              <div class="Order-infoContent">
-                                  <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>
-                              </div>
-                              {% elif order.status == 'in_progress' %}
-                              <div class="Order-infoContent">
-                                  <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
-                              </div>
-                              {% elif order.status == 'is_ready' %}
-                              <div class="Order-infoContent">
-                                  <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                              </div>
-                              {% elif order.status == 'completed' %}
-                              <div class="Order-infoContent">
-                                  <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width" ></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width" ></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width" ></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width" ></span>
-                                  <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width" ></span>
-                              </div>
-                              {% endif %}
+
+
                           </div>
                                     {% if order.error %}
                                     <div class="Order-info Order-info_error">
                                         <div class="Order-infoType">Оплата не прошла:</div>
-                                        <div class="Order-infoContent">{{ order.error }}
-                                        </div>
-                                        {% endif %}
+                                        <div class="Order-infoContent">{{ order.error }}</div>
+                                    {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="Cart-product" >
+                             <div class="Cart-block Cart-block_row">
+                                 <!--    ORDER SEND BUTTON -->
+                                 <div class="Cart-price Cart-block_info">
+                                     {% if order.status == 'in_progress' %}
+                                     <form method="post"
+                                           action="{% url 'app_store:sent_purchase' order_id=order.pk %}">
+                                         {% csrf_token %}
+                                         <input type="hidden" name="status" value="is_ready">
+                                         <button class="btn btn_square btn_success btn_narrow  btn_sm"> отправить товар</button>
+                                     </form>
+                                     {% endif %}
+                                 </div>
+                                 <!--    ORDER SEND BUTTON -->
 
+                                 <!--    STATUS ORDER  -->
+                                 <div class="Cart-block_info">
+                                     статус: <span class="Cart-price">{{ order.get_status_display }}</span>
+                                 </div>
+                                 <!--    STATUS ORDER  -->
+
+                                 <!--    STATUS BAR  -->
+                                 <div class="Cart-price Cart-block_info">
+                                     {% if order.status == 'deactivated' %}
+                                     <div class="Order-infoContent">
+                                         <span class="Order-progress-bar_width Order-progress-bar-deactivated Order-progress-bar_width"></span>
+                                     </div>
+                                     {% elif order.status == 'new' %}
+                                     <div class="Order-infoContent">
+                                         <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>
+                                     </div>
+                                     {% elif order.status == 'in_progress' %}
+                                     <div class="Order-infoContent">
+                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
+                                     </div>
+                                     {% elif order.status == 'on_the_way' %}
+                                     <div class="Order-infoContent">
+                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
+                                     </div>
+                                     {% elif order.status == 'is_ready' %}
+                                     <div class="Order-infoContent">
+                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
+                                     </div>
+                                     {% elif order.status == 'completed' %}
+                                     <div class="Order-infoContent">
+                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
+                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
+                                     </div>
+                                     {% endif %}
+                                 </div>
+                                 <!--    STATUS BAR  -->
+
+                                 <!-- EDIT ORDER'S ITEMS -->
+                                 <div class="Cart-price Cart-block_price">
+                                     {% if order.status == 'in_progress' or order.status == 'new' %}
+                                     <a class="btn btn_square btn_dark btn_narrow btn_sm" style="margin-left:10px"
+                                        href="{% url 'app_store:delivery_edit' order.id %}">
+                                         редактировать
+                                     </a>
+                                     {% endif %}
+                                 </div>
+                                 <!--  EDIT ORDER'S ITEMS -->
+
+                                 <!-- CANCEL ORDER   -->
+                                 <div class="Cart-price Cart-block_price">
+                                     {% if order.status == 'in_progress' or order.status == 'new' %}
+                                     <a class="btn btn_square btn_danger btn_narrow btn_sm" style="margin-left:10px"
+                                        href="#deliveryDeleteModal">
+                                         удалить
+                                     </a>
+                                     {% endif %}
+                                 </div>
+
+                                  <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+                                                <div id="deliveryDeleteModal" class="modal-my">
+                                                    <div class="modal-dialog-my">
+                                                        <div class="modal-content-my">
+                                                            <div class="modal-header-my">
+                                                                <a href="#close" title="Close" class="close-my">×</a>
+                                                            </div>
+                                                            <div class="modal-body-my">
+                                                                <div class="form Payment">
+                                                                    <div class="form-group">
+                                                                        <h3>Удалить </h3>{{ order }}
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <a href="{% url 'app_store:delivery_edit' order.id %}"
+                                                                           class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                                        <a href="." title="Close"
+                                                                           class="btn btn_square btn_dark btn_narrow">отмена</a>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer-my"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+
+                                 <!-- CANCEL ORDER   -->
+                             </div>
+                         </div>
                         <div class="Cart Cart_order">
-
                             {% for item in items %}
                             <div class="Cart-product">
                                 <div class="Cart-block Cart-block_row">
@@ -159,40 +253,24 @@
                                         </a>
                                     </div>
                                     <div class="Cart-block Cart-block_price">
-                                        <div class="Cart-price">{{ item.price }}$
-                                        </div>
+                                        <span
+                                            class="Cart-price">${{ item.price }}</span></div>
+                                    <div class="Cart-block Cart-block_price">
+                                        <span class="Cart-price ">{{ item.quantity }}шт.</span>
                                     </div>
-                                </div>
-                                <div class="Cart-block Cart-block_row">
-                                    <div class="Cart-block Cart-block_amount">{{ item.quantity }} шт.</div>
-                                    <div class="Cart-price">{{ item.total }}</div>
-
+                                    <div class="Cart-block Cart-block_price">
+                                        <span class="Cart-price">${{ item.total }}</span></div>
                                 </div>
                             </div>
                             {% endfor %}
-
-                            <div class="Cart-total">
-                                <div class="Cart-block Cart-block_total">
-                                    <strong class="Cart-title">Итого:<span
-                                            class="Cart-price">{{ order.total_sum }}$</span>
-                                    </strong>
-                                </div>
-                            </div>
+                        </div>
+                        <div class="Cart-total">
                             <div class="Cart-block Cart-block_total">
-                                <div class="Cart-total-order">
-                                    {% if order.status == 'in_progress' %}
-                                        <form method="post" action="{% url 'app_store:sent_purchase' order_id=order.pk %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="status" value="is_ready">
-
-                                            <button class="btn btn_success">
-                                                <span style="margin-right: 10px">отправить товар</span>
-                                                <img src="/assets/img/icons/delivery.svg" alt="delivery">
-                                            </button>
-                                        </form>
-                                        {% endif %}
-                                </div>
+                                <strong class="Cart-title">
+                                    <span class="Cart-price Cart-total-order">Итого: {{ order.total_sum }}$</span>
+                                </strong>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -200,6 +278,6 @@
         </div>
     </div>
 </div>
-
+</div>
 
 {% endblock %}

@@ -1,9 +1,10 @@
+import datetime
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MinLengthValidator
-from django.utils.timezone import now
 
 from utils.my_utils import slugify_for_cyrillic_text
 from app_store.models import Store
@@ -13,7 +14,23 @@ from app_item.managers.app_item_managers import (AvailableItemManager, Unavailab
 
 
 class IpAddress(models.Model):
-    ip = models.CharField(max_length=15)
+    ip = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='ip_address',
+        verbose_name='пользователь',
+        blank=True,
+        null=True,
+    )
+    created = models.DateTimeField(
+            auto_now_add=True,
+            verbose_name='дата создания'
+        )
 
     objects = models.Manager()
 
@@ -36,7 +53,7 @@ class Item(models.Model):
     MAGENTA = ' magenta'
     WHITE = 'white'
     BLACK = 'black'
-    GREY = 'grey'
+    BROWN = 'brown'
 
     COLOURS = (
         (RED, 'red'),
@@ -47,7 +64,7 @@ class Item(models.Model):
         (MAGENTA, 'magenta'),
         (WHITE, 'white'),
         (BLACK, 'black'),
-        (GREY, 'grey'),
+        (BROWN, 'brown'),
     )
     title = models.CharField(
         max_length=100,
@@ -121,6 +138,7 @@ class Item(models.Model):
     )
     image = models.ManyToManyField(
         'Image',
+        blank=True,
         related_name='item_images',
         verbose_name='изображение'
     )
@@ -132,12 +150,12 @@ class Item(models.Model):
         verbose_name='тег'
     )
 
-    features = models.ManyToManyField(
-        'Feature',
+    feature_value = models.ManyToManyField(
+        'FeatureValue',
         max_length=20,
         blank=True,
         related_name='item_features',
-        verbose_name='характеристики'
+        verbose_name='характеристика'
     )
 
     objects = models.Manager()
@@ -154,23 +172,40 @@ class Item(models.Model):
     def __str__(self):
         return self.title
 
-    def get_price(self):
-        """Функция возвращает цену товара."""
-        return self.price
-
-    @property
-    def main_image(self):
-        return self.image.first().image.url
-
     def get_absolute_url(self):
         return reverse('app_item:item_detail', kwargs={'pk': self.pk})
+
+    def get_category_url(self):
+        return self.category.get_absolute_url()
+
+    def get_store_url(self):
+        try:
+            return self.store.get_absolute_url()
+        except:
+            return reverse('main_page')
 
     def save(self, *args, **kwargs):
         """Функция по созданию slug"""
         if not self.slug:
             self.slug = slugify_for_cyrillic_text(self.title)
-        self.updated = now()
+        self.updated = datetime.datetime.now()
         super(Item, self).save(*args, **kwargs)
+
+    @property
+    def main_image(self):
+        """Функция возвращает URL главного изображения товара."""
+        try:
+            return self.image.first().image.url
+        except (ObjectDoesNotExist, AttributeError):
+            return '/media/default_images/default_item.png'
+
+    @property
+    def other_images(self):
+        """Функция возвращает все изображения товара кроме первого."""
+        try:
+            return self.image.all()[1:]
+        except (ObjectDoesNotExist, AttributeError):
+            return None
 
     def total_views(self):
         """Функция возвращает общее количество просмотров для товара."""
@@ -184,6 +219,17 @@ class Item(models.Model):
     def get_store(self):
         return self.store
 
+    @property
+    def comments(self):
+        return self.item_comments.filter(is_published=True)
+
+    @property
+    def purchases(self):
+        return self.cart_item.aggregate(bestseller=Count('quantity')).get('bestseller')
+
+    @property
+    def pieces(self):
+        return self.cart_item.aggregate(bestseller=Sum('quantity')).get('bestseller')
 
 
 class Category(models.Model):
@@ -215,6 +261,13 @@ class Category(models.Model):
         blank=True,
         verbose_name='родительская категория'
     )
+    feature = models.ManyToManyField(
+        'Feature',
+        max_length=200,
+        blank=True,
+        related_name='categories',
+        verbose_name='характеристика'
+    )
 
     objects = CategoryWithItemsManager()
 
@@ -232,6 +285,12 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify_for_cyrillic_text(self.title)
         super(Category, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('app_item:item_category', kwargs={'category': self.slug})
+
+    def get_parent_url(self):
+        return reverse('app_item:item_category', kwargs={'category': self.parent_category.slug})
 
     def item_count(self):
         """Функция по количеству товаров в конкретной категории."""
@@ -260,11 +319,9 @@ class Tag(models.Model):
     def __str__(self):
         return self.title
 
-    # @property
-    # def url(self):
-    #     module_name = self.__module__.split('.')[0].lower()
-    #     class_name = self.__class__.__name__.lower()
-    #     return f'{module_name}/?{class_name}={self.slug}'
+    def get_absolute_url(self):
+        return reverse('app_item:item_tag', kwargs={'tag': self.slug})
+
 
     class Meta:
         db_table = 'app_tags'
@@ -321,6 +378,11 @@ class Comment(models.Model):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
 
+    def save(self, *args, **kwargs):
+        """Функция по созданию slug"""
+        self.updated = datetime.datetime.now()
+        super(Comment, self).save(*args, **kwargs)
+
 
 class Image(models.Model):
     """Модель изображения."""
@@ -359,6 +421,13 @@ class Image(models.Model):
 
 class Feature(models.Model):
     """Модель характеристики товара."""
+
+    WIDGET_TYPE = (
+        ('CBX', 'checkbox'),
+        ('SLC', 'select'),
+        ('TXT', 'textfield')
+    )
+
     title = models.CharField(
         max_length=200,
         verbose_name='характеристика'
@@ -369,15 +438,25 @@ class Feature(models.Model):
         allow_unicode=False
     )
 
-    value = models.CharField(
-        max_length=200,
-        verbose_name='значение'
+    widget_type = models.CharField(
+        max_length=3,
+        choices=WIDGET_TYPE,
+        default='CBX',
+        null=True,
+        blank=True,
+        verbose_name='тип виджета'
     )
     is_active = models.BooleanField(
         default=True,
         verbose_name='активная характеристика'
     )
     objects = models.Manager()
+
+    def save(self, *args, **kwargs):
+        """Функция по созданию slug"""
+        if not self.slug:
+            self.slug = slugify_for_cyrillic_text(self.title)
+        super(Feature, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -387,6 +466,42 @@ class Feature(models.Model):
         ordering = ('title',)
         verbose_name = 'характеристика'
         verbose_name_plural = 'характеристики'
+
+
+class FeatureValue(models.Model):
+    value = models.CharField(
+        max_length=200,
+        verbose_name='значение характеристик'
+    )
+    slug = models.SlugField(
+        max_length=100,
+        db_index=True,
+        allow_unicode=False,
+        verbose_name='slug'
+    )
+    feature = models.ForeignKey(
+        'Feature',
+        on_delete=models.CASCADE,
+        related_name='values',
+        verbose_name='название характеристики'
+    )
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.value
+
+    def save(self, *args, **kwargs):
+        """Функция по созданию slug"""
+        if not self.slug:
+            self.slug = slugify_for_cyrillic_text(self.value)
+        super(FeatureValue, self).save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'app_values'
+        ordering = ('value',)
+        verbose_name = 'значение характеристик'
+        verbose_name_plural = 'значения характеристик'
 
 # class ItemImage(models.Model):
 #     item = models.ForeignKey(

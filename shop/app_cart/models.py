@@ -14,6 +14,20 @@ from app_order.models import Order
 
 class CartItem(models.Model):
     """Модель выбранного товара."""
+    STATUS = (
+        ('in_cart', 'в корзине'),
+        ('not_paid', 'заказан'),
+        ('new', 'новый'),
+        ('in_progress', 'собирается'),
+        ('on_the_way', 'доставляется'),
+        ('is_ready', 'готов к выдаче'),
+        ('completed', 'доставлен'),
+        ('deactivated', 'отменен')
+    )
+
+
+
+
     item = models.ForeignKey(
         Item,
         on_delete=models.CASCADE,
@@ -53,6 +67,11 @@ class CartItem(models.Model):
     is_paid = models.BooleanField(
         default=False,
         verbose_name='статус оплаты'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS,
+        verbose_name='статус выбранного товара'
     )
     created = models.DateTimeField(
         auto_now_add=True,

@@ -1,19 +1,8 @@
 from django.urls import path
 
-from app_order.views import (
-    OrderCreate,
-    SuccessOrdered,
-    FailedOrdered,
-    OrderList,
-    OrderDetail,
-    PaymentCardView,
-    PaymentAccountView,
-    SuccessPaid,
-    ConfirmReceiptPurchase,
-    InvoicesList,
-    PaymentProgress,
-    RejectOrder
-)
+from app_order.views import *
+
+
 app_name = 'app_order'
 
 urlpatterns = [
@@ -21,7 +10,13 @@ urlpatterns = [
     path('order_list/', OrderList.as_view(), name='order_list'),
     path('order_list/<slug:status>/', OrderList.as_view(), name='order_progress'),
 
+    path('address/create/', AddressCreate.as_view(), name='address_create'),
+    path('address/list/', AddressList.as_view(), name='address_list'),
+    path('address/edit/<int:pk>/', AddressUpdate.as_view(), name='address_edit'),
+    path('address/remove/<int:pk>/', AddressDelete.as_view(), name='address_remove'),
+
     path('invoices_list/', InvoicesList.as_view(), name='invoices_list'),
+    path('invoices_detail/<int:pk>/', InvoicesDetail.as_view(), name='invoices_detail'),
     path('invoices_list/<slug:sort>/', InvoicesList.as_view(), name='invoices_by_date'),
 
     path('order_detail/<int:pk>/', OrderDetail.as_view(), name='order_detail'),
@@ -30,8 +25,9 @@ urlpatterns = [
     path('success_order/', SuccessOrdered.as_view(), name='success_order'),
     path('failed_order/', FailedOrdered.as_view(), name='failed_order'),
 
-    path('payment_progress/', PaymentProgress.as_view(), name='progress_payment'),
-    path('pay_by_card/', PaymentCardView.as_view(), name='pay_by_card'),
-    path('pay_by_account/', PaymentAccountView.as_view(), name='pay_by_account'),
-    path('success_pay/', SuccessPaid.as_view(), name='success_pay'),
+    path('progress_payment/<int:pk>/', PaymentView.as_view(), name='progress_payment'),
+    path("validate_username/", validate_username, name="validate_username"),
+    path("get_status_payment/<int:order_id>/<task_id>/", get_status_payment, name="get_status_payment"),
+    path('success_pay/<int:order_id>/', SuccessPaid.as_view(), name='success_pay'),
+    path('failed_pay/<int:order_id>/', FailedPaid.as_view(), name='failed_pay'),
 ]

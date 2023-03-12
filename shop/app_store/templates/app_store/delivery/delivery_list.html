@@ -1,4 +1,4 @@
-{% extends 'index.html' %}
+{% extends 'seller_index.html' %}
 {% load static  %}
 {% load cache %}
 {% block title %}
@@ -10,8 +10,12 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title"> Заказы магазина
-                </h1>
+                <h1 class="Middle-title">
+                    {% if request.GET.store %}
+                    Заказы магазина <strong>{{ request.GET.store }}</strong>
+                    {% else %}
+                        все заказы продавца
+                    {% endif %}</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item"><a href="index.html">home</a>
                     </li>
@@ -26,33 +30,54 @@
             <div class="Section-column">
                 <div class="Section-columnSection">
                     <header class="Section-header">
-                        <strong class="Section-title">Навигация
-                        </strong>
+                        <strong class="Section-title">Навигация </strong>
                     </header>
                     {% include "app_user/seller/sidebar_seller.html" %}
+
+                    <div class="NavigateProfile">
+                        <ul class="menu menu_vt">
+                            <li class="menu-item" style="margin-top: 20px">
+                                <div class="menu-link">Мои заказы:</div>
+                            </li>
+                            {% for store in user.store.all %}
+                            <li class="menu-item "
+                                style="margin-left: 0;{% if request.GET.store == store.title %}Order-side-bar-chosen-store{% endif %}">
+                                <a class=" Order-side-bar-store"
+                                   href="{% url 'app_store:delivery_list'  %}?store={{ store.title }}">
+                                    <div>
+                                        <img src="{{store.logo.url}}" width="25" height="25"
+                                             style="border-radius: 4px; margin-right:10px">
+                                        {{ store.title }}
+                                    </div>
+                                    <div style="margin-top:10px;">заказы {{ store.all_orders }}</div>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="Section-content">
                 <div class="Sort">
                     <div class="Sort-title">Сортировать по:</div>
                     <div class="Sort-variants">
-                        <a class="Sort-sortBy" href="{% url 'app_store:delivery_list'  %}">
+                        <a class="Sort-sortBy " href="{% url 'app_store:delivery_list'  %}">
                             <span>Все</span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_store:delivery_progress' status='deactivated' %}">
+                        <a class="Sort-sortBy " href="{% url 'app_store:delivery_list'  %}?{% if request.GET.store %}&store={{ request.GET.store }}&{% endif %}status=deactivated">
                             <span>
                                 Отменен&#160;
                                 <span class="Order-progress-bar Order-progress-bar-deactivated"></span>
                             </span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_store:delivery_progress' status='new' %}">
+                        <a class="Sort-sortBy " href="{% url 'app_store:delivery_list'  %}?{% if request.GET.store %}&store={{ request.GET.store }}&{% endif %}status=new">
                             <span>
                                 Новый&#160;
                                 <span class="Order-progress-bar Order-progress-bar-new"></span>
                                 <span class="Order-progress-bar Order-progress-bar-new"></span>
                             </span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_store:delivery_progress' status='in_progress' %}">
+                        <a class="Sort-sortBy " href="{% url 'app_store:delivery_list'  %}?{% if request.GET.store %}&store={{ request.GET.store }}&{% endif %}status=in_progress">
                             <span>
                                 В обработке&#160;
                                 <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
@@ -60,7 +85,16 @@
                                 <span class="Order-progress-bar Order-progress-bar-in_progress"></span>
                             </span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_store:delivery_progress' status='is_ready' %}">
+                        <a class="Sort-sortBy " href="{% url 'app_store:delivery_list'  %}?{% if request.GET.store %}&store={{ request.GET.store }}&{% endif %}status=on_the_way">
+                            <span>
+                                доставляется&#160;
+                                <span class="Order-progress-bar Order-progress-bar-on_the_way"></span>
+                                <span class="Order-progress-bar Order-progress-bar-on_the_way"></span>
+                                <span class="Order-progress-bar Order-progress-bar-on_the_way"></span>
+
+                            </span>
+                        </a>
+                        <a class="Sort-sortBy " href="{% url 'app_store:delivery_list'  %}?{% if request.GET.store %}&store={{ request.GET.store }}&{% endif %}status=is_ready">
                             <span>
                                 Готов&#160;
                                 <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
@@ -69,7 +103,7 @@
                                 <span class="Order-progress-bar Order-progress-bar-is_ready"></span>
                             </span>
                         </a>
-                        <a class="Sort-sortBy" href="{% url 'app_store:delivery_progress' status='completed' %}">
+                        <a class="Sort-sortBy " href="{% url 'app_store:delivery_list'  %}?{% if request.GET.store %}&store={{ request.GET.store }}&{% endif %}status=completed">
                             <span>
                                 Выполнен&#160;
                                 <span class="Order-progress-bar Order-progress-bar-completed"></span>
@@ -82,6 +116,7 @@
                     </div>
                 </div>
                 <div class="Orders">
+                    {% if orders %}
                     <!--    TABLE HEAD      -->
                     <div class="Order Order_anons">
                         <div class="Order-personal">
@@ -106,7 +141,7 @@
                         </div>
                     </div>
                     <!--    TABLE HEAD      -->
-
+                    {% endif %}
                     <!--    TABLE BODY     -->
                     {% for order in orders %}
                     <div class="Order Order_anons">
@@ -114,16 +149,15 @@
                             <div class="row">
                                 <div class="row-block">
                                     <a class="Order-info" href="{% url 'app_store:delivery_detail' pk=order.pk %}">
-                                        <span class="Order-numberOrder">Заказ&#32;№00{{ order.id }}</span>
+                                        <span class="Order-numberOrder">Заказ&#32;№00{{ order.id }}</span><br>
+
                                     </a>
-                                    {% if order.error %}
-                                    <div class="Order-info Order-info_error">
-                                        <div class="Order-infoType">Оплата не прошла:
-                                        </div>
-                                        <div class="Order-infoContent">Оплата не выполнена, т.к. {{ order.error }}
-                                        </div>
+                                    <div>
+                                        {% for item in order.items_is_paid.all %}
+                                        <div> - {{ item|truncatechars:'19' }}</div>
+                                        {% endfor %}
                                     </div>
-                                    {% endif %}
+
                                     <div class="row-block">
                                         <hr>
                                     {% for item in order.items_is_paid.all %}
@@ -137,8 +171,6 @@
                                     {% endfor %}
                                 </div>
                                 </div>
-
-
                                 <div class="row-block Order-list-infoContent-right">
                                     <div class="Order-info Order-list-infoContent-right">
                                         <div class="Order-list-infoContent-right">статус</div>
@@ -158,6 +190,10 @@
                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress"></span>
                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress"></span>
                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress"></span>
+                                        {% elif order.status == 'on_the_way' %}
+                                        <span class="Order-progress-bar_width Order-progress-bar-on_the_way"></span>
+                                        <span class="Order-progress-bar_width Order-progress-bar-on_the_way"></span>
+                                        <span class="Order-progress-bar_width Order-progress-bar-on_the_way"></span>
                                         {% elif order.status == 'is_ready' %}
                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready"></span>
                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready"></span>
@@ -181,8 +217,6 @@
                                             {{ order.created|date:"j M o" }}</span>
                                     </div>
                                 </div>
-
-
                                 <div class="row-block Order-list-infoContent-right">
                                     <div class=" Order-info_pay ">
                                         <div class=" Order-list-infoContent-right">кол-во</div>
@@ -204,8 +238,17 @@
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
+                                {% if order.error %}
+                            <div class="row">
+                                    <div class="Order-info Order-info_error">
+                                        <div class="Order-infoType">Оплата не прошла:
+                                        </div>
+                                        <div class="Order-infoContent">Оплата не выполнена, т.к. {{ order.error }}
+                                        </div>
+                                    </div>
+                            </div>
+                               {% endif %}
                         </div>
                     </div>
                     {% empty %}

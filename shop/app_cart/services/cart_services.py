@@ -1,3 +1,4 @@
+from celery import Celery
 from django.core.cache import cache
 from django.http.response import HttpResponseBase, HttpResponseRedirect
 from django.utils.timezone import now
@@ -13,6 +14,9 @@ from app_item.models import Item
 from app_item.services.item_services import ItemHandler
 from app_store.models import Store
 from app_user.services.user_services import is_customer
+from shop.settings import CELERY_RESULT_BACKEND, CELERY_BROKER_URL
+
+app = Celery('tasks', backend=CELERY_RESULT_BACKEND, broker=CELERY_BROKER_URL)
 
 
 def cart_(request):
@@ -51,19 +55,19 @@ def get_current_cart(request) -> dict:
     except (KeyError, AttributeError):
         return {'cart': cart}
 
-
-def add_item_in_cart(request, item_id):
+def add_item_in_cart(request, item_id, quantity=1):
     """
      Функция для добавления товара из корзины.
     :param request: request
     :param item_id: id товара
+    :param quantity: кол-во товара (по умолчанию 1)
     :return: response редирект URL источника запроса
     """
     response = redirect(request.META.get('HTTP_REFERER'))
-    if request.user.profile.is_customer:
-        cart = get_current_cart(request).get('cart')
-        item = ItemHandler.get_item(item_id)
-        if request.user.is_authenticated:
+    cart = get_current_cart(request).get('cart')
+    item = ItemHandler.get_item(item_id)
+    if request.user.is_authenticated:
+        if request.user.profile.is_customer:
             # all_cart_item = CartItem.objects.filter(Q(item=item) & Q(is_paid=False))
             # # находим общее кол-во этих товаров для корзины
             # all_cart_item = all_cart_item.aggregate(total_sum=Sum('quantity')).get('total_sum')
@@ -74,31 +78,56 @@ def add_item_in_cart(request, item_id):
             # # сравниваем кол-во в корзине с кол-вом на складе
             # if item.stock + 1 > all_cart_item + 1:
             # cart_items = get_items_in_cart(request)
+            #   проверяем есть ли данный товар в корзине
             is_already_added = cart.items.filter(item_id=item.id).first()
+            #   если ли данный товар в корзине
             if is_already_added:
+                # увеличиваем его на переданное кол-во
                 cart_item = cart.items.get(item=item)
-                cart_item.quantity += 1
-                cart_item.save(update_fields=['quantity', 'updated'])
+                cart_item.quantity += quantity
+                cart_item.save()
+                messages.add_message(request, messages.SUCCESS,
+                                     f"Количество товара обновлено до {cart_item.quantity} шт.")
             else:
+                #   если ли данный товар отсутствует в корзине,
+                #   то создаем экземпляр класса CartItem
                 cart_item = create_cart_item(item, user=request.user)
+                #  добавляем его в корзину
                 cart.items.add(cart_item)
+                messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+    else:
+        #   если корзины не существует
+        if not cart:
+            #   создаем ключ-сессии
+            session_key = create_session_key(request)
+            #  создаем корзину анонимного пользователя,
+            cart, created = Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)
+            #   если корзина была только что создана,
+            if created:
+                #   создаем экземпляр класса (CartItem)
+                cart_item = create_cart_item(item)
+                #   добавляем его в корзину
+                cart.items.add(cart_item)
+                messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+        #   если анонимная корзина существует
         else:
-            if not cart:
-                session_key = create_session_key(request)
-                cart, created = Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)
-                if created:
-                    cart_item = create_cart_item(item)
-                    cart.items.add(cart_item)
+            #   проверяем есть ли товар(Item) в  добавленных товарах(CartItem)
+            cart_item = cart.items.filter(item=item).first()
+            #   если ли данный товар в корзине
+            if cart_item:
+                #  увеличиваем его на переданное кол-во
+                cart_item.quantity += quantity
+                cart_item.save()
+                messages.add_message(request, messages.SUCCESS,
+                                     f"Количество товара обновлено до {cart_item.quantity} шт.")
+            #   если ли данный товар отсутствует в корзине
             else:
-                cart_item = cart.items.filter(item=item).first()
-                if cart_item:
-                    cart_item.quantity += 1
-                    cart_item.save(update_fields=['quantity', 'updated'])
-                else:
-                    cart_item = create_cart_item(item)
-                    cart.items.add(cart_item)
-            response = set_cart_cookies(request)
-        messages.add_message(request, messages.SUCCESS, f'{item} \nдобавлен в вашу корзину')
+                #   то создаем экземпляр класса CartItem
+                cart_item = create_cart_item(item)
+                #  добавляем его в корзину
+                cart.items.add(cart_item)
+                messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+        response = set_cart_cookies(request)
     return response
 
 
@@ -110,10 +139,10 @@ def remove_from_cart(request, item_id):
     :return:
     """
     cart = get_current_cart(request).get('cart')
-    cart_item = get_object_or_404(CartItem, id=item_id, is_paid=False)
-    messages.add_message(request, messages.SUCCESS, f"{cart_item.item.title} удален из корзины")
+    cart_item = get_object_or_404(CartItem, item=item_id, all_items=cart, is_paid=False)
+    messages.add_message(request, messages.INFO, f"{cart_item.item.title} удален из корзины")
     try:
-        cart.items.get(id=item_id).delete()
+        cart_item.delete()
     except ObjectDoesNotExist:
         pass
 
@@ -286,6 +315,13 @@ def get_items_in_cart(request):
     except AttributeError:
         in_cart = None
     return in_cart
+
+
+def get_cart_item_in_cart(request, item):
+    try:
+        return get_current_cart(request).get('cart').items.filter(item=item).first()
+    except AttributeError:
+        return None
 
 
 def create_session_key(request):

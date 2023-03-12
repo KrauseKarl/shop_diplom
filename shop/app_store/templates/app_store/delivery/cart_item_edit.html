@@ -1,0 +1,105 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Добавить товар{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Редактировать - <b>{{item.title}} </b>
+                </h1>
+
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Профиль</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include 'app_user/seller/sidebar_seller.html' %}
+            </div>
+            <div class="Section-content">
+                <div>{% include 'message.html' %}</div>
+
+                <div class="Profile">
+                    <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="row-block">
+                                {% include 'error_message.html' %}
+
+                                <!--                                <div class="form-group">-->
+                                <!--                                    <div class="form-label">-->
+                                <!--                                        -->
+                                <!--                                    </div>-->
+                                <!--                                </div>-->
+                                {{ form.as_p }}
+
+
+                            </div>
+
+                            <!--                            <div class="row-block">-->
+                            <!--                                <div class="form-group">-->
+                            <!--                                    {% for img in item.image.all %}-->
+                            <!--                                    &lt;!&ndash;  IMAGE  &ndash;&gt;-->
+                            <!--                                    <div class="Profile-avatar">-->
+                            <!--                                        <div class="Profile-img">-->
+                            <!--                                            <img src="{{ img.image.url }}" alt="#.png"/>-->
+                            <!--                                        </div>-->
+                            <!--                                    </div>-->
+                            <!--                                    &lt;!&ndash;  IMAGE END &ndash;&gt;-->
+                            <!--                                    <div>-->
+                            <!--                                        <a href="{% url 'app_store:delete_image' image_id=img.pk item_id=item.pk %}"-->
+                            <!--                                           style="color:red">удалить&#8195;x</a>-->
+                            <!--                                    </div>-->
+                            <!--                                    {% endfor %}-->
+                            <!--                                </div>-->
+
+
+                            <!--                                &lt;!&ndash; ADD IMAGE FORM BEGIN &ndash;&gt;-->
+                            <!--                                <div id="form-container-image" class="form-group input-collect">-->
+                            <!--                                    {{ image_formset.management_form }}-->
+                            <!--                                    {% for form in image_formset %}-->
+                            <!--                                    <div class="image-form Profile-avatar Profile-avatar-noimg">-->
+                            <!--                                        <input class="form-input Profile-file"-->
+                            <!--                                               id="output-0"-->
+                            <!--                                               onchange="loadFile(event)"-->
+                            <!--                                               name="image"-->
+                            <!--                                               type="file"-->
+                            <!--                                               data-validate="onlyImgAvatar"/>-->
+
+                            <!--                                            <img id="im-0" src="/media/default_images/default_image.png" width="200" height="200">-->
+
+                            <!--                                    </div>-->
+                            <!--                                    {% endfor %}-->
+                            <!--                                    <button id="add-form-image" class="btn" type="button">-->
+                            <!--                                        + добавить изображение-->
+                            <!--                                    </button>-->
+
+
+                            <!--                                </div>-->
+                            <!--                                &lt;!&ndash;    ADD IMAGE FORM END      &ndash;&gt;-->
+
+                            <!--                            </div>-->
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
+{% endblock %}

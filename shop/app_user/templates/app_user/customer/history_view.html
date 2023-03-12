@@ -1,0 +1,117 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Недавно просмотренные товары</h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="#">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Корзина</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="Section">
+        <div class="wrap">
+            <div>{% include 'message.html' %}</div>
+            <div>{% include 'error_message.html' %}</div>
+            <div class="form Cart">
+
+                <!--  ITEM CARD    -->
+
+
+                {% for item in object_list %}
+
+                <div class="Cart-product">
+                    <div class="Cart-block Cart-block_row">
+                        <div class="Cart-block Cart-block_pict">
+                            <a class="Cart-pict" href="{{ item.get_absolute_url }}">
+                                {% if item.image.first %}
+                                <img class="Cart-img {% if not item.is_available %}Cart-img-not_available{% endif %}"
+                                     src="{{ item.image.first.image.url }}"
+                                     alt="{{ item.title }}_image"/>
+                                {% else %}
+                                <img class="Cart-img" src="/media/default_images/default_item.png"
+                                     alt="{{ item.title }}_image"/>
+                                {% endif %}
+
+                            </a>
+                        </div>
+                        <div class="Cart-block Cart-block_info">
+                            <!--   ITEM'S TITLE    -->
+                            <a class="Cart-title {% if not item.is_available %}Cart-title-not_available{% endif %}"
+                               href="{{ item.get_absolute_url }}">
+                                {{ item.title }}
+                            </a>
+                            <!--   ITEM'S TITLE    -->
+
+                            <!-- ITEM'S DESCRIPTION -->
+                            {% if item.is_available %}
+                            <div class="Cart-desc">
+                                {% if item.category.parent_category %}
+                                 <a href="{{ item.category.get_parent_url }}">{{item.category.parent_category}} /
+                                </a> <a href="{{ item.get_category_url }}">{{item.category}}</a>
+                                {% else %}<a>{{item.category}}</a>
+                                    {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="Cart-message-not_available">
+                                <span>товар закончился</span>
+                            </div>
+                            {% endif %}
+                            <!-- ITEM'S DESCRIPTION -->
+                        </div>
+                        <div class="Cart-block Cart-block_price">
+
+                        </div>
+                    </div>
+                        <!--    UPDATE ITEM AMOUNT   -->
+                        <div class="Cart-block Cart-block_delete">
+
+
+                        </div>
+                        <!--    UPDATE ITEM AMOUNT   -->
+
+                        <!--   REMOVE ITEM FROM CART   -->
+                        <div class="Cart-block Cart-block_delete">
+
+                        </div>
+                        <!--   REMOVE ITEM FROM CART   -->
+                    </div>
+                </div>
+
+                <!--   ITEM CARD  -->
+
+                <!--    EMPTY CART  -->
+                {% empty %}
+                <div class="Middle Middle_top">
+                    <div class="Section">
+                        <div class="wrap">
+                            <div class="ProgressPayment">
+                                <div class="ProgressPayment-title">Список просмотренных товаров пуст</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <!--    EMPTY CART  -->
+
+            </div>
+        </div>
+    </div>
+    <!-- AVAILABLE ITEMS -->
+
+</div>
+{% endblock %}

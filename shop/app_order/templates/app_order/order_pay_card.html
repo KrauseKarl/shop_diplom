@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="Middle Middle_top">
+<div id="form_container"  class="Middle Middle_top">
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
@@ -26,17 +26,27 @@
     </div>
     <div class="Section">
         <div class="wrap">
+            <div id='spinner' style="display:none" class="ProgressPayment">
+                <div class="ProgressPayment-title">Ждем подтверждения оплаты платежной системой
+                </div>
+                <div class="ProgressPayment-icon">
+                    <div class="cssload-thecube">
+                        <div class="cssload-cube cssload-c1"></div>
+                        <div class="cssload-cube cssload-c2"></div>
+                        <div class="cssload-cube cssload-c4"></div>
+                        <div class="cssload-cube cssload-c3"></div>
+                    </div>
+                </div>
+            </div>
 
-            <form class="form Payment" action="" method="post" enctype="multipart/form-data">
+            <form id="form" class="form Payment"  action="{% url 'app_order:progress_payment' order.id %}" method="post" >
                 {% csrf_token %}
                 <div class=" Payment-card">
                     <div class="form-group ">
                         <label class="form-label">
-                            {% for ord in new_orders %}
+
                             <div class="form-shadow" style="margin-bottom:20px;">
-                                <label class="Order-infoContent-right" style="margin-bottom:20px;">
-                                    номер заказа
-                                </label>
+                                <label class="Order-infoContent-right" style="margin-bottom:20px;">номер заказа</label>
                                 <!-- ERROR MESSAGE   -->
                                 {% if form.errors %}
                                 <div class="form-error form-textarea_error" role="alert">
@@ -51,10 +61,11 @@
                                 <!-- ERROR MESSAGE   -->
 
                                 <div class="Order-infoContent-left">
-                                    <input type="checkbox" name="order" value="{{ ord.id }}" multiple>
-                                    <span class="Order-infoContent-right Cart-price">{{ ord }}</span>
+                                    <input type="hidden" name="recipient" id='recipient' value="{{ order.store.id }}" >
+                                    <input type="checkbox" name="order" id='order' value="{{ order.id }}" multiple>
+                                    <span class="Order-infoContent-right Cart-price">{{ order }}</span>
                                 </div>
-                                {% for item in ord.items_is_paid.all %}
+                                {% for item in order.items_is_paid.all %}
                                 <ul>
                                     <li class="Order-infoContent-left">
                                         <div>{{ item.item }}</div>
@@ -64,14 +75,14 @@
                                 </ul>
                                 {% endfor %}
                                 <label class="Cart-total-order form-label">сумма заказа</label>
-                                <label class="Cart-total-order form-label"><b>{{ord.total_sum}}</b></label>
+                                <label class="Cart-total-order form-label"><b>{{ order.total_sum }}</b></label>
                             </div>
-                            {% endfor %}
+
                         </label>
 
-                        {% for item in ord.items_is_paid.all %}
-                        <label class="Cart-total-order form-label"> {{ item.item.title }}</label>
-                        {% endfor %}
+<!--                        {% for item in order.items_is_paid.all %}-->
+<!--                        <label class="Cart-total-order form-label"> {{ item.item.title }}</label>-->
+<!--                        {% endfor %}-->
 
                     </div>
                     <div class="form-shadow form-group">
@@ -91,10 +102,49 @@
                     </div>
                 </div>
                 <div class="Payment-pay">
-                    <button class="btn btn_primary" type="submit">Оплатить</button>
+                    <button class="btn btn_primary"   id="pay_button" type="submit">Оплатить</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+<div id="hidden_section"   class="Middle Middle_top hide_comment">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Ожидание оплаты
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>Ожидание оплаты</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <div class="ProgressPayment">
+                <div class="ProgressPayment-title">Ждем подтверждения оплаты платежной системой
+                </div>
+                <div class="ProgressPayment-icon">
+                    <div class="cssload-thecube">
+                        <div class="cssload-cube cssload-c1"></div>
+                        <div class="cssload-cube cssload-c2"></div>
+                        <div class="cssload-cube cssload-c4"></div>
+                        <div class="cssload-cube cssload-c3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+<!---->
+</script>
 {% endblock %}
+
+
+

@@ -1,0 +1,86 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Каталог{% endblock %}
+
+{% block heard %}
+{% include 'search_string.html' %}
+{% endblock %}
+
+{% block content %}
+
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Товары для вас</h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Blog</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <div class="Cards Cards_blog">
+                {% for item in object_list %}
+                <div class="Card">
+                    <a class="Card-picture " href="{{ item.get_absolute_url  }}">
+                        <img src="{% if item.image.first %}
+                                    {{ item.image.first.image.url }}
+                                    {% else %}/media/default_images/default_item.png
+                                    {% endif %}" alt="product.png"/>
+                    </a>
+                    <div class="Card-date">
+                        <strong class="Card-date-number {% if item in in_cart %}rest_label{% else %} seller_label{% endif %}">
+                            {% if item in in_cart %}
+                            <a href="{% url 'app_cart:remove_cart' pk=item.pk  %}"  title="удалить из корзины">
+                                <span style="text-decoration: none; color:white">-</span>
+                                <img src="/assets/img/icons/card/cart_white.svg" width="20" height="20"></a>
+                            {% else %}
+                            <a href="{% url 'app_cart:add_cart' pk=item.pk  %}"  title="добавить в корзину">
+                                <span style="text-decoration: none; color:white">+</span>
+                                <img src="/assets/img/icons/card/cart_white.svg" width="20" height="20"></a>
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div class="Card-pin"></div>
+                    <div class="Card-content">
+                        <strong class="Card-title">
+                            <a href="{{ item.get_absolute_url }}">{{ item.title }}</a>
+                        </strong>
+                        <div class="Card-cost">
+                            <span class="Card-price">${{ item.price }}</span>
+                        </div>
+                        <div class="Card-description">
+                            <a href="{{ item.get_store_url }}">{{ item.store }}</a>
+                        </div>
+                        <div class="Card-category">
+                            {% if item.category.parent_category %}
+                            <a href="{{ item.category.parent_category.get_absolute_url }}">
+                                {{ item.category.parent_category }}</a>
+                            /
+                            <a href="{{ item.get_category_url }}"> {{ item.category }} </a>
+                            {% else %}
+                            <a href="{{ item.get_category_url }}"> {{ item.category }} </a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!--       PAGINATION         -->
+            <div>{% include "pagination.html" %}<br><br></div>
+            <!--       PAGINATION         -->
+        </div>
+    </div>
+</div>
+{% endblock %}

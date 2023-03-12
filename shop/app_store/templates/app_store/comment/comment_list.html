@@ -1,0 +1,175 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Список комментариев{% endblock %}
+
+{% block content %}
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+
+                <h1 class="Middle-title">
+                    Комментарии
+                    {% if request.GET.is_published == 'True' %}
+                    опубликованные
+                    {% elif request.GET.is_published == 'False' %}
+                    ожидающие модерацию
+                    {% endif %}
+                </h1>
+
+                {% block breadcrumbs %}
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+
+                        <a href="{% url 'main_page' %}">home</a>
+                        {% if title %} &rsaquo; {{ title }}{% endif %}
+
+
+                        <!--  <a href="index.html">home</a>-->
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Catalog</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include "app_user/seller/sidebar_seller.html" %}
+            </div>
+            <!--    SORT BY     -->
+            <div class="Section-content">
+                <div class="Sort">
+                    <div class="Sort-title">Всего комментариев: </div>
+                    <div class="Sort-variants">
+                        {% for store in request.user.store.all %}
+                        <a class="Sort-sortBy"
+                           href="?store={{ store.slug }}">
+                            {{ store.title| upper }}
+                        </a>
+                        {% endfor %}
+                        <a class="Sort-sortBy"
+                           href="?{% if request.GET.store %}store={{ request.GET.store }}&{% endif %}is_published=False">
+                            новые
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% if request.GET.store %}store={{ request.GET.store }}&{% endif %}is_published=True">
+                            опубликованные
+                        </a>
+                        <a class="Sort-sortBy">удаленные</a>
+                    </div>
+                </div>
+                <!--    SORT BY END    -->
+                <!--       PAGINATION         -->
+                <div>{% include "pagination.html" %}<br></div>
+                <!--       PAGINATION         -->
+                <div class="Orders">
+                    {% for comment in object_list %}
+                    <div class="Order Order_anons">
+                        <div class="Order-personal">
+                            <div class="row">
+                                <!--  ORDER'S TITLE & DATE -->
+                                <div class="row-block">
+                                     <div class="Order-info">
+                                        <div class="Order-infoType">автор:</div>
+                                        <div class="Order-infoContent">
+                                            {{ comment.user.get_full_name }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">магазин:</div>
+                                        <div class="Order-infoContent">
+                                            <div class="Order-infoContent" style="display:inline">
+                                                {{ comment.item.store|upper }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">товар:</div>
+                                        <div class="Order-infoContent">
+                                            <a href="{% url 'app_item:item_detail' comment.item.pk %}">
+                                                <div class="Order-infoContent" style="display:inline">
+                                                    {{ comment.item.title }}
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">дата:</div>
+                                        <div class="Order-infoContent">
+                                            {{ comment.created_at }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">модерация:</div>
+                                        <div class="Order-infoContent">
+                                            {% if  comment.is_published %}
+                                            <span class="seller_label">ОПУБЛИКОВАН</span>
+                                            {% else %}
+                                              <span class="rest_label">НА МОДЕРАЦИИ</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="Order-info ">
+                                        <div class="Order-infoType">комментарий:</div>
+                                        <div class="Order-infoContent">
+                                            <span class="Order-price">
+                                                {{ comment.review|truncatechars:200 }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                        <div class="Order-info ">
+                                        <div class="Order-infoType"></div>
+                                        <div class="Order-infoContent">
+                                            <div class="Order-price">
+                                                {% if not comment.is_published %}
+                                                <a class="btn btn_square  btn_success btn_narrow"
+                                                   href="{% url 'app_store:comment_moderate' pk=comment.pk slug='approve' %}">
+                                                    опубликовать
+                                                </a>
+                                                   &#160;&#160;
+                                                {% else %}
+                                                <a class="btn btn_square btn_danger btn_narrow"
+                                                 href="{% url 'app_store:comment_moderate' pk=comment.pk slug='reject'%}">
+                                                    отклонить
+                                                </a>
+                                                 {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="Order Order_anons">Ничего не найдено</div>
+                    {% endfor %}
+                </div>
+
+                <!--       PAGINATION         -->
+                {% include "pagination.html" %}
+                <!--       PAGINATION         -->
+
+            </div>
+            <!--    SORT BY     -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

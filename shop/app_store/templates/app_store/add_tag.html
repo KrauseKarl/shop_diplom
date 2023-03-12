@@ -69,11 +69,10 @@
 
                     <div class="Order-footer">
                         <button type="submit" class="btn btn_success">Добавить тег</button>
-                        <a href="#openModal"
-                           id="p_create_tag"
-                           class="btn btn_primary"
-                           style="margin-top:10px; "
-                           type="button">создать тег</a>
+                        <a href="{% url 'app_store:tag_list' %}" class="btn btn_info"
+                           style="margin-top:10px;" type="button">
+                            создать тег
+                        </a>
                     </div>
                 </form>
             </div>

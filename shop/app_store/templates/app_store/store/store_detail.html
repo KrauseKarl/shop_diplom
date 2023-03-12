@@ -34,6 +34,7 @@
             </div>
         </div>
     </div>
+    {% include 'message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
@@ -84,8 +85,8 @@
                              <div class="buttons">
                                 <ul>
                                     <li>
-                                        <a href="{% url 'app_store:add_item' store.pk %}"
-                                           class="btn btn_default btn_full">Заказы</a>
+                                        <a href="{% url 'app_store:delivery_list'  %}?store={{ store.title }}"
+                                           class="btn btn_square btn_dark btn_narrow btn_full">Заказы "{{ store.title }}"</a>
                                     </li>
                                 </ul>
                             </div>
@@ -114,7 +115,7 @@
                             <input id="finish" type="date" name="finish">
                         </div>
                         <div class="form-group">
-                            <button class="btn btn_full btn_default " type="submit">Отчет</button>
+                            <button class="btn btn_square btn_dark btn_narrow btn_full" type="submit">Отчет</button>
                         </div>
                     </div>
                     <!--     Загрузить        -->
@@ -127,11 +128,11 @@
                                 <ul>
                                     <li>
                                         <a href="{% url 'app_store:add_item' store.pk %}"
-                                           class="btn btn_default btn_full">+ Добавить товар</a>
+                                           class="btn btn_square btn_dark btn_narrow btn_full">+ Добавить товар</a>
                                     </li>
                                     <li>
                                         <a href="{% url 'app_store:export_data' store.pk %}"
-                                           class="btn btn_default btn_full"> Выгрузить CVS</a>
+                                           class="btn btn_square btn_dark btn_narrow btn_full"> Выгрузить CVS</a>
                                     </li>
                                 </ul>
                             </div>
@@ -146,7 +147,8 @@
                                         </form>
                                     </li>
                                     <li>
-                                        <button class="btn btn_default btn_full" form="import_cvs_form" type="submit">
+                                        <button class="btn btn_square btn_dark btn_narrow btn_full"
+                                                form="import_cvs_form" type="submit">
                                             Загрузить CVS
                                         </button>
                                     </li>
@@ -166,10 +168,10 @@
                         <div class="Section-columnContent">
                             <div class="buttons">
                                 <a href="{% url 'app_store:store_detail' pk=store.pk  %}"
-                                   class="btn btn_default btn_full">все товары</a>
+                                   class="btn btn_primary btn_full btn_sm">все товары</a>
                                 {% for category in categories %}
                                 <a href="{% url 'app_store:category_item' pk=store.pk slug=category.slug %}"
-                                   class="btn btn_default btn_full">{{category}}</a>
+                                   class="btn btn_primary btn_full btn_sm">{{category}}</a>
                                 {% endfor %}
                             </div>
                         </div>
@@ -318,13 +320,38 @@
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoContent">
                                             <div class="Card-icon-view-and-sell">
-                                                <a href="{% url 'app_store:edit_item' item.pk %}">
+                                                <a href="#itemDeleteModal">
                                                     <img src="/assets/img/icons/card/delete.svg">
                                                 </a>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+                                <div id="itemDeleteModal" class="modal-my">
+                                    <div class="modal-dialog-my">
+                                        <div class="modal-content-my">
+                                            <div class="modal-header-my">
+                                                <a href="#close" title="Close" class="close-my">×</a>
+                                            </div>
+                                            <div class="modal-body-my">
+                                                <div class="form Payment">
+                                                    <div class="form-group">
+                                                        <h3>Удалить </h3>{{ item }}
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <a href="{% url 'app_store:edit_item' item.pk %}"
+                                                           class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                        <a href="." title="Close"
+                                                           class="btn btn_square btn_dark btn_narrow">отмена</a>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer-my"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
                                 <!--  DELETE ITEM -->
 
                             </div>

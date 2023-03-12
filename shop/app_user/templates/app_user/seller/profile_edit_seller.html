@@ -23,13 +23,14 @@
             </div>
         </div>
     </div>
+     {% include 'message.html' %}
+
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
                 {% include "app_user/seller/sidebar_seller.html" %}
             </div>
             <div class="Section-content">
-                <div>{% include 'message.html' %}</div>
                 <div class="Profile">
                     <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
                         {% csrf_token %}

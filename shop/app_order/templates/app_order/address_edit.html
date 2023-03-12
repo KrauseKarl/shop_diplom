@@ -1,0 +1,151 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+{% load url_extras %}
+{% block title %}Каталог{% endblock %}
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+{% block content %}
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+
+                <h1 class="Middle-title">
+                    {% if request.GET.sort_by_letter %}
+                    Все категории на букву <strong>"{{ request.GET.sort_by_letter }}"</strong>
+                    {% else %}
+                        Категории
+                    {% endif %}
+                </h1>
+
+                {% block breadcrumbs %}
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+
+                        <a href="{% url 'main_page' %}">home</a>
+                        {% if title %} &rsaquo; {{ title }}{% endif %}
+
+
+                        <!--  <a href="index.html">home</a>-->
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Catalog</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">Добавить категорию</strong>
+                    </header>
+
+                    <div class="Section-columnContent">
+                        <!--    FORM    -->
+                        <form class="form" action="{% url 'app_store:create_category' %}" method="post">
+                           {% csrf_token %}
+                            <div class="form-group">
+                                <label class="form-label" for="parent_category">Родительская категория</label>
+                                <select id="parent_category" name="parent_category" class="form-input">
+                                    <option  selected="selected">{{ request.POST.parent_category }}</option>
+                                    {% for category in categories %}
+                                        {% if not category.parent_category %}
+                                            <option value="{{ category.id }}">
+                                                {{ category.title }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="title">Название категории</label>
+                                {% if form.errors.title %}
+                                <div class="form-error" >
+                                    {{ form.errors.title }}
+                                </div>
+                                {% endif %}
+                                <input class="form-input form-input_full" id="title" name="title" type="text"
+                                       placeholder="Название" value="{{ request.POST.title}}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="description">Описание категории</label>
+
+                                <textarea class="form-input form-input_full" id="description" name="description"
+                                       placeholder="Описание категории" >{{ request.POST.description }}</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="buttons">
+                                    <button class="btn btn_square btn_dark btn_narrow" type="submit">Создать категорию
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                    <!--    FORM    -->
+                </div>
+            </div>
+
+            <!--    SORT BY     -->
+             <div class="Section-content">
+                <div class="Sort">
+                    <div class="Sort-title">Добавить значение характеристики</div>
+                </div>
+                <!--    SORT BY END    -->
+                <div class="Orders">
+                    <div class="Order Order_anons">
+                        <div class="Order-personal">
+                            <form class="form" action="{% url 'app_order:a' %}" method="post">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <select id="feature" name="feature" class="form-input">
+                                        <option  selected="selected">выберите характеристику</option>
+
+                                        <option value="{{ feature.id }}" >
+                                                {{ address.city }}
+                                            </option>
+                                    </select>
+
+                                    <input class="form-input" name="value" placeholder="создайте новое значение"/>
+                                </div>
+                                <div class="form-group">
+                                    <div class="buttons">
+                                        <button class="btn btn_square btn_dark btn_narrow" type="submit">
+                                            создать значение
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% if form.errors.title %}
+                        <div class="Order Order_anons">
+                            <div class="form-error">ОШИБКА!
+                                <p>{{ form.errors.title }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="Order Order_anons">Ничего не найдено</div>
+                    {% endif %}
+                    {% endfor %}
+
+                </div>
+
+                <!--       PAGINATION         -->
+                {% include "pagination.html" %}
+                <!--       PAGINATION         -->
+
+            </div>
+            <!--    SORT BY     -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
