@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -19,9 +20,13 @@ class Store(models.Model):
         allow_unicode=False,
         verbose_name='slug'
     )
-    delivery_fees = models.SmallIntegerField(
+    discount = models.SmallIntegerField(
         default=0,
-        verbose_name='стоимость доставки'
+        verbose_name='скидка',
+        validators=[
+            MaxValueValidator(99),
+            MinValueValidator(0)
+        ]
     )
     owner = models.ForeignKey(
         User,
@@ -30,7 +35,9 @@ class Store(models.Model):
         related_name='store',
         verbose_name='собственник'
     )
-    min_free_delivery = models.IntegerField(
+    min_for_discount = models.DecimalField(
+        decimal_places=2,
+        max_digits=9,
         default=0,
         verbose_name='минимальная сумма бесплатной доставки'
     )

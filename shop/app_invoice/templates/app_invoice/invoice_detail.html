@@ -1,0 +1,81 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+ <div class="Middle Middle_top">
+    <div class="Middle-top">
+      <div class="wrap">
+        <div class="Middle-header">
+          <h1 class="Middle-title">{{ invoice }}</h1>
+          <ul class="breadcrumbs Middle-breadcrumbs">
+            <li class="breadcrumbs-item">
+              <a href="index.html">home</a>
+            </li>
+            <li class="breadcrumbs-item">
+             <a> История заказов</a>
+            </li>
+            <li class="breadcrumbs-item breadcrumbs-item_current">
+              <span>{{ invoice.id }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+     {% include 'message.html' %}
+    <div class="Section">
+      <div class="wrap">
+        <div class="Section-content">
+          <div class="Orders">
+          </div>
+          <div class="Order">
+            <div class="Order-infoBlock">
+              <div class="Order-personal">
+                <div class="row">
+                  <div class="row-block">
+                    <div class="Order-info Order-info_date">
+                      <div class="Order-infoType">Дата:</div>
+                      <div class="Order-infoContent">{{ invoice.created|date:'j F o H:m' }}</div>
+                    </div>
+                    <div class="Order-info">
+                      <div class="Order-infoType">Заказ:</div>
+                      <div class="Order-infoContent">
+                        <a href="{% url 'app_order:order_detail' invoice.order.id %}">{{ invoice.order }}
+                        </a></div>
+                    </div>
+                    <div class="Order-info">
+                      <div class="Order-infoType">Плательщик:
+                      </div>
+                      <div class="Order-infoContent">{{ invoice.order.user.get_full_name }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row-block">
+                    <div class="Order-info Order-info_delivery">
+                       <div class="Order-infoType">Способ оплаты:</div>
+                      <div class="Order-infoContent">{{ invoice.order.get_pay_display }}</div>
+
+                    </div>
+                    <div class="Order-info">
+                      <div class="Order-infoType">Номер документа:</div>
+                      <div class="Order-infoContent">**** **{{ invoice.number|slice:"6:" }}</div>
+                    </div>
+                     <div class="Order-info">
+                      <div class="Order-infoType">Сумма:</div>
+                      <div class="Order-infoContent">$ {{ invoice.total_sum }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}

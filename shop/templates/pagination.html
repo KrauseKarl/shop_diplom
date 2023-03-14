@@ -1,6 +1,5 @@
 <!--       PAGINATION         -->
-{% if object_list %}
-{% if object_list.next_page  %}
+{% if object_list  and object_list.has_next %}
 <div class="Pagination">
     <div class="Pagination-ins" id="#pag">
         {% with last_page=object_list.paginator.num_pages %}
@@ -73,6 +72,5 @@
         {% endwith %}
     </div>
 </div>
-{% endif %}
 {% endif %}
 <!--       PAGINATION         -->

@@ -1,22 +1,15 @@
+from pprint import pprint
+
 from celery import Celery
-from django.core.cache import cache
-from django.http.response import HttpResponseBase, HttpResponseRedirect
-from django.utils.timezone import now
+from django.http.response import HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, Sum, Count
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from app_cart.models import *
 from app_item.models import Item
 from app_item.services.item_services import ItemHandler
-from app_store.models import Store
 from app_user.services.user_services import is_customer
 from shop.settings import CELERY_RESULT_BACKEND, CELERY_BROKER_URL
-
-app = Celery('tasks', backend=CELERY_RESULT_BACKEND, broker=CELERY_BROKER_URL)
 
 
 def cart_(request):
@@ -49,11 +42,13 @@ def get_current_cart(request) -> dict:
 
     try:
         ordered_cart_by_store = order_items_in_cart(cart)
-        items_and_fees = calculate_delivery_fees(ordered_cart_by_store)
+        items_and_fees = calculate_discount(ordered_cart_by_store)
         total_delivery_fees = fees_total_amount(items_and_fees)
+
         return {'cart': cart, 'book': ordered_cart_by_store, 'fees': total_delivery_fees}
     except (KeyError, AttributeError):
         return {'cart': cart}
+
 
 def add_item_in_cart(request, item_id, quantity=1):
     """
@@ -139,7 +134,8 @@ def remove_from_cart(request, item_id):
     :return:
     """
     cart = get_current_cart(request).get('cart')
-    cart_item = get_object_or_404(CartItem, item=item_id, all_items=cart, is_paid=False)
+
+    cart_item = get_object_or_404(CartItem, id=item_id, all_items=cart, is_paid=False)
     messages.add_message(request, messages.INFO, f"{cart_item.item.title} удален из корзины")
     try:
         cart_item.delete()
@@ -208,7 +204,8 @@ def order_items_in_cart(cart) -> dict:
         if shop not in sort_by_store:
             # если магазина нет словаре,
             # добавляем вложенный словарь с суммой, товаром и булевым значением
-            sort_by_store[shop] = {'total': cart_item.total,
+
+            sort_by_store[shop] = {'total': float(cart_item.total),
                                    'items': {
                                        f'{cart_item.id}': {
                                            'product': cart_item,
@@ -218,7 +215,7 @@ def order_items_in_cart(cart) -> dict:
                                    }
         else:
             # добавляем сумму к имеющейся сумме всех товаров этого магазина
-            sort_by_store[shop]['total'] += cart_item.total
+            sort_by_store[shop]['total'] += float(cart_item.total)
             # если в словаре нет товара - добавляем его
             if not sort_by_store[shop]['items'].get(f'{cart_item.id}'):
                 sort_by_store[shop]['items'][f'{cart_item.id}'] = {
@@ -232,19 +229,18 @@ def order_items_in_cart(cart) -> dict:
     return sort_by_store
 
 
-def calculate_delivery_fees(ordered_cart_by_store):
+def calculate_discount(ordered_cart_by_store):
     """
-    Функция определяет если сумма заказа меньше установленного,
-    то возвращает стоимость доставки, если же наоборот, то возвращает 0.
+    Функция определяет если сумма заказа больше установленного,
+    то начисляет скидку, если же наоборот, то возвращает 0.
     """
     for store, value in ordered_cart_by_store.items():
-        total = value['total']
-        min_free_delivery = store.min_free_delivery
-        if total > min_free_delivery:
-            value['fees'] = 0
+        total = float(value['total'])
+        if total > float(store.min_for_discount):
+            value['fees'] = store.discount
+            value['total'] = round(float(value['total']) * ((100 - store.discount) / 100), 0)
         else:
-            fees = store.delivery_fees
-            value['fees'] = fees
+            value['fees'] = 0
     return ordered_cart_by_store
 
 

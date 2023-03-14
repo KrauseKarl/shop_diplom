@@ -14,6 +14,7 @@ urlpatterns = [
     path('order/', include(('app_order.urls', 'app_order'), namespace='app_order')),
     path('store/', include(('app_store.urls', 'app_store'), namespace='app_store')),
     path('item/', include(('app_item.urls', 'app_item'), namespace='app_item')),
+    path('invoice/', include(('app_invoice.urls', 'app_invoice'), namespace='app_invoice')),
     path('__debug__/', include('debug_toolbar.urls')),
 ]
 if settings.DEBUG:

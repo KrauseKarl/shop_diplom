@@ -1,15 +1,78 @@
 import random
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from django.db.models import F, QuerySet
+from django.db.models.query_utils import DeferredAttribute
 from django.http import Http404
 from django.shortcuts import redirect
+
+from app_cart.context_processors import get_cart
 from app_cart.models import Cart, CartItem
+from app_cart.services.cart_services import get_current_cart
+from app_invoice.models import Invoice
 from app_item.models import Item, Comment
-from app_order.models import Order, Invoice, Address
+from app_item.services.item_services import ItemHandler
+from app_order.models import Order, Address
+from app_settings.models import SiteSettings
 from app_store.models import Store
+from app_user.services.register_services import ProfileHandler
 
 
 class CustomerOrderHandler:
+
+    @staticmethod
+    def create_order(request, form):
+        """Функция содает заказ."""
+        cart = get_current_cart(request).get('cart')
+        user = request.user
+
+        post_address = form.cleaned_data.get('post_address')
+        if not post_address:
+            city = form.cleaned_data.get('city')
+            address = form.cleaned_data.get('address')
+            AddressHandler.get_post_address(request, city, address)
+        else:
+            city = post_address.split(';')[0]
+            address = post_address.split(';')[1]
+        delivery_express_cost = CustomerOrderHandler.calculate_express_delivery_fees(form.cleaned_data.get('delivery'))
+        delivery_cost = cart.is_free_delivery
+        print(delivery_cost)
+        print(delivery_express_cost)
+        print(form.cleaned_data.get('total_sum'))
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=user,
+                name=form.cleaned_data.get('name'),
+                email=form.cleaned_data.get('email'),
+                telephone=ProfileHandler.telephone_formatter(form.cleaned_data.get('telephone')),
+                delivery=form.cleaned_data.get('delivery'),
+                pay=form.cleaned_data.get('pay'),
+                city=city,
+                address=address,
+                total_sum=form.cleaned_data.get('total_sum'),
+                delivery_fees=delivery_cost + delivery_express_cost,
+                comment=form.cleaned_data.get('comment'),
+            )
+            stores = get_cart(request).get('cart_dict').get('book')
+            for store_title, values in stores.items():
+                store = Store.objects.get(title=store_title)
+                order.store.add(store)
+                order.save()
+
+            cart_items = cart.items.filter(is_paid=False)
+            for cart_item in cart_items:
+                cart_item.is_paid = True
+                cart_item.order = order
+                cart_item.status = 'not_paid'
+                cart_item.save()
+
+                # product = Item.objects.get(id=cart_item.item.id)
+                # product.stock -= cart_item.quantity
+                # product.save()
+            cart.is_archived = True
+            cart.save()
+        return order
 
     @staticmethod
     def get_customer_one_order(request):
@@ -39,6 +102,13 @@ class CustomerOrderHandler:
             last_order = None
         return last_order
 
+    @staticmethod
+    def calculate_express_delivery_fees(delivery):
+        if delivery == 'express':
+            res = SiteSettings().express_delivery_price
+            return res
+        return 0
+
 
 class SellerOrderHAndler:
 
@@ -56,8 +126,8 @@ class SellerOrderHAndler:
         # # all sold product
         # items_my_store = items.filter(cart_item__in=items_in_cart)
         # все заказы в магазинах собственника
-        order_list = Order.objects.select_related('user', 'store').\
-            filter(items_is_paid__in=items_in_cart).\
+        order_list = Order.objects.select_related('user', 'store'). \
+            filter(items_is_paid__in=items_in_cart). \
             order_by('-created')
         return order_list
 
@@ -95,7 +165,6 @@ class SellerOrderHAndler:
 
 
 class Payment:
-
     ERROR_DICT = {
         '1': 'способствует вымиранию юго-восточных туканов  ',
         '2': 'способствует глобальному потеплению',

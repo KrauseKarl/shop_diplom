@@ -105,7 +105,6 @@
                                     <input type="radio" name="delivery" id="delivery_{{ type.0|lower }}"
                                            value="{{ type.0|lower}}"
                                            {% if forloop.counter == 1 %} checked="checked" {% endif %}/>
-
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text" id="{{ type.0|lower }}"> {{ type.1|capfirst }} </span>
                                 </label>
@@ -174,76 +173,57 @@
                         </div>
                     </div>
 
-
                     <!--    Шаг 4. Подтверждение заказа          -->
 
                     <div class="Order-block" id="step4">
                         <header class="Section-header Section-header_sm">
-                            <h2 class="Section-title">Шаг 4. Подтверждение заказа
-                            </h2>
+                            <h2 class="Section-title">Шаг 4. Подтверждение заказа</h2>
                         </header>
-                        <!--+div.Order.-confirmation-->
                         <div class="Order-infoBlock">
                             <div class="Order-personal">
                                 <div class="row">
                                     <div class="row-block">
                                         <div class="Order-info">
-                                            <div class="Order-infoType">ФИО:
-                                            </div>
-                                            <div class="Order-infoContent" id="name_result">
-                                            </div>
+                                            <div class="Order-infoType">ФИО:</div>
+                                            <div class="Order-infoContent" id="name_result"></div>
                                         </div>
                                         <div class="Order-info">
-                                            <div class="Order-infoType">Телефон:
-                                            </div>
-                                            <div class="Order-infoContent" id="telephone_result">
-                                            </div>
+                                            <div class="Order-infoType">Телефон:</div>
+                                            <div class="Order-infoContent" id="telephone_result"></div>
                                         </div>
                                         <div class="Order-info">
-                                            <div class="Order-infoType">E-mail:
-                                            </div>
-                                            <div class="Order-infoContent" id="email_result">
-                                            </div>
+                                            <div class="Order-infoType">E-mail:</div>
+                                            <div class="Order-infoContent" id="email_result"></div>
                                         </div>
                                         <div class="Order-info">
-                                            <div class="Order-infoType">Комментарий к заказу:
-                                            </div>
-                                            <div class="Order-infoContent" id="comment_result">
-                                            </div>
+                                            <div class="Order-infoType">Комментарий к заказу:</div>
+                                            <div class="Order-infoContent" id="comment_result"></div>
                                         </div>
                                     </div>
                                     <div class="row-block">
                                         <div class="Order-info Order-info_delivery">
-                                            <div class="Order-infoType">Тип доставки:
-                                            </div>
-                                            <div class="Order-infoContent" id="delivery_result">
-                                            </div>
+                                            <div class="Order-infoType">Тип доставки:</div>
+                                            <div class="Order-infoContent" id="delivery_result"></div>
                                         </div>
                                         <div class="Order-info">
-                                            <div class="Order-infoType">Город:
-                                            </div>
-                                            <div class="Order-infoContent" id="city_result">
-                                            </div>
+                                            <div class="Order-infoType">Город:</div>
+                                            <div class="Order-infoContent" id="city_result"></div>
                                         </div>
                                         <div class="Order-info">
-                                            <div class="Order-infoType">Адрес:
-                                            </div>
-                                            <div class="Order-infoContent" id="address_result">
-                                            </div>
+                                            <div class="Order-infoType">Адрес:</div>
+                                            <div class="Order-infoContent" id="address_result"></div>
                                         </div>
                                         <div class="Order-info Order-info_pay">
-                                            <div class="Order-infoType">Оплата:
-                                            </div>
-                                            <div class="Order-infoContent" id="pay_result">
-                                            </div>
+                                            <div class="Order-infoType">Оплата:</div>
+                                            <div class="Order-infoContent" id="pay_result"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="Cart Cart_order">
                                 {% for item in cart_dict.cart.items.all  %}
-                                {% if not item.ordered %}
-                                <div class="Cart-product">
+                                    {% if not item.ordered %}
+                                        <div class="Cart-product">
                                     <div class="Cart-block Cart-block_row">
                                         <div class="Cart-block Cart-block_pict">
                                             <a class="Cart-pict" href="#">
@@ -251,12 +231,13 @@
                                                      alt="card.jpg"/></a>
                                         </div>
                                         <div class="Cart-block Cart-block_info">
-                                            <a class="Cart-title" href="#">{{ item.item.title }}</a>
+                                            <a class="Cart-title" href="#">{{ item.item.title }}
+                                            </a>
                                             <div class="Cart-desc">{{ item.item.description|truncatechars:50 }}
                                             </div>
                                         </div>
                                         <div class="Cart-block Cart-block_price">
-                                            <div class="Cart-price">${{ item.item.price }}
+                                            <div class="Cart-price">${{ item.discount_price }}
                                             </div>
                                         </div>
                                     </div>
@@ -265,15 +246,15 @@
                                         </div>
                                     </div>
                                 </div>
-                                {% endif %}
+                                    {% endif %}
                                 {% endfor %}
                                 <div class="Cart-total Cart-total-order ">
                                     <div class="Cart-block-order ">
                                         <strong class="Cart-title-order"> сумма заказа:</strong>
-                                        <span class="Cart-price">$</span>
-                                        <strong class="Cart-price Cart-total-price"
-                                              data-value="{{ cart_dict.cart.get_total_price }} ">
-                                                {{ cart_dict.cart.get_total_price }}</strong>
+                                        <span class="Cart-price Cart-total-price">$</span>
+                                        <span id="total_item_cost" class="Cart-price Cart-total-price"
+                                              data-value="{{ cart_dict.cart.total_cost_with_delivery }}">
+                                               {{ cart_dict.cart.get_total_price_with_discount|floatformat:'2' }}</span>
 
                                     </div>
                                 </div>
@@ -281,29 +262,29 @@
                                     <div class="Cart-title-order">
                                         <span class="Cart-title-order">доставка:</span>
                                         <span class="Cart-price">$</span>
-                                        <strong id='fees' class=" Cart-price Cart-total-quantity">
-                                            {{ cart_dict.fees }}
-                                        </strong>
+                                        <span  class=" Cart-price Cart-total-quantity">
+                                            {{ cart_dict.cart.is_free_delivery|floatformat:'2' }}
+                                        </span>
+                                        <input type="hidden" id='fees' value="{{ cart_dict.cart.is_free_delivery }}">
                                         </div>
                                 </div>
                                 <div class="Cart-total-order" id="delivery_express_block">
-                                    <div class="Cart-title-order ">
+                                    <div class="Cart-title-order">
                                         <span class="Cart-title-order" id="delivery_cost_span">
                                             экспресс доставка:
                                         </span>
                                         <span class="Cart-price">$</span>
-                                        <strong id='delivery_cost' class=" Cart-price Cart-total-quantity">0</strong>
+                                        <span id='delivery_cost' class=" Cart-price Cart-total-quantity">0</span>
                                         </div>
                                 </div>
                                 <div class="Cart-total Cart-total-order ">
                                     <div class="Cart-title-order ">
-                                        <strong class="Cart-title Cart-title-order">итого:</strong>
+                                        <strong class="Cart-title Cart-title-order">ИТОГО:</strong>
                                         <span class="Cart-price">$</span>
                                         <strong id='total_cost' class="Cart-price">
-                                            {{ cart_dict.cart.get_total_price }}
                                         </strong>
                                         <input class="form-input" type="hidden" id="total_sum" name="total_sum"
-                                               value="{{ cart_dict.cart.get_total_price }}" readonly/>
+                                               value="{{ cart_dict.cart.get_total_price }}"/>
                                     </div>
                                 </div>
                                 <div class="Cart-total-order">

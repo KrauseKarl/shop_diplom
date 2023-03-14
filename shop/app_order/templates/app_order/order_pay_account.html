@@ -8,16 +8,16 @@
 
 
 {% block content %}
-<div class="Middle Middle_top">
+<div id="hidden_section"   class="Middle Middle_top hide_comment">
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">Оплата
+                <h1 class="Middle-title">Ожидание оплаты
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item"><a href="index.html">home</a>
                     </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>Оплата</span>
+                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>Ожидание оплаты</span>
                     </li>
                 </ul>
             </div>
@@ -25,55 +25,61 @@
     </div>
     <div class="Section">
         <div class="wrap">
-
-            <form class="form Payment" action="#" method="post">
-               {% csrf_token %}
-                <div class="Payment-card">
-                    <div class="form-group ">
-                        <label class="form-label">
-                            {% for ord in new_orders %}
-                            <div class="pay-border" style="margin-bottom:20px;">
-                                <label class="Order-infoContent-right" style="margin-bottom:20px;">
-                                    номер заказа
-                                </label>
-                                <!-- ERROR MESSAGE   -->
-                                {% if form.errors %}
-                                <div class="form-error form-textarea_error" role="alert">
-                                    <ul>{% for field, errors in form.errors.items %}
-                                        {% for error in errors %}
-                                        <li>{{error}}</li>
-                                        {% endfor %}
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                {% endif %}
-                                <!-- ERROR MESSAGE   -->
-
-                                <div class="Order-infoContent-left">
-                                    <input type="checkbox" name="order" value="{{ ord.id }}" multiple>
-                                    <span class="Order-infoContent-right Cart-price">{{ ord }}</span>
-                                </div>
-                                {% for item in ord.items_is_paid.all %}
-                                <ul>
-                                    <li class="Order-infoContent-left">
-                                        <div>{{ item.item }}</div>
-                                        <span>{{ item.quantity }} шт.</span> *
-                                        <span>{{ item.total }}</span>
-                                    </li>
-                                </ul>
-                                {% endfor %}
-                                <label class="Cart-total-order form-label">сумма заказа</label>
-                                <label class="Cart-total-order form-label"><b>{{ord.total_sum}}</b></label>
-                            </div>
-                            {% endfor %}
-                        </label>
-
-                        {% for item in ord.items_is_paid.all %}
-                        <label class="Cart-total-order form-label"> {{ item.item.title }}</label>
-                        {% endfor %}
-
+            <div class="ProgressPayment">
+                <div class="ProgressPayment-title">Ждем подтверждения оплаты платежной системой</div>
+                <div class="ProgressPayment-icon">
+                    <div class="cssload-thecube">
+                        <div class="cssload-cube cssload-c1"></div>
+                        <div class="cssload-cube cssload-c2"></div>
+                        <div class="cssload-cube cssload-c4"></div>
+                        <div class="cssload-cube cssload-c3"></div>
                     </div>
-                    <div class="pay-border form-group">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div  id="form_container" class="Middle Middle_top">
+    <div class="Middle-top">
+    <div class="wrap">
+        <div class="Middle-header">
+            <h1 class="Middle-title">Онлайн со случайного чужого счёта
+            </h1>
+            <ul class="breadcrumbs Middle-breadcrumbs">
+                <li class="breadcrumbs-item"><a href="index.html">home</a></li>
+                <li class="breadcrumbs-item breadcrumbs-item_current"><span>Оплата</span></li>
+            </ul>
+        </div>
+    </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <form id="form" class="form Payment" action="{% url 'app_order:progress_payment' order.id %}" method="post">
+                {% csrf_token %}
+                <div class="Payment-card form-shadow">
+                    <div class="form-group">
+                        <!-- ERROR MESSAGE   -->
+                        {% if form.errors %}
+                        <div class="form-error form-textarea_error" role="alert">
+                            <ul>{% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                <li>{{error}}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        <!-- ERROR MESSAGE   -->
+                        <div class="Order-infoContent-left">
+                            <input type="checkbox" name="order" id='order' value="{{ order.id }}">
+                            <span class="Order-infoContent-left">{{ order }}</span>
+                            <span class="Order-infoContent-right form-label">сумма заказа</span>
+                            <span class="Order-infoContent-right Cart-price form-label">
+                                ${{ order.total_sum|add:order.delivery_fees }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         {% if form.errors %}
                         <div class="form-error form-textarea_error" role="alert">
                             <ul>{% for field, errors in form.errors.items %}
@@ -87,7 +93,6 @@
                         <label class="form-label">Номер счета </label>
                         <input class="form-input Payment-bill" id="number" name="number"
                                type="text" placeholder="9999 9999" data-mask="9999 9999" data-validate="require pay"/>
-                        <input type="hidden" name="error" value="{{error}}">
                     </div>
                     <div class="form-group">
                         <a class="btn btn_success Payment-generate" href="#">Сгенирировать случайный счет</a>
@@ -99,5 +104,7 @@
             </form>
         </div>
     </div>
+
 </div>
+
 {% endblock %}

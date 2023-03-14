@@ -1,9 +1,7 @@
-from decimal import Decimal
-
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Sum, F, DecimalField
 from django.utils.timezone import now
+
 from app_settings.models import SiteSettings
 from app_store.models import Store
 
@@ -13,7 +11,7 @@ class Order(models.Model):
 
     STATUS = (
         ('created', 'сформирован'),
-        ('paid', 'плачен'),
+        ('paid', 'оплачен'),
         ('on_the_way', 'доставляется'),
         ('is_ready', 'готов к выдаче'),
         ('completed', 'доставлен'),
@@ -24,10 +22,10 @@ class Order(models.Model):
         on_delete=models.CASCADE,
         related_name='user_order'
     )
-    store = models.ForeignKey(
+    store = models.ManyToManyField(
         Store,
-        on_delete=models.CASCADE,
-        related_name='orders'
+        related_name='orders',
+        verbose_name='магазины'
     )
     name = models.CharField(
         max_length=250,
@@ -40,17 +38,25 @@ class Order(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS,
-        verbose_name='статус заказа'
+        verbose_name='статус заказа',
+        default='created'
     )
     total_sum = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        verbose_name='сумма заказа'
+        verbose_name='сумма заказа',
+        default=0
     )
     delivery = models.CharField(
         max_length=20,
         choices=SiteSettings.DELIVERY,
         verbose_name='доставка'
+    )
+    delivery_fees = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='сумма доставки',
+        default=0
     )
     pay = models.CharField(
         max_length=20,
@@ -102,7 +108,6 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         self.updated = now()
-        # self.total_sum = self.get_order_total_sum()
         super().save(*args, **kwargs)
 
     # def get_order_total_sum(self):
@@ -110,46 +115,10 @@ class Order(models.Model):
     #                                                   output_field=DecimalField())).get('total', 0)
 
     def __str__(self):
-        return f'Заказ №{self.created.strftime("%Y%m%d-%H%M")}-{self.pk}'
+        return f'Заказ №{self.user.id:05}-{self.pk}'
 
     def get_quantity(self):
         return self.items_is_paid.count()
-
-
-class Invoice(models.Model):
-    """Модель чека оплаты заказа."""
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name='invoices',
-        verbose_name='чек'
-    )
-    recipient = models.ForeignKey(
-        Store,
-        on_delete=models.CASCADE,
-        related_name='all_store_invoices',
-        verbose_name='магазин получатель'
-    )
-    number = models.CharField(
-        max_length=20,
-        verbose_name='номер карты'
-    )
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата создания'
-    )
-    objects = models.Manager()
-
-    def __str__(self):
-        return f'квитанция №00{self.pk}-{self.order.id}'
-
-    class Meta:
-        db_table = 'app_invoices'
-        ordering = ['-created']
-        verbose_name = 'квитанция'
-        verbose_name_plural = 'квитанции'
-
 
 class Address(models.Model):
     """Модель адреса доставки."""

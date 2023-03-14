@@ -19,7 +19,7 @@
              <a> История заказов</a>
             </li>
             <li class="breadcrumbs-item breadcrumbs-item_current">
-              <span>Заказ №{{order.id}}</span>
+              <span>{{ order }}</span>
             </li>
           </ul>
         </div>
@@ -86,11 +86,9 @@
                           <div class="Order-infoType">Статус оплаты:</div>
                         <div class="Order-infoContent">
                           {% if order.is_paid %}
-                            <span>оплачено</span>
-                            <a href="{% url 'app_order:invoices_detail' order.invoices.first.id %}">
-                              ( {{ order.invoices.first }} )
-                            </a>
-                          {% else %}не оплачено
+                            <span class="btn btn_success btn_square btn_sm">оплачен</span>
+                          {% else %}
+                            <span class="btn btn_danger btn_square btn_sm"> не оплачен</span>
                           <a class="btn btn_success Order-pay-button"
                              href="{% url 'app_order:progress_payment' order.id %}">
                             оплатить
@@ -111,6 +109,14 @@
 
               <div class="Cart Cart_order">
                 {% for item in items_is_paid %}
+                {% ifchanged %}
+                <h3>{{ item.item.store }}</h3>
+                  {% for invoice in item.item.store.all_store_invoices.all %}
+                    {% if order == invoice.order  %}
+                      <a href="{% url 'app_order:invoices_detail'  invoice.id%}">{{ invoice }}</a>
+                    {% endif %}
+                  {% endfor %}
+                {% endifchanged %}
                 <div class="Cart-product">
                   <div class="Cart-block Cart-block_row">
                     <div class="Cart-block Cart-block_pict">
@@ -122,29 +128,30 @@
                       <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.pk %}">{{ item.item.title }}</a>
                       <div class="Cart-desc">{{ item.item.description|truncatechars:50 }}</div>
                     </div>
-                     <div class="Cart-block Cart-block_row">
-
-                  </div>
+                      <div class="Cart-block Cart-block_row"> {{ item.get_status_display }}</div>
                       <div class="Cart-block Cart-block_row"></div>
                     <div class="Cart-block Cart-block_price">
                       <div class="Cart-price">{{ item.price }}$
                       </div>
                     </div>
                   </div>
-
-
                   <div class="Cart-block Cart-block_row">
                     <div class="Cart-block Cart-block_amount">{{ item.quantity }} шт.</div>
                     <div class="Cart-price">{{ item.total }}</div>
-
                   </div>
                 </div>
                 {% endfor %}
                 <div class="Cart-total">
                   <div class="Cart-block Cart-block_total">
-                    <strong class="Cart-title">Итого:<span class="Cart-price">{{ order.total_sum }}$</span>
+                    <strong class="Cart-title">сумма заказа:
+                      <span class="Cart-price">${{ order.total_sum }}</span>
                     </strong>
+                    {% if order.delivery_fees %}
+                      <strorng class="Cart-title"> из них стоимость доставки </strorng>
+                      <span class="Cart-price">${{ order.delivery_fees }}</span>
+                      {% endif %}
                   </div>
+
 
                 </div>
                 <div class="Cart-block Cart-block_total">

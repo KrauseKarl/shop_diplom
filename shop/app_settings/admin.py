@@ -6,7 +6,6 @@ from .models import SiteSettings
 
 class SiteSettingsAdmin(admin.ModelAdmin):
 
-
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
 

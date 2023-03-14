@@ -189,7 +189,7 @@ class Item(models.Model):
         if not self.slug:
             self.slug = slugify_for_cyrillic_text(self.title)
         self.updated = datetime.datetime.now()
-        super(Item, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     @property
     def main_image(self):
@@ -230,6 +230,8 @@ class Item(models.Model):
     @property
     def pieces(self):
         return self.cart_item.aggregate(bestseller=Sum('quantity')).get('bestseller')
+
+
 
 
 class Category(models.Model):

@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from app_order.models import Order, Invoice
+from app_order.models import Order
 
 
 @receiver(post_save, sender=Order)

@@ -10,7 +10,7 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">Корзина</h1>
+                <h1 class="Middle-title">Корзина | {{ cart.calculate_discount }}</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
                         <a href="#">home</a>
@@ -30,6 +30,18 @@
                 {% for shop, book in cart_dict.book.items %}
                 {% for value in book.items.values %}
                 {% with item=value.product  fees=value.fees %}
+                {% ifchanged %}
+                <h4>{{ shop }}
+                    {% if book.fees != 0 %}
+                    <small class="seller_label"> - {{ book.fees }}% скидка</small>
+                    <span class="Cart-desc-delivery-conditions">
+                            при заказе свыше $
+                        <b>{{ shop.min_for_discount }}</b> магазин дарит скидку в размере
+                         - {{ shop.discount }}%
+                        </span>
+
+                    {% endif %}</h4>
+                {% endifchanged %}
                 <div class="Cart-product">
                     <div class="Cart-block Cart-block_row">
                         <div class="Cart-block Cart-block_pict">
@@ -77,23 +89,20 @@
                             {% endif %}
                             <!-- ITEM'S DESCRIPTION -->
 
-                            {% if  book.fees != 0 %}
-                             <div class="Cart-desc">
-                                <div style="width:10rem" class="seller_label">
-                                 + {{ book.fees }}$ доставка
-                            </div>
-                                <span class="Cart-desc-delivery-conditions">
-                                при заказе свыше $<b>{{ shop.min_free_delivery }}</b> доставка бесплатна
-                         (иначе $ {{ shop.delivery_fees }})</span>
-                             </div>
-                            {% endif %}
+
 
                         </div>
                         <div class="Cart-block Cart-block_price">
-                            <div class="Cart-price {% if not item.item.is_available %}Cart-title-not_available{% endif %}"
+
+                            <div class="{% if book.fees == 0 %}Cart-price{% else %}Card-priceOld{% endif %}
+                            {% if not item.item.is_available %}Cart-title-not_available{% endif %}"
                                  id="total_price_{{item.id}}" data-value="{{ item.total_price }}">
-                                {{ item.total_price }}$
+                                ${{ item.total_price }}
                             </div>
+                            {% if book.fees != 0 %}
+                             <div class="Cart-price">${{ item.discount_price }}</div>
+                            {% endif %}
+
                         </div>
                     </div>
 
@@ -112,14 +121,12 @@
                                     {% csrf_token %}
                                     <a type="button" id="update-button-remove" data-index="{{item.id}}"
                                        class="Amount-remove update-button">
-
                                     </a>
                                     <input class="Amount-input form-input" id="input{{item.id}}" readonly name="quantity"
                                            type="text" value="{{ item.quantity }}"/>
                                     <input id="update{{ item.id }}" name="update" type="hidden" value="1"/>
                                     <a type="button" id="update-button-add" data-index="{{item.id}}"
                                        class="Amount-add update-button ">
-
                                     </a>
                                 </form>
                                 <!--  ADD & REMOVE ITEM FORM  -->
@@ -154,17 +161,18 @@
                                                     <div class="form Payment">
                                                         <div class="form-group">
                                                             <img class="Cart-img {% if not item.item.is_available %}Cart-img-not_available{% endif %}"
-                                                                 src="{{ item.item.image.first.image.url }}"
+                                                                 src="/assets/img/icons/error.svg"
                                                                  alt="{{ item.item.title }}_image"/>
                                                         </div>
+                                                        УДАЛИТЬ?
                                                         <div class="form-group">
-                                                            Удалить <b>{{ item.item }}</b>
+                                                            <h4>{{ item.item.title }}</h4>
                                                         </div>
                                                         <div class="form-group">
                                                             <a href="{% url 'app_cart:remove_cart' pk=item.pk  %}"
-                                                               class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                               class="btn  btn_danger btn_narrow">удалить&#8195;x</a>
                                                             <a href="#close" title="Close"
-                                                               class="btn btn_square btn_dark btn_narrow">отмена</a>
+                                                               class="btn  btn_dark btn_narrow">отмена</a>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer-my"> </div>
@@ -281,82 +289,19 @@
     <div class="modal-dialog-my">
         <div class="modal-content-my">
             <div class="modal-header-my">
-                <h2 class="modal-title-my">Оформить заказ</h2>
                 <a href="#close" title="Close" class="close-my">×</a>
             </div>
-            <div class="modal-body-my">
-                {% for shop, book in cart_dict.book.items %}
-                {% for value in book.items.values %}
-                {% with cart_item=value.product fees=value.fees %}
-                <div class="modal-body-img_block">
-                    <div class="Cart-product">
-                        <div class="Cart-block Cart-block_row">
-                            <div class="Cart-block Cart-block_pict">
-                                <a class="Cart-pict" href="{% url 'app_item:item_detail' cart_item.item.pk %}">
-                                    {% if cart_item.item.image.first %}
-                                    <img class="Cart-img"
-                                         src="{{ cart_item.item.image.first.image.url }}" alt="card.jpg"/>
-                                    {% else %}
-                                    <img class="Cart-img" src="/media/default_images/default_item.png" alt="card.jpg"/>
-                                    {% endif %}
+            <div class="modal-body-my Payment">
+                <img src="/assets/img/icons/delivery.png" width="150">
+                <h2>Оформить заказ?</h2>
 
-                                </a>
-                            </div>
-                            <div class="Cart-block Cart-block_info">
-                                <a class="Cart-title"
-                                   href="{% url 'app_item:item_detail' cart_item.item.pk %}">
-                                    {{ cart_item.item.title }}
-                                </a>
-                                <div class="Cart-desc">
-                                    {{ cart_item.quantity }} шт.
-                                </div>
-                                <div class="Cart-price ">
-                                    ${{ cart_item.total }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endwith %}
-                {% endfor %}
-                {% endfor %}
-            </div>
-            <div class="modal-body-my">
-                <div class="Cart-product">
-                    <div class="Cart-block Cart-block_row">
-                        <div class="Cart-block Cart-block_info">
-                            <div class="Cart-title">
-                                <strong class="Cart-title">Количество товаров:</strong>
-                                <span class="Cart-price">{{ cart.get_total_quantity }} шт.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="Cart-product">
-                    <div class="Cart-block Cart-block_row">
-                        <div class="Cart-block Cart-block_info">
-                            <div class="Cart-title">
-                                <strong class="Cart-title">доставка:</strong>
-                                <span class="Cart-price">${{ cart_dict.fees }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="Cart-product">
-                    <div class="Cart-block Cart-block_row">
-                        <div class="Cart-block Cart-block_info">
-                            <div class="Cart-title">
-                                <strong class="Cart-title">итого:</strong>
-                                <span class="Cart-price">${{ cart.get_total_price }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div class="modal-footer-my">
-                   <a href="{% url 'app_order:order_create'  %}" id="btn_confirm_order " class="btn  btn_primary btn_full">
-                    <span>Оформить заказ</span></a>
+                <a href="#close" title="Close" class="btn  btn_dark ">проверить все еще раз</a>
+                <a href="{% url 'app_order:order_create'  %}" id="btn_confirm_order " class="btn btn_primary">
+                    да
+                </a>
             </div>
         </div>
     </div>

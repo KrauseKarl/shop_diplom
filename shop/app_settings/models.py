@@ -46,22 +46,31 @@ class SiteSettings(SingletonModel):
         ('someone', 'Онлайн со случайного чужого счета'),
         ('bonus', 'бонусами'),
     )
-    express_delivery_price = models.SmallIntegerField(verbose_name='стоимость экспресс доставки', default=500)
+    express_delivery_price = models.DecimalField(decimal_places=2, max_digits=9, default=500,
+                                                 verbose_name='стоимость экспресс доставки')
+    min_free_delivery = models.DecimalField(decimal_places=2, max_digits=9, default=2000,
+                                            verbose_name='минимальная сумма для бесплатной доставки')
+    delivery_fees = models.DecimalField(decimal_places=2, max_digits=9, default=200,
+                                        verbose_name='стоимость доставки')
     cache_detail_view = models.IntegerField(verbose_name='время кэширования страницы товара', default=86400)
     type_of_delivery = models.CharField(max_length=256, verbose_name='тип доставки', choices=DELIVERY,
                                         default='standard')
     type_of_payment = models.CharField(max_length=256, verbose_name='тип оплаты', choices=PAY_TYPE, default='online')
     url = models.URLField(verbose_name='Website url', max_length=256)
     title = models.CharField(verbose_name='название сайта', max_length=256, default='Megano')
-    support_email = models.EmailField(default='Support@ninzio.com')
+    support_email = models.EmailField(default='Support@ninzio.com', verbose_name='электронный ящик')
     phone = models.CharField(max_length=256, verbose_name='телефон', default='8-800-200-600')
-    skype = models.CharField(max_length=256, verbose_name='телефон', default='techno')
-    address = models.CharField(max_length=256, verbose_name='телефон', default='New York, north Avenue 26/7 0057 ')
-    facebook = models.CharField(max_length=256, verbose_name='телефон', default='https://facebook.com/megano')
-    twitter = models.CharField(max_length=256, verbose_name='телефон', default='https://twitter.com/megano')
-    linkedIn = models.CharField(max_length=256, verbose_name='телефон', default='https://linkedin.com/megano')
+    skype = models.CharField(max_length=256, verbose_name='skype', default='techno')
+    address = models.CharField(max_length=256, verbose_name='адрес', default='New York, north Avenue 26/7 0057 ')
+    facebook = models.CharField(max_length=256, verbose_name='facebook', default='https://facebook.com/megano')
+    twitter = models.CharField(max_length=256, verbose_name='twitter', default='https://twitter.com/megano')
+    linkedIn = models.CharField(max_length=256, verbose_name='linkedIn', default='https://linkedin.com/megano')
     created = models.DateTimeField(auto_now_add=True, verbose_name='дата создания')
     updated = models.DateTimeField(auto_now_add=True, verbose_name='дата обновления')
+
+    class Meta:
+        db_table = 'app_site_settings'
+        verbose_name_plural = 'Настройки'
 
     def __str__(self):
         return 'Configuration'
@@ -69,7 +78,3 @@ class SiteSettings(SingletonModel):
     def save(self, *args, **kwargs):
         self.updated = now()
         super().save(*args, **kwargs)
-
-    class Meta:
-        db_table = 'app_site_settings'
-        verbose_name_plural = 'Настройки'

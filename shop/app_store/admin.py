@@ -5,7 +5,7 @@ from app_store.models import Store
 
 
 class StoreAdmin(admin.ModelAdmin):
-    list_display = ['title', 'owner', 'full_image', 'delivery_fees', 'min_free_delivery']
+    list_display = ['title', 'owner', 'full_image', 'discount', 'min_for_discount']
     readonly_fields = ['full_image', 'owner']
 
     # fields = ('title', 'owner', ('logo', 'full_image'), 'is_active')

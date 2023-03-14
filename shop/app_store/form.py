@@ -11,7 +11,7 @@ class CreateStoreForm(forms.ModelForm):
 
     class Meta:
         model = Store
-        fields = ('title', 'logo', 'delivery_fees', 'min_free_delivery')
+        fields = ('title', 'logo', 'discount', 'min_for_discount')
 
 
 class UpdateStoreForm(forms.ModelForm):
@@ -19,7 +19,7 @@ class UpdateStoreForm(forms.ModelForm):
 
     class Meta:
         model = Store
-        fields = ('title', 'logo', 'delivery_fees', 'min_free_delivery', 'is_active')
+        fields = ('title', 'logo', 'discount', 'min_for_discount', 'is_active')
 
 
 class AddItemForm(forms.ModelForm):

@@ -1,56 +1,75 @@
 {% load static %}
 {% load cache %}
 
-<div class="Cart-total">
-
+<div class="Cart-total Cart">
+    <div class="Cart-block Cart-block_order ">
     <!--    TOTAL SUM OF ORDER -->
-    <div class="Cart-block Cart-block_total">
-        <strong class="Cart-title">сумма заказа:</strong>
-        <span class="Cart-price">$</span>
-        <span class="Cart-price Cart-total-price"
+    <div class="Cart-total Cart-total-order ">
+
+        <strong class="Cart-title Order-infoContent-left">сумма заказа:</strong>
+        {% if cart_dict.fees %}
+            <span class="Card-priceOld " data-value="{{ cart.get_total_price }}">
+                $&#160;{{ cart.get_total_price }}
+            </span>
+        {% endif %}
+        <span class="Cart-price ">${{ cart.get_total_price_with_discount|floatformat:'2' }}</span>
+    </div>
+    <!--    TOTAL SUM OF ORDER -->
+
+    <!--    DISCOUNT  -->
+    {% if cart_dict.fees %}
+    <div class="Cart-total Cart-total-order ">
+        <strong class="Cart-title Order-infoContent-left">скидка:</strong>
+        <div>
+            {% for shop, discount in cart_dict.book.items %}
+                {% if discount.fees != 0 %}
+            <strong class="Cart-price">{{ discount.fees }}%</strong>&#160;{{ shop }}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <!--    DISCOUNT  -->
+
+    <!--    DELIVERY COST -->
+
+    {% if cart.is_free_delivery != 0 %}
+    <div class="Cart-total Cart-total-order">
+        <strong class="Cart-title Order-infoContent-left" >стоимость доставки:</strong>
+        <span   class="Cart-price">+&#160;${{ cart.is_free_delivery|floatformat:'2' }}</span>
+    </div>
+    <!--    DELIVERY COST -->
+
+    <!--    TOTAL SUM OF ORDER WITH DELIVERY COST -->
+    <div class="Cart-total Cart-total-order ">
+        <strong class="Cart-title Order-infoContent-left">сумма заказа  с учетом доставки:</strong>
+        <span   class="Cart-price"
               id='total_price'
-              data-value="{{ cart.get_total_price }}">
-              {{ cart.get_total_price }}
+              data-value="{{ cart.total_cost_with_delivery }}">
+              $&#160;{{ cart.total_cost_with_delivery|floatformat:'2' }}
         </span>
     </div>
-    <!--    TOTAL SUM OF ORDER -->
-
-    <!--    DELIVERY FEES -->
-
-    <div class="Cart-block Cart-block_total">
-        <strong class="Cart-title">доставка:</strong>
-
-        <span class="Cart-price">{% if cart_dict.fees %}${% endif %}</span>
-        <span class="Cart-price Cart-total-price" id='total_fees' data-value="{{ cart_dict.fees }}">
-            {% if cart_dict.fees %}
-                {{ cart_dict.fees }}
-            {% else %}
-                <span class="seller_label">FREE</span>
-            {% endif %}
-        </span>
-
-
-    </div>
-    <!--    DELIVERY FEES -->
+    {% endif %}
+    <!--    TOTAL SUM OF ORDER WITH DELIVERY COST -->
 
     <!--    FINALE COST  -->
-    <div class="Cart-block Cart-block_total">
-        <strong class="Cart-title">итого:</strong>
-        <span class="Cart-price">$</span>
-        <span class="Cart-price Cart-total-price" id='total_price_with_delivery'
-              data-value="{{ cart.get_total_price }} ">
-                            {{ cart.get_total_price }}
-        </span>
+    <div class="Cart-total Cart-total-order ">
+
+            <strong class="Cart-title Order-infoContent-left">итого:</strong>
+            <span class="Cart-price" data-value="{{ cart.total_cost_with_delivery }} ">
+            $&#160;{{ cart.total_cost_with_delivery|floatformat:'2' }}
+            </span>
+
     </div>
     <!--    FINALE COST  -->
 
     <!--    MAKE ORDER BUTTON -->
-    <div class="Cart-block">
+    <div class="Cart-total Cart-total-order ">
         <a href="#openModal" id="open_order_modal" class="btn btn_success btn_lg">
             <span>Оформить заказ </span>
-
-            <!--    MAKE ORDER BUTTON -->
-
         </a>
+    </div>
+    <!--    MAKE ORDER BUTTON -->
+
     </div>
 </div>

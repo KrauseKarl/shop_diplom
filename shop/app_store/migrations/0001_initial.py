@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(db_index=True, max_length=200, verbose_name='название магазина')),
                 ('slug', models.SlugField(max_length=100, verbose_name='slug')),
                 ('delivery_fees', models.SmallIntegerField(default=0, verbose_name='стоимость доставки')),
-                ('min_free_delivery', models.IntegerField(default=0, verbose_name='минимальная сумма бесплатной доставки')),
+                ('min_for_discount', models.IntegerField(default=0, verbose_name='минимальная сумма бесплатной доставки')),
                 ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
                 ('updated', models.DateTimeField(auto_now_add=True, verbose_name='дата обновления')),
                 ('description', models.TextField(blank=True, default='', verbose_name='Описание магазина')),

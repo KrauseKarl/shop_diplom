@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'app_store.apps.AppStoreConfig',
     'app_order.apps.AppOrderConfig',
     'app_cart.apps.AppCartConfig',
+    'app_invoice.apps.AppInvoiceConfig',
     'app_settings.apps.AppSettingsConfig',
 ]
 

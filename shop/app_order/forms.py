@@ -1,7 +1,7 @@
 from django import forms
 
 from app_cart.models import CartItem
-from app_order.models import Order, Invoice, Address
+from app_order.models import Order, Address
 
 
 class OrderCreateForm(forms.ModelForm):
@@ -10,7 +10,7 @@ class OrderCreateForm(forms.ModelForm):
 
     class Meta:
         model = Order
-        fields = ('email', 'telephone', 'delivery', 'pay', 'city', 'address', 'name', 'post_address', 'comment' )
+        fields = ('email', 'telephone', 'delivery', 'pay', 'city', 'address', 'name', 'post_address', 'comment', 'total_sum')
 
 
 class CartItemUpdateForm(forms.ModelForm):
@@ -27,12 +27,6 @@ class OrderUpdateForm(forms.ModelForm):
         fields = ('email', 'telephone', 'delivery', 'pay', 'city', 'address', 'name', 'total_sum')
 
 
-class PaymentForm(forms.ModelForm):
-    """Форма для создания чека оплаты заказа."""
-
-    class Meta:
-        model = Invoice
-        fields = ('order', 'number', 'recipient')
 
 
 class AddressForm(forms.ModelForm):

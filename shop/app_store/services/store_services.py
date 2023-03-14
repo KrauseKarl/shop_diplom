@@ -2,7 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 
 from app_item.services.item_services import ItemHandler
-from app_order.models import Invoice, Store
+from app_invoice.models import Invoice
+from app_store.models import Store
 
 
 class StoreHandler:

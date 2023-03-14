@@ -15,9 +15,6 @@ urlpatterns = [
     path('address/edit/<int:pk>/', AddressUpdate.as_view(), name='address_edit'),
     path('address/remove/<int:pk>/', AddressDelete.as_view(), name='address_remove'),
 
-    path('invoices_list/', InvoicesList.as_view(), name='invoices_list'),
-    path('invoices_detail/<int:pk>/', InvoicesDetail.as_view(), name='invoices_detail'),
-    path('invoices_list/<slug:sort>/', InvoicesList.as_view(), name='invoices_by_date'),
 
     path('order_detail/<int:pk>/', OrderDetail.as_view(), name='order_detail'),
     path('order_detail/<int:order_id>/confirm/', ConfirmReceiptPurchase.as_view(), name='order_confirm'),

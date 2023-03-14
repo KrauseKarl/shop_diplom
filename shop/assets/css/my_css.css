@@ -791,3 +791,37 @@ box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
     padding: 3px 10px;
     border-radius: 10px;
 }
+.total_label {
+ display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border: 1px solid #fff;
+  border-color: #fff;
+  border-radius: 100px;
+  background: #fff;
+  padding: 3px 15px;
+  line-height: 1.2em;
+  text-align: center;
+  color: #424650;
+  text-decoration: none;
+  position: relative;
+  font-size: 16px;
+  border-color: #fff;
+  color: #424650;
+  background: #fff;
+  transition: all 200ms;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding-left: 38px;
+  padding-right: 38px;
+  }
+.warning_label {
+    border-color: #f98561;
+    color: #fff;
+    background: #f98561;
+}
+.Cart-block_order {
+  margin-left: auto;
+}
