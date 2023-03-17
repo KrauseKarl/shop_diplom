@@ -1,15 +1,9 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.utils import timezone
-
-from django.core.cache import cache
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import F, Q, Sum, QuerySet, Manager, Count
+from django.db.models import F, Q, Sum
 from django.utils.timezone import now
 
 from app_item.models import Item
-from app_order.models import Order
 from app_settings.models import SiteSettings
 from app_store.models import Store
 
@@ -40,14 +34,6 @@ class CartItem(models.Model):
         verbose_name='покупатель',
         null=True
     )
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name='items_is_paid',
-        verbose_name='заказ'
-    )
     quantity = models.PositiveIntegerField(
         default=1,
         verbose_name='количество товара'
@@ -65,12 +51,6 @@ class CartItem(models.Model):
     is_paid = models.BooleanField(
         default=False,
         verbose_name='статус оплаты'
-    )
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS,
-        verbose_name='статус выбранного товара',
-        default='in_cart'
     )
     created = models.DateTimeField(
         auto_now_add=True,
@@ -176,13 +156,15 @@ class Cart(models.Model):
         """Цена всей корзины."""
         if not self.is_empty():
             return sum(self.calculate_discount)
-            # return self.items.all().annotate(Count('item__store')).aggregate(total=Sum(F('quantity') * F('price'))).get('total', 0)
         return 0
 
     @property
     def get_total_price(self):
-        return self.items.all().annotate(Count('item__store')).aggregate(total=Sum(F('quantity') * F('price'))).get(
-            'total', 0)
+        if not self.is_empty():
+            return self.items.prefetch_related('item').\
+                aggregate(total=Sum(F('quantity') * F('price'))).\
+                get('total', 0)
+        return 0
 
     @property
     def get_total_quantity(self):
@@ -219,26 +201,27 @@ class Cart(models.Model):
 
     @property
     def is_free_delivery(self):
-        min_free_delivery = SiteSettings().min_free_delivery
-        delivery_fees = SiteSettings().delivery_fees
+        settings = SiteSettings.objects.get(id=1)
+        min_free_delivery = settings.min_free_delivery
+        delivery_fees = settings.delivery_fees
         if self.get_total_price_with_discount < min_free_delivery:
             return delivery_fees
         return 0
 
     @property
     def calculate_discount(self):
-        store_res = []
+        price_list_with_discount = []
         store_list = list(set(self.items.values_list('item__store', flat=True).distinct()))
         for store in store_list:
-            store_ = Store.objects.get(id=store)
+            shop_ = Store.objects.values('min_for_discount', 'discount').get(id=store)
             items = self.items.filter(item__store=store)
-            result = float(items.aggregate(Sum('total')).get('total__sum'))
-            if result > float(store_.min_for_discount):
-                result = round(result * ((100 - store_.discount) / 100))
-                store_res.append(result)
+            default_price = float(items.aggregate(Sum('total')).get('total__sum'))
+            if default_price > float(shop_.get('min_for_discount')):
+                discount_price = round(default_price * ((100 - shop_.get('discount')) / 100))
+                price_list_with_discount.append(discount_price)
             else:
-                store_res.append(result)
-        return store_res
+                price_list_with_discount.append(default_price)
+        return price_list_with_discount
 
 #
 # @receiver(post_save, sender=Cart)

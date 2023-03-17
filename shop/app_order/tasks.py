@@ -4,6 +4,7 @@ from time import sleep
 
 from celery import Celery
 from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Sum
@@ -19,13 +20,14 @@ from app_store.models import Store
 from shop.settings import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from app_order.models import Order
 from app_invoice.models import Invoice
+from app_settings.models import SiteSettings
 from shop.celery import app
 
 
 @app.task
-def pay_order(order_id, number):
-    sleep(4)
-    if number % 2 != 0 and number[:-1] != 0:
+def pay_order(order_id, number, pay):
+    sleep(10)
+    if number % 2 != 0 or number % 10 == 0:
         error = Payment.error_generator()
         order = Order.objects.get(id=order_id)
         order.error = error
@@ -36,6 +38,8 @@ def pay_order(order_id, number):
             order = Order.objects.get(id=order_id)
             order.status = 'paid'
             order.is_paid = True
+            if pay != order.pay:
+                order.pay = pay
             order.items_is_paid.update(status='in_progress')
             if order.error:
                 order.error = ''
@@ -55,4 +59,30 @@ def pay_order(order_id, number):
         #         item.save()
 
         return True
-    # return redirect('app_order:success_pay')
+
+
+
+@app.task
+def order_is_preparing(order_id):
+    sleep(10)
+    order = Order.objects.get(id=order_id)
+    order.status = 'is_preparing'
+    order.save()
+    delivery_in_progress.delay(order_id)
+    return True
+
+
+@app.task
+def delivery_in_progress(order_id):
+    timer = SiteSettings().cache_detail_view
+    sleep(10)
+    try:
+        order = Order.objects.get(id=order_id)
+        order.status = 'on_the_way'
+        order.save()
+        sleep(90)
+        order.status = 'is_ready'
+        order.save()
+        return True
+    except ObjectDoesNotExist:
+        return False

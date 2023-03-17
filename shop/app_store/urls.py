@@ -20,7 +20,9 @@ urlpatterns = [
     path('delivery/detail/<int:order_id>/sent/', SentPurchase.as_view(), name='sent_purchase'),
 
     path('comment/list/', CommentListView.as_view(), name='comment_list'),
-    path('comment/<int:pk>/moderate/<slug:slug>/', CommentModerate.as_view(), name='comment_moderate'),
+    path('comment/<int:pk>/', CommentDetail.as_view(), name='comment_detail'),
+    path('comment/<int:pk>/update/', CommentModerate.as_view(), name='comment_update'),
+    path('comment/<int:pk>/delete/', CommentDelete.as_view(), name='comment_delete'),
 
     path('item/add/<int:pk>/store/', CreateItemView.as_view(), name='add_item'),
     path('item/edit/<int:pk>/', UpdateItemView.as_view(), name='edit_item'),

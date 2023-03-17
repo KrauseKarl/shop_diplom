@@ -50,6 +50,11 @@ class CommentHandler:
         return comment
 
     @staticmethod
+    def delete_comment_by_seller(comment_id):
+        comment = CommentHandler.get_comment(comment_id)
+        comment.delete()
+
+    @staticmethod
     def get_comment_list_by_user(request) -> QuerySet[Comment]:
         """Функция возвращает список всех комментариев пользователя. """
         comments = Comment.objects.select_related('item').filter(user=request.user)

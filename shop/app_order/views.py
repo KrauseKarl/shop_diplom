@@ -22,7 +22,7 @@ from app_user.services.register_services import ProfileHandler
 from utils.my_utils import MixinPaginator
 
 from app_order.forms import OrderCreateForm, AddressForm
-from app_order.models import Order,  Address
+from app_order.models import Order, Address, OrderItem
 from app_order.services.order_services import CustomerOrderHandler, AddressHandler, Payment
 from app_store.form import UpdateOrderStatusForm
 from app_store.models import Store
@@ -71,6 +71,7 @@ class OrderList(ListView, MixinPaginator):
     template_name = 'app_order/order_list.html'
     context_object_name = 'orders'
     paginate_by = 5
+    extra_context = {}
 
     # permission_required = ('app_order.view_order', 'app_order.change_order')
 
@@ -79,10 +80,12 @@ class OrderList(ListView, MixinPaginator):
         if self.request.user.is_authenticated:
             delivery_status = self.request.GET.get('status')
             queryset = CustomerOrderHandler.get_customer_order_list(self.request, delivery_status)
+            # queryset = CartItem.objects.filter(user=request.user)
             object_list = self.my_paginator(queryset, self.request, self.paginate_by)
-            context = {'object_list': object_list}
+            context = {'object_list': object_list, 'status_list': CartItem.STATUS}
+            print(queryset)
         else:
-            context = {'object_list': None}
+            context = {'object_list': None, 'status_list': CartItem().STATUS}
         return render(request, self.template_name, context=context)
 
 
@@ -100,9 +103,19 @@ class OrderDetail(UserPassesTestMixin, DetailView):  # UserPassesTestMixin Permi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['items_is_paid'] = CartItem.objects.filter(
+        context['order_items'] = OrderItem.objects.filter(
             order=self.get_object()).order_by('item__store')  # TODO service def _get_has_paid_items
         return context
+
+
+class OrderUpdatePayWay(UpdateView):
+    model = Order
+    template_name = 'app_order/order_update_pay_way.html'
+    fields = ['pay']
+    extra_context = {'type_of_payment': SiteSettings().PAY_TYPE}
+
+    def get_success_url(self):
+        return reverse('app_order:progress_payment', kwargs={'pk': self.object.pk})
 
 
 class SuccessPaid(TemplateView):
@@ -132,13 +145,15 @@ class FailedPaid(TemplateView):
 class PaymentView(DetailView, CreateView):
     model = Order
     form_class = PaymentForm
+    template_name = 'app_order/order_pay_account.html'
     success_url = reverse_lazy('app_order:progress_payment')
+    extra_context = {'type_of_delivery': SiteSettings.DELIVERY, 'type_of_payment': SiteSettings.PAY_TYPE}
 
     def get_template_names(self):
         super(PaymentView, self).get_template_names()
         templates_dict = {
-            'online': 'app_order/order_pay_card.html',
-            'someone': 'app_order/order_pay_account.html'
+            'online': 'app_order/pay_online.html',
+            'someone': 'app_order/pay_someone.html'
         }
         order = self.get_object()
         name = templates_dict[order.pay]
@@ -147,14 +162,8 @@ class PaymentView(DetailView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         order_id = self.kwargs['pk']
-
         order = Order.objects.get(id=order_id)
-        store = 3
-        total_sum = order.items_is_paid.filter(item__store_id=store).aggregate(total=Sum('total')).get('total')
-        total_sum_1 = order.items_is_paid.filter(item__store_id=6).aggregate(total=Sum('total')).get('total')
         context['order'] = order
-        context['total_sum'] = total_sum
-        context['total_sum_1'] = total_sum_1
         return context
 
     def form_valid(self, form):
@@ -165,8 +174,8 @@ class PaymentView(DetailView, CreateView):
 def validate_username(request):
     order_id = request.POST.get('order', None)
     number = int(str(request.POST.get('number', None)).replace(' ', ''))
-
-    task = pay_order.delay(order_id, number)
+    pay = request.POST.get('pay', None)
+    task = pay_order.delay(order_id, number, pay)
     response = {
         "task_id": task.id,
         "task_status": task.status,
@@ -196,7 +205,8 @@ def get_status_payment(request, task_id, order_id):
         response.update(error_dict)
     return JsonResponse(response)
 
-
+class ChangePayWay(TemplateView):
+    pass
 class PaymentProgress(TemplateView):
     template_name = 'app_order/progress_payment.html'
 

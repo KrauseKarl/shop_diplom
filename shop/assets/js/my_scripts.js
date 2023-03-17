@@ -14,6 +14,41 @@ $(function getAddress() {
 });
 /* АВТОЗАПОЛЕНИЕ ПОЛЕ АДРЕС */
 
+/* АВТОЗАПОЛЕНИЕ ПОЛЕ СПОСОБ ОТПЛАТЫ */
+$(document).ready(function(){
+    var currentPayType = $('#current').val()
+    if(currentPayType == 'online') {
+        $('#pay_type_online').show();
+        $('#pay_type_someone').hide();
+    }
+    else if(currentPayType == 'someone') {
+        $('#pay_type_someone').show();
+        $('#pay_type_online').hide();
+    }
+    getPayWay()
+});
+
+function getPayWay() {
+$("#pay").on("change", function () {
+    var type_pay = $('#pay').val()
+    console.log(`type_pay = ${type_pay}`)
+    if (typeof type_pay != "undefined") {
+        if(type_pay == 'online') {
+            console.log(`online`)
+            $('#pay_type_online').show('slow');
+            $('#pay_type_someone').hide('slow');
+        }
+        else if(type_pay == 'someone') {
+            console.log(`someone`)
+            $('#pay_type_someone').show('slow');
+            $('#pay_type_online').hide('slow');
+        };
+      };
+ });
+};
+/* АВТОЗАПОЛЕНИЕ ПОЛЕ СПОСОБ ОТПЛАТЫ */
+
+
 /* АВТОЗАПОЛЕНИЕ ПОЛЕ ЗАКАЗА */
 $(document).ready( function() {
     $('#step_4').on('click', function () {
@@ -123,8 +158,10 @@ $( document ).ready(function() {
 
 /* ОПЛАТА ТОВАРА */
 $('#form').submit(function () {
-    $('#spinner').attr('style', 'display:block');
-    $('#form_container').attr('style', 'display:none');
+    $('#spinner').show('slow');
+//    ('style', 'display:block');
+    $('#form_container').hide('slow');
+//    attr('style', 'display:none');
     $.ajax({
         data: $(this).serialize(),
         url: `/order/validate_username/`,

@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Sum, Count
 from django.urls import reverse
 
 from app_store.managers.app_store_managers import StoreIsActiveManager
@@ -92,3 +93,11 @@ class Store(models.Model):
     @property
     def all_orders(self):
         return self.orders.count()
+
+    @property
+    def cash(self):
+        return self.items.values_list('cart_item', flat=True).aggregate(total=Sum('cart_item__total')).get('total')
+
+    @property
+    def paid_item(self):
+        return self.items.values_list('cart_item', flat=True).aggregate(total=Count('cart_item')).get('total')

@@ -163,7 +163,7 @@
                     <div class="CartBlock-block">
                             <span class="CartBlock-price">
                                 {% if cart_dict.cart %}
-                                {{ cart_dict.cart.get_total_price  }}$
+                                {{ cart_dict.cart.get_total_price_with_discount  }}$
                                 {% endif %}
                                </span>
                     </div>

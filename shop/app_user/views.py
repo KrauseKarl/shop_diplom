@@ -23,7 +23,7 @@ from app_user.services.user_services import is_customer
 from utils.my_utils import MixinPaginator
 from app_cart.models import Cart
 from app_cart.services.cart_services import get_current_cart, merge_anon_cart_with_user_cart, delete_cart_cookies, \
-    get_items_in_cart
+    get_items_in_cart, identify_cart
 from app_item.models import Comment
 from app_item.services.comment_services import CommentHandler
 from app_user.forms import RegisterUserForm, UpdateUserForm, UpdateProfileForm, RegisterUserFormFromOrder
@@ -43,44 +43,7 @@ class CreateProfile(SuccessMessageMixin, CreateView):
         return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
 
     def form_valid(self, form):
-        # создание пользователя
-        user = form.save(commit=False)
-        user.first_name = form.cleaned_data.get('first_name')
-        user.last_name = form.cleaned_data.get('last_name')
-        user.save()
-        # присвоение группы для пользователя
-        GroupHandler().set_group(user=user)
-        # создание расширенного профиля пользователя
-        ProfileHandler().create_profile(
-            user=user,
-            telephone=form.cleaned_data.get('telephone'),
-            role=form.cleaned_data.get('role'),
-        )
-        # SendVerificationMail.send_mail(self.request, user.email)
-
-        if is_customer(user):
-            if self.request.session.session_key:
-                session_key = self.request.session.session_key
-                cart = Cart.objects.filter(session_key=session_key).first()
-                if cart:
-                    cart.session_key = ''
-                    cart.is_anonymous = False
-                    cart.user = user
-                    for cart_item in cart.items.all():
-                        cart_item.user = user
-                        cart_item.save()
-                    cart.save()
-        user = authenticate(
-            self.request,
-            username=form.cleaned_data.get('username'),
-            password=form.cleaned_data.get('password1')
-        )
-        login(self.request, user)
-        if self.request.GET.get('next'):
-            path = self.request.GET.get('next')
-        else:
-            path = self.get_success_url()
-        response = delete_cart_cookies(self.request, path)
+        response = ProfileHandler.create_user(self.request, form, self.get_success_url)
         return response
 
     def form_invalid(self, form):
@@ -97,29 +60,14 @@ class UpdateProfile(UpdateView):
     second_form_class = UpdateProfileForm
 
     def form_valid(self, form):
-        user_form = UpdateUserForm(
-            data=self.request.POST,
-            instance=self.request.user
-        )
-        profile_form = UpdateProfileForm(
-            data=self.request.POST,
-            files=self.request.FILES,
-            instance=self.request.user.profile
-        )
-        user_form.save()
-        profile = profile_form.save(commit=False)
-
-        telephone = profile_form.cleaned_data['telephone']
-        telephone = ProfileHandler.telephone_formatter(telephone)
-        profile.telephone = telephone
-
-        profile.save()
+        ProfileHandler.update_profile(self.request)
         messages.add_message(self.request, messages.SUCCESS, "Данные профиля обновлены!")
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        form = RegisterUserForm(self.request.POST)
         messages.add_message(self.request, messages.ERROR, "Ошибка.Данные профиля не обновлены!")
-        return super().form_valid(form)
+        return super(UpdateProfile, self).form_invalid(form)
 
     def get_success_url(self):
         pk = self.kwargs["pk"]

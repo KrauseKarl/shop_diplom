@@ -46,7 +46,7 @@ class Profile(models.Model):
                                default='',
                                verbose_name='аватар')
     telephone = models.CharField(max_length=18,
-                                 verbose_name='телефон')
+                                 verbose_name='телефон', unique=True)
     date_joined = models.DateTimeField(auto_now_add=True,
                                        null=True)
     review_items = models.ManyToManyField(Item,

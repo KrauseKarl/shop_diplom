@@ -1,8 +1,8 @@
 from urllib.parse import urlencode
 from django.contrib import messages
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from urllib.parse import parse_qs
-from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
@@ -11,7 +11,8 @@ from app_item.models import Item, Category, Comment
 from app_item.forms import CommentForm
 from app_store.models import Store
 from utils.my_utils import MixinPaginator, query_counter
-from app_cart.services.cart_services import get_items_in_cart, get_current_cart, get_cart_item_in_cart
+from app_settings.models import SiteSettings
+from app_cart.services.cart_services import get_items_in_cart, get_cart_item_in_cart
 from app_item.services.comment_services import CommentHandler
 from app_item.services.item_services import (
     AddItemToReview,
@@ -19,7 +20,6 @@ from app_item.services.item_services import (
     CategoryHandler,
     TagHandler, CountView, ItemHandler
 )
-
 
 
 class CategoryListView(ListView, MixinPaginator):
@@ -237,45 +237,49 @@ class ItemDetail(DetailView, CreateView):
         """
         item = self.get_object()
         user = request.user
-        form = self.get_form()
+        context = cache.get(item.id)
+        if context is None:
+            form = self.get_form()
+            # добавляет товар в список просмотренных товаров пользователя
+            try:
+                AddItemToReview().add_item_to_review(user=user, item_id=item.id)
+            except ObjectDoesNotExist:
+                pass
+            # увеличивает количество просмотров товара
+            CountView().add_view(request, item_id=item.id)
 
-        # добавляет товар в список просмотренных товаров пользователя
-        try:
-            AddItemToReview().add_item_to_review(user=user, item_id=item.id)
-        except ObjectDoesNotExist:
-            pass
-        # увеличивает количество просмотров товара
-        CountView().add_view(request, item_id=item.id)
+            # список всех тегов товара
+            tags = TagHandler.get_tags_queryset(item_id=item.id)
 
-        # список всех тегов товара
-        tags = TagHandler.get_tags_queryset(item_id=item.id)
+            # список всех  товаров (Item) в корзине
+            item_in_cart = get_items_in_cart(self.request)
 
-        # список всех  товаров (Item) в корзине
-        item_in_cart = get_items_in_cart(self.request)
+            # список всех добавленных товаров (CartItem) в корзине
+            cart_item_in_cart = get_cart_item_in_cart(self.request, item)
 
-        # список всех добавленных товаров (CartItem) в корзине
-        cart_item_in_cart = get_cart_item_in_cart(self.request, item)
+            # количество всех добавленных в корзину товаров (CartItem)
+            try:
+                cart_item_in_cart_quantity = cart_item_in_cart.quantity
+            except (AttributeError, ObjectDoesNotExist):
+                cart_item_in_cart_quantity = 0
 
-        # количество всех добавленных в корзину товаров (CartItem)
-        try:
-            cart_item_in_cart_quantity = cart_item_in_cart.quantity
-        except (AttributeError, ObjectDoesNotExist):
-            cart_item_in_cart_quantity = 0
+            # общее кол-во комментариев(прошедших модерацию) к товару
+            comments_count = CommentHandler.get_comment_cont(item.id)
 
-        # общее кол-во комментариев(прошедших модерацию) к товару
-        comments_count = CommentHandler.get_comment_cont(item.id)
+            # все характеристики товара отсортированные по названию характеристик
+            features = item.feature_value.order_by('feature__title')
+            context = {
+                'form': form,                                        # форма для создания комментария к товару
+                'tags': tags,                                        # список тегов товара
+                'item': item,                                        # товар (экземпляр класса Item)
+                'features': features,                                # список характеристик товара
+                'comments_count': comments_count,                    # счетчик кол-ва комментариев(прошедших модерацию)
+                'already_in_cart': item_in_cart,                     # все товары (Item) который присутствуют в корзине
+                'already_in_cart_count': cart_item_in_cart_quantity  # кол-во всех товаров добавленных (CartItem) в корзину
+            }
+            settings = SiteSettings.objects.get(id=1)
+            cache.set(item.id, context, settings.cache_detail_view)
 
-        # все характеристики товара отсортированные по названию характеристик
-        features = item.feature_value.order_by('feature__title')
-        context = {
-            'form': form,                                        # форма для создания комментария к товару
-            'tags': tags,                                        # список тегов товара
-            'item': item,                                        # товар (экземпляр класса Item)
-            'features': features,                                # список характеристик товара
-            'comments_count': comments_count,                    # счетчик кол-ва комментариев(прошедших модерацию)
-            'already_in_cart': item_in_cart,                     # все товары (Item) который присутствуют в корзине
-            'already_in_cart_count': cart_item_in_cart_quantity  # кол-во всех товаров добавленных (CartItem) в корзину
-        }
         return self.render_to_response(context)
 
     def form_valid(self, form):
@@ -284,10 +288,11 @@ class ItemDetail(DetailView, CreateView):
         :param form: форма для создания комментария
         :return: на страницу товара
         """
-        item = self.kwargs['pk']
+        item_id = self.kwargs['pk']
         user = self.request.user
         data = self.request.POST
-        CommentHandler.add_comment(user=user, item_id=item, data=data)
+        CommentHandler.add_comment(user=user, item_id=item_id, data=data)
+        cache.delete(item_id)
         messages.add_message(self.request, messages.SUCCESS,
                              f"{user.get_full_name()}, спасибо за комментарий. После модерации он будет опубликован.")
         return redirect(self.request.get_full_path())
@@ -320,7 +325,6 @@ class ItemForYouList(ListView, MixinPaginator):
     template_name = 'app_item/items_for_you.html'
     paginate_by = 8
 
-    @query_counter
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         queryset = ItemHandler.get_items_for_you(self.request)
@@ -373,6 +377,7 @@ class DeleteComment(DetailView):
         user = request.user
         CommentHandler.delete_comment(user=user, comment_id=comment, item_id=item)
         messages.add_message(self.request, messages.INFO, "Комментарий удален.")
+        cache.delete(item)
         return redirect('app_item:item_detail', item)
 
 
@@ -400,6 +405,7 @@ class EditComment(UpdateView):
         if form.is_valid():
             comment.is_published = False
             comment.save(force_update=True)
+            cache.delete(item_id)
             messages.add_message(self.request, messages.SUCCESS,
                                  "Комментарий изменен.После модерации он будет опубликован.")
             return redirect('app_item:item_detail', item_id)

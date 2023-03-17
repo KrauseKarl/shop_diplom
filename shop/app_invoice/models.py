@@ -1,43 +1,7 @@
 from django.db import models
 
 from app_cart.models import CartItem
-from app_order.models import Order
-
-
-class InvoiceItem(models.Model):
-    """Модель оплаченного товара."""
-    item = models.ForeignKey(
-        CartItem,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name='cart_item'
-    )
-    quantity = models.PositiveIntegerField(
-        default=1,
-        verbose_name='количество товара'
-    )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name='цена товара'
-    )
-    total = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name='Общая сумма'
-    )
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата создания'
-    )
-    objects = models.Manager()
-
-    class Meta:
-        db_table = 'app_invoice_item'
-        ordering = ['-created']
-        verbose_name = 'оплаченный товар'
-        verbose_name_plural = 'оплаченный товары'
+from app_order.models import Order, OrderItem
 
 
 class Invoice(models.Model):
@@ -72,7 +36,7 @@ class Invoice(models.Model):
         verbose_name='номер платежного документа'
     )
     paid_item = models.ManyToManyField(
-        InvoiceItem,
+        OrderItem,
         related_name='invoices',
         verbose_name='плаченный товар'
     )

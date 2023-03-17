@@ -13,7 +13,7 @@ from app_cart.services.cart_services import get_current_cart
 from app_invoice.models import Invoice
 from app_item.models import Item, Comment
 from app_item.services.item_services import ItemHandler
-from app_order.models import Order, Address
+from app_order.models import Order, Address, OrderItem
 from app_settings.models import SiteSettings
 from app_store.models import Store
 from app_user.services.register_services import ProfileHandler
@@ -37,9 +37,6 @@ class CustomerOrderHandler:
             address = post_address.split(';')[1]
         delivery_express_cost = CustomerOrderHandler.calculate_express_delivery_fees(form.cleaned_data.get('delivery'))
         delivery_cost = cart.is_free_delivery
-        print(delivery_cost)
-        print(delivery_express_cost)
-        print(form.cleaned_data.get('total_sum'))
         with transaction.atomic():
             order = Order.objects.create(
                 user=user,
@@ -61,11 +58,18 @@ class CustomerOrderHandler:
                 order.save()
 
             cart_items = cart.items.filter(is_paid=False)
-            for cart_item in cart_items:
-                cart_item.is_paid = True
+            with transaction.atomic():
+                for cart_item in cart_items:
+                    cart_item.is_paid = True
+                    cart_item.save()
+                    OrderItem.objects.create(
+                        item=cart_item,
+                        quantity=cart_item.quantity,
+                        price=cart_item.price,
+                        order=order,
+                    )
                 cart_item.order = order
                 cart_item.status = 'not_paid'
-                cart_item.save()
 
                 # product = Item.objects.get(id=cart_item.item.id)
                 # product.stock -= cart_item.quantity
@@ -86,9 +90,10 @@ class CustomerOrderHandler:
     def get_customer_order_list(request, delivery_status=None):
         try:
             if delivery_status:
-                orders = Order.objects.filter(user=request.user).filter(status=delivery_status).order_by('-created')
+                orders = CartItem.objects.filter(user=request.user).filter(status=delivery_status).order_by('-created')
             else:
-                orders = Order.objects.filter(user=request.user).order_by('-created')
+                # orders = CartItem.objects.exclude(status='in_cart').filter(user=request.user).order_by('-created')
+                orders = CartItem.objects.filter(user=request.user)
             return orders
         except ObjectDoesNotExist:
             return None
@@ -123,13 +128,14 @@ class SellerOrderHAndler:
 
         # все заказанные товары из магазинов
         items_in_cart = CartItem.objects.select_related('item').filter(item_id__in=items)
+        order_items = OrderItem.objects.filter(item__in=items_in_cart)
         # # all sold product
         # items_my_store = items.filter(cart_item__in=items_in_cart)
         # все заказы в магазинах собственника
-        order_list = Order.objects.select_related('user', 'store'). \
-            filter(items_is_paid__in=items_in_cart). \
-            order_by('-created')
-        return order_list
+        # order_list = OrderItem.objects.select_related('user').prefetch_related('store'). \
+        #     filter(order_items__in=items_in_cart). \
+        #     order_by('-created')
+        return order_items
 
     @staticmethod
     def get_seller_comment_list(request):

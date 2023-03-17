@@ -2,9 +2,10 @@ import csv
 from datetime import datetime
 from django.contrib import messages
 from django.db import transaction
-from django.http import Http404, HttpRequest
+from django.db.models import Sum, Q
+from django.http import Http404, HttpRequest, HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView, TemplateView
 from django.http import HttpResponse
@@ -12,6 +13,8 @@ from django.http import HttpResponse
 from app_item.services.comment_services import CommentHandler
 from app_order.forms import CartItemUpdateForm
 from app_order.services.order_services import SellerOrderHAndler
+from app_order.tasks import delivery_in_progress
+from app_settings.models import SiteSettings
 from utils.my_utils import MixinPaginator
 from app_cart.models import CartItem
 from app_item.models import Item, Tag, Image, Category, FeatureValue, Feature, Comment
@@ -77,7 +80,16 @@ class StoreDetailView(DetailView, MixinPaginator):
             items = all_items.filter(category=category)
         except (ObjectDoesNotExist, KeyError):
             items = all_items
-
+        if request.GET.get('q'):
+            query = str(request.GET.get('q'))  # [:-1]
+            title = query.title()
+            lower = query.lower()
+            items = all_items.select_related('category', 'store'). \
+                prefetch_related('tag', 'views', 'image', 'feature_value'). \
+                filter(
+                Q(title__icontains=title) |
+                Q(title__icontains=lower)
+            ).distinct()
         if request.GET.get('order_by', None):
             order_by = request.GET.get('order_by')
             items = StoreHandler.ordering_store_items(queryset=items, order_by=order_by)
@@ -443,16 +455,19 @@ class DeliveryListView(ListView):
 
     def get(self, request, status=None, **kwargs):
         super().get(request, **kwargs)
-        orders = SellerOrderHAndler.get_seller_order_list(request)
+        stores = Store.objects.values_list('id', flat=True).filter(owner=request.user)
+        cart_items = CartItem.objects.exclude(status='in_cart').filter(item__store__in=stores)
         if self.request.GET.get('store'):
             current_store = self.request.GET.get('store')
-            orders = orders.filter(store__title=current_store)
+            cart_items = cart_items.filter(item__store__title=current_store)
         if request.GET.get('status'):
             status = request.GET.get('status')
-            orders = orders.filter(status=status)
-        else:
-            orders = orders
-        return render(request, self.template_name, {'orders': orders})
+            cart_items = cart_items.filter(status=status)
+        if request.GET.get('number'):
+            order_number = request.GET.get('number')
+            cart_items = cart_items.filter(order__id__icontains=order_number)
+
+        return render(request, self.template_name, {'cart_items': cart_items, 'status_list': CartItem.STATUS })
 
 
 class DeliveryDetailView(DetailView):
@@ -466,8 +481,8 @@ class DeliveryDetailView(DetailView):
         context = self.get_context_data(object=self.object)
         stores = request.user.store.all()
         order = self.get_object()
-        context[
-            'items'] = order.items_is_paid.all  # CartItem.objects.filter(item__store__in=stores).filter(order=order)
+        context['items'] = order.items_is_paid.filter(item__store__in=stores)
+        context['total'] = context['items'].aggregate(total_cost=Sum('total')).get('total_cost')
         return self.render_to_response(context)
 
 
@@ -480,9 +495,7 @@ class DeliveryUpdateView(UpdateView):
 
     def form_valid(self, form):
         form.save()
-
         order = self.get_object()
-
         messages.add_message(self.request, messages.SUCCESS, f"Данные {order} успешно обновлены")
         return redirect('app_store:delivery_detail', order.pk)
 
@@ -525,6 +538,8 @@ class SentPurchase(UpdateView):
             status = form.cleaned_data.get('status')
             order.status = status
             order.save()
+
+            delivery_in_progress.delay(order.id)
             path = self.request.META.get('HTTP_REFERER')
             messages.success(self.request, f"Заказ  {order} отправлен")
             return redirect(path)
@@ -550,7 +565,7 @@ class CommentListView(ListView):
         return render(request, self.template_name, {'object_list': comments})
 
 
-class CommentModerate(TemplateView):
+class CommentList(ListView):
     model = Comment
     template_name = 'app_store/comment/comment_list.html'
 
@@ -559,6 +574,9 @@ class CommentModerate(TemplateView):
         action = kwargs['slug']
         if action == 'approve':
             CommentHandler.set_comment_approved(comment_id)
+            messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
+        elif action == 'delete':
+            CommentHandler.delete_comment_by_seller(comment_id)
             messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
         else:
             CommentHandler.set_comment_reject(comment_id)
@@ -570,12 +588,38 @@ class CommentModerate(TemplateView):
         return redirect(path)
 
 
+class CommentDetail(DetailView):
+    """Класс-представление для отображения одного комментария."""
+    model = Comment
+    template_name = 'app_store/comment/comment_detail.html'
+    context_object_name = 'comment'
+
+
+class CommentDelete(DeleteView):
+    """Класс-представление для удаления комментария."""
+    model = Comment
+    template_name = 'app_store/comment/comment_delete.html'
+
+    def form_valid(self, form):
+        success_url = self.success_url
+        self.object.archived = True
+        self.object.save()
+        return HttpResponseRedirect(self.object.get_absolute_url())
+
+
+class CommentModerate(UpdateView):
+    """Класс-представление для изменения статуса комментария(прохождение модерации)."""
+    model = Comment
+    template_name = 'app_store/comment/comment_update.html'
+    fields = ['is_published']
+
+
 # EXPORT & IMPORT DATA-STORE FUNCTION #
 def export_data_to_csv(request, **kwargs):
     """Функция для экспорта данных из магазина продавца в формате CSV."""
     store_id = kwargs['pk']
     store = Store.active_stores.get(id=store_id)
-    items = Item.available_items.filter(store_items__id=store_id)
+    items = Item.objects.filter(store__id=store_id)
     curr_date = datetime.now().strftime('%Y-%m-%d')
     response = HttpResponse()
     response['Content-Disposition'] = f'attachment; filename="price_list_{curr_date}({store.title})"'
@@ -588,7 +632,7 @@ def export_data_to_csv(request, **kwargs):
         'price',
         'is_available',
         'category__title',
-        'store_items__title',
+        'store__title',
     )
     for item in items_report:
         writer.writerow(item)

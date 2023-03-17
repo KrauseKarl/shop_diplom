@@ -1,0 +1,43 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Опубликовать комментарий
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Опубликовать комментарий</h1>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <form method="post" class="form Payment" action="">
+                {% csrf_token %}
+                <div class="Payment-card">
+                    <div class="form-group">
+                        <strong>Опубликовать комментарий ?</strong>
+                    </div>
+                    <div class="form-group">
+                        <form method="post" action=".">
+                            {% csrf_token %}
+                            <input type="hidden" name="is_published" value="1">
+                            <button type="submit" class="btn btn_success ">Да
+                            </button>
+                        </form>
+
+                        <a class="btn btn_dark " href="{% url 'app_store:comment_detail' pk=object.pk %}">Нет
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

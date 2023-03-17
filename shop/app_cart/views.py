@@ -2,6 +2,7 @@ from collections import Counter
 
 from celery import Celery
 from django.contrib import messages
+from django.db import connection
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, UpdateView, DetailView, CreateView
 
@@ -80,7 +81,7 @@ class CartDetail(DetailView):
         context['curr_cart'] = get_cart(self.request)
         total_lis = get_cart(self.request).get('cart_dict').get('book').values()
         context['total_amount_sum'] = sum(Counter([d['total'] for d in total_lis]).keys())
-        print('00000 = ', context['total_amount_sum'])
+        print('\nЗАПРОСЫ = ', len(connection.queries))
         return context
 
 

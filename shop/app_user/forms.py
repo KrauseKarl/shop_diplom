@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from app_user.models import Profile
+from app_user.services.register_services import ProfileHandler
 
 
 class AuthForm(AuthenticationForm):
@@ -124,6 +125,12 @@ class RegisterUserFormFromOrder(UserCreationForm):
             raise forms.ValidationError("Это электронная почта уже используется")
         return email
 
+    def clean_telephone(self):
+        telephone = ProfileHandler.telephone_formatter(self.cleaned_data.get('telephone'))
+        if Profile.objects.filter(telephone=telephone).exists():
+            raise forms.ValidationError("Этот номер телефона уже используется")
+        return telephone
+
 
 class UpdateUserForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, required=False)
@@ -134,6 +141,12 @@ class UpdateUserForm(forms.ModelForm):
         model = User
         fields = ('first_name', 'last_name', 'email')
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Это электронная почта уже используется")
+        return email
+
 
 class UpdateProfileForm(forms.ModelForm):
     telephone = forms.CharField(max_length=18)
@@ -142,3 +155,9 @@ class UpdateProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ('avatar', 'telephone')
+
+    def clean_telephone(self):
+        telephone = ProfileHandler.telephone_formatter(self.cleaned_data.get('telephone'))
+        if Profile.objects.filter(telephone=telephone).exists():
+            raise forms.ValidationError("Этот номер телефона уже используется")
+        return telephone

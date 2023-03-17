@@ -232,8 +232,6 @@ class Item(models.Model):
         return self.cart_item.aggregate(bestseller=Sum('quantity')).get('bestseller')
 
 
-
-
 class Category(models.Model):
     """Модель категории товара."""
     title = models.CharField(
@@ -359,26 +357,30 @@ class Comment(models.Model):
         related_name='user_comments',
         verbose_name='пользователь'
     )
-    created_at = models.DateTimeField(
+    created = models.DateTimeField(
         auto_now_add=True,
         verbose_name='дата создания'
     )
-    updated_at = models.DateTimeField(
+    updated = models.DateTimeField(
         auto_now_add=True,
         verbose_name='дата обновления'
     )
-
+    archived = models.BooleanField(default=False,
+                                   verbose_name='удален в архив')
     objects = models.Manager()
     published_comments = ModeratedCommentsManager()
 
-    def __str__(self):
-        return self.review[:15]
-
     class Meta:
         db_table = 'app_comments'
-        ordering = ['-created_at']
+        ordering = ['-created']
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
+
+    def __str__(self):
+        return f'комментарий №{self.pk}'
+
+    def get_absolute_url(self):
+        return reverse('app_store:comment_detail', kwargs={'pk': self.pk})
 
     def save(self, *args, **kwargs):
         """Функция по созданию slug"""

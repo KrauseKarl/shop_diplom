@@ -1,6 +1,7 @@
 from pprint import pprint
 
 from celery import Celery
+from django.core.cache import cache
 from django.http.response import HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect
@@ -9,7 +10,7 @@ from app_cart.models import *
 from app_item.models import Item
 from app_item.services.item_services import ItemHandler
 from app_user.services.user_services import is_customer
-from shop.settings import CELERY_RESULT_BACKEND, CELERY_BROKER_URL
+from utils.my_utils import query_counter
 
 
 def cart_(request):
@@ -28,6 +29,24 @@ def cart_(request):
     return cart
 
 
+def get_cache_key(request):
+    if request.user.is_authenticated:
+        key = request.user
+    else:
+        key = request.COOKIES.get('cart')
+    return key
+
+
+def get_cart_cache(request):
+    cache_key = get_cache_key(request)
+    return cache.get(cache_key)
+
+
+def set_cart_cache(request, instance):
+    cache_key = get_cache_key(request)
+    cache.set(cache_key, instance, 60 * 60)
+
+
 def get_current_cart(request) -> dict:
     """
     Функция возвращает словарь из трех ключей(
@@ -41,11 +60,14 @@ def get_current_cart(request) -> dict:
     cart = cart_(request)
 
     try:
-        ordered_cart_by_store = order_items_in_cart(cart)
-        items_and_fees = calculate_discount(ordered_cart_by_store)
-        total_delivery_fees = fees_total_amount(items_and_fees)
-
-        return {'cart': cart, 'book': ordered_cart_by_store, 'fees': total_delivery_fees}
+        cart_dict = get_cart_cache(request)
+        if cart_dict is None:
+            ordered_cart_by_store = order_items_in_cart(cart)
+            items_and_fees = calculate_discount(ordered_cart_by_store)
+            total_delivery_fees = fees_total_amount(items_and_fees)
+            cart_dict = {'cart': cart, 'book': ordered_cart_by_store, 'fees': total_delivery_fees}
+            set_cart_cache(request, cart_dict)
+        return cart_dict
     except (KeyError, AttributeError):
         return {'cart': cart}
 
@@ -122,7 +144,9 @@ def add_item_in_cart(request, item_id, quantity=1):
                 #  добавляем его в корзину
                 cart.items.add(cart_item)
                 messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+        cart.save()
         response = set_cart_cookies(request)
+    cache.delete(get_cache_key(request))
     return response
 
 
@@ -139,6 +163,7 @@ def remove_from_cart(request, item_id):
     messages.add_message(request, messages.INFO, f"{cart_item.item.title} удален из корзины")
     try:
         cart_item.delete()
+        cache.delete(get_cache_key(request))
     except ObjectDoesNotExist:
         pass
 
@@ -162,6 +187,7 @@ def update_quantity_item_in_cart(request, quantity, update, **kwargs):
             cart_item.quantity = int(quantity)
             cart_item.save()
             messages.add_message(request, messages.SUCCESS, f"Количество товара обновлено до {cart_item.quantity} шт.")
+    cache.delete(get_cache_key(request))
 
 
 def order_items_in_cart(cart) -> dict:
@@ -267,6 +293,20 @@ def create_cart_item(item, user=None):
     cart_item = CartItem.objects.create(item=item, price=item.price, is_paid=False, user=user)
     return cart_item
 
+
+def identify_cart(request, user):
+    if is_customer(user):
+        if request.session.session_key:
+            session_key = request.session.session_key
+            cart = Cart.objects.filter(session_key=session_key).first()
+            if cart:
+                cart.session_key = ''
+                cart.is_anonymous = False
+                cart.user = user
+                for cart_item in cart.items.all():
+                    cart_item.user = user
+                    cart_item.save()
+                cart.save()
 
 def merge_anon_cart_with_user_cart(request, cart):
     """

@@ -89,10 +89,6 @@
                             <span class="btn btn_success btn_square btn_sm">оплачен</span>
                           {% else %}
                             <span class="btn btn_danger btn_square btn_sm"> не оплачен</span>
-                          <a class="btn btn_success Order-pay-button"
-                             href="{% url 'app_order:progress_payment' order.id %}">
-                            оплатить
-                          </a>
                           {% endif %}
                         </div>
                       </div>
@@ -106,9 +102,8 @@
                   </div>
                 </div>
               </div>
-
               <div class="Cart Cart_order">
-                {% for item in items_is_paid %}
+                {% for item in order_items %}
                 {% ifchanged %}
                 <h3>{{ item.item.store }}</h3>
                   {% for invoice in item.item.store.all_store_invoices.all %}
@@ -121,23 +116,23 @@
                   <div class="Cart-block Cart-block_row">
                     <div class="Cart-block Cart-block_pict">
                       <a class="Cart-pict" href="{% url 'app_item:item_detail' pk=item.item.pk %}">
-                        <img class="Cart-img" src="{{ item.item.image.first.image.url }}" alt="{{ item.item.title }}"/>
+                        <img class="Cart-img" src="{{ item.item.item.image.first.image.url }}" alt="{{ item.item.item.title }}"/>
                       </a>
                     </div>
                     <div class="Cart-block Cart-block_info">
-                      <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.pk %}">{{ item.item.title }}</a>
+                      <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.pk %}">{{ item.item.item.title }}</a>
                       <div class="Cart-desc">{{ item.item.description|truncatechars:50 }}</div>
                     </div>
                       <div class="Cart-block Cart-block_row"> {{ item.get_status_display }}</div>
                       <div class="Cart-block Cart-block_row"></div>
                     <div class="Cart-block Cart-block_price">
-                      <div class="Cart-price">{{ item.price }}$
+                      <div class="Cart-price">{{ item.item.price }}$
                       </div>
                     </div>
                   </div>
                   <div class="Cart-block Cart-block_row">
-                    <div class="Cart-block Cart-block_amount">{{ item.quantity }} шт.</div>
-                    <div class="Cart-price">{{ item.total }}</div>
+                    <div class="Cart-block Cart-block_amount">{{ item.item.quantity }} шт.</div>
+                    <div class="Cart-price">{{ item.item.total }}</div>
                   </div>
                 </div>
                 {% endfor %}
@@ -155,16 +150,24 @@
 
                 </div>
                 <div class="Cart-block Cart-block_total">
-                    <div class="Cart-total-order">
-                      {% if order.status == 'is_ready' %}
-                      <form method="post" action="{% url 'app_order:order_confirm' order_id=order.pk %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="status" value="completed">
-                          <button class="btn btn_success">подтвердить получение</button>
-                      </form>
-                      {% endif %}
-                    </div>
+                  <div class="Cart-total-order">
+                    {% if order.status == 'is_ready' %}
+                    <form method="post" action="{% url 'app_order:order_confirm' order_id=order.pk %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="completed">
+                      <button class="btn btn_success">подтвердить получение</button>
+                    </form>
+                    {% endif %}
                   </div>
+                  <div class="Cart-total-order">
+                    {% if not order.is_paid %}
+                    <a class="btn btn_success "
+                       href="{% url 'app_order:progress_payment' order.id %}">
+                      оплатить
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

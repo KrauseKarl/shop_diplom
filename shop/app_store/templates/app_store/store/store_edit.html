@@ -11,6 +11,20 @@
             <div class="Middle-header">
                 <h1 class="Middle-title">Редактировать магазин
                 </h1>
+                <div>
+    {% if form.errors %}
+    <div class="form-error form-textarea_error" role="alert">
+        <h3>Ошибка:</h3>
+        <ul>{% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li>- {{ field }} {{ error}}</li>
+              {% endfor %}
+            {% endfor %}
+        </ul>
+        Пожалуйста, попробуйте еще раз!
+    </div>
+    {% endif %}
+</div>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
                         <a href="index.html">home</a>
@@ -25,7 +39,7 @@
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
-                {% include "app_user/navbar.html" %}
+                {% include "app_user/seller/sidebar_seller.html" %}
             </div>
             <div class="Section-content">
                 <div class="Profile">
@@ -51,6 +65,7 @@
                                         {% else %} <span class="store-status-non_active">не активен</span>
                                         {% endif %}
                                         <input class="form-input" id="is_active" name="is_active" type="checkbox"
+                                               {% if store.is_active  %}checked{% endif %}
                                            value="{{ store.is_active }}"/>
                                     </div>
                                 </div>
@@ -59,17 +74,17 @@
                                 <!--    DELIVERY FEES FIELD  -->
                                 <div class="form-group">
                                     {% include 'error_message.html' %}
-                                    <label class="form-label" for="delivery_fees">минимальная сумма бесплатной доставки</label>
-                                    <input class="form-input" id="delivery_fees" name="delivery_fees" type="text"
-                                           value="{{ store.delivery_fees }}"/>
+                                    <label class="form-label" for="discount">скидка</label>
+                                    <input class="form-input" id="discount" name="discount" type="number"
+                                           value="{{ store.discount }}"/>
                                 </div>
                                 <!--    DELIVERY FEES FIELD   -->
                                 <!--    MINIMUM FREE DELIVERY  FIELD  -->
                                 <div class="form-group">
                                     {% include 'error_message.html' %}
-                                    <label class="form-label" for="min_free_delivery">стоимость доставки</label>
-                                    <input class="form-input" id="min_free_delivery" name="min_free_delivery"
-                                           type="text" value="{{ store.min_free_delivery }}"/>
+                                    <label class="form-label" for="min_for_discount">минимальная сумма для скидки</label>
+                                    <input class="form-input" id="min_for_discount" name="min_for_discount"
+                                           type="number" value="{{ store.min_for_discount }}"/>
                                 </div>
                                 <!--    MINIMUM FREE DELIVERY  FIELD  -->
                                 <!--    TITLE DESCRIPTION  -->
@@ -108,9 +123,10 @@
                                 <!--    OWNER FIELD  -->
                                 <div class="form-group">
                                     {% include 'error_message.html' %}
-                                    <label class="form-label" for="owner">Собственник</label>
-                                    <input class="form-input" id="owner" name="owner" type="text"
-                                           value="{{ store.owner.get_full_name }}"/>
+                                    <label class="form-label" for="owner">Собственник </label>
+                                    <label class="form-label" for="owner">{{ store.owner.get_full_name}}</label>
+                                    <input class="form-input" id="owner" name="owner" type="hidden"
+                                           value="{{ store.owner.id }}"  readonly/>
                                 </div>
                                 <!--    OWNER FIELD  -->
 

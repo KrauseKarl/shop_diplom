@@ -125,11 +125,11 @@
                              <div class="Cart-block Cart-block_row">
                                  <!--    ORDER SEND BUTTON -->
                                  <div class="Cart-price Cart-block_info">
-                                     {% if order.status == 'in_progress' %}
+                                     {% if order.status == 'paid' %}
                                      <form method="post"
                                            action="{% url 'app_store:sent_purchase' order_id=order.pk %}">
                                          {% csrf_token %}
-                                         <input type="hidden" name="status" value="is_ready">
+                                         <input type="hidden" name="status" value="is_preparing">
                                          <button class="btn btn_square btn_success btn_narrow  btn_sm"> отправить товар</button>
                                      </form>
                                      {% endif %}
@@ -142,54 +142,54 @@
                                  </div>
                                  <!--    STATUS ORDER  -->
 
-                                 <!--    STATUS BAR  -->
-                                 <div class="Cart-price Cart-block_info">
-                                     {% if order.status == 'deactivated' %}
-                                     <div class="Order-infoContent">
-                                         <span class="Order-progress-bar_width Order-progress-bar-deactivated Order-progress-bar_width"></span>
-                                     </div>
-                                     {% elif order.status == 'new' %}
-                                     <div class="Order-infoContent">
-                                         <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>
-                                     </div>
-                                     {% elif order.status == 'in_progress' %}
-                                     <div class="Order-infoContent">
-                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>
-                                     </div>
-                                     {% elif order.status == 'on_the_way' %}
-                                     <div class="Order-infoContent">
-                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>
-                                     </div>
-                                     {% elif order.status == 'is_ready' %}
-                                     <div class="Order-infoContent">
-                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>
-                                     </div>
-                                     {% elif order.status == 'completed' %}
-                                     <div class="Order-infoContent">
-                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
-                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>
-                                     </div>
-                                     {% endif %}
-                                 </div>
-                                 <!--    STATUS BAR  -->
+<!--                                 &lt;!&ndash;    STATUS BAR  &ndash;&gt;-->
+<!--                                 <div class="Cart-price Cart-block_info">-->
+<!--                                     {% if order.status == 'deactivated' %}-->
+<!--                                     <div class="Order-infoContent">-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-deactivated Order-progress-bar_width"></span>-->
+<!--                                     </div>-->
+<!--                                     {% elif order.status == 'new' %}-->
+<!--                                     <div class="Order-infoContent">-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-new Order-progress-bar_width"></span>-->
+<!--                                     </div>-->
+<!--                                     {% elif order.status == 'in_progress' %}-->
+<!--                                     <div class="Order-infoContent">-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-in_progress Order-progress-bar_width"></span>-->
+<!--                                     </div>-->
+<!--                                     {% elif order.status == 'on_the_way' %}-->
+<!--                                     <div class="Order-infoContent">-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-on_the_way Order-progress-bar_width"></span>-->
+<!--                                     </div>-->
+<!--                                     {% elif order.status == 'is_ready' %}-->
+<!--                                     <div class="Order-infoContent">-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-is_ready Order-progress-bar_width"></span>-->
+<!--                                     </div>-->
+<!--                                     {% elif order.status == 'completed' %}-->
+<!--                                     <div class="Order-infoContent">-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>-->
+<!--                                         <span class="Order-progress-bar_width Order-progress-bar-completed Order-progress-bar_width"></span>-->
+<!--                                     </div>-->
+<!--                                     {% endif %}-->
+<!--                                 </div>-->
+<!--                                 &lt;!&ndash;    STATUS BAR  &ndash;&gt;-->
 
                                  <!-- EDIT ORDER'S ITEMS -->
                                  <div class="Cart-price Cart-block_price">
-                                     {% if order.status == 'in_progress' or order.status == 'new' %}
+                                     {% if order.status == 'paid' or order.status == 'new' %}
                                      <a class="btn btn_square btn_dark btn_narrow btn_sm" style="margin-left:10px"
                                         href="{% url 'app_store:delivery_edit' order.id %}">
                                          редактировать
@@ -200,7 +200,7 @@
 
                                  <!-- CANCEL ORDER   -->
                                  <div class="Cart-price Cart-block_price">
-                                     {% if order.status == 'in_progress' or order.status == 'new' %}
+                                     {% if order.status == 'paid' or order.status == 'new' %}
                                      <a class="btn btn_square btn_danger btn_narrow btn_sm" style="margin-left:10px"
                                         href="#deliveryDeleteModal">
                                          удалить
@@ -267,7 +267,7 @@
                         <div class="Cart-total">
                             <div class="Cart-block Cart-block_total">
                                 <strong class="Cart-title">
-                                    <span class="Cart-price Cart-total-order">Итого: {{ order.total_sum }}$</span>
+                                    <span class="Cart-price Cart-total-order">Итого:$ {{ total|floatformat:'2' }}</span>
                                 </strong>
                             </div>
                         </div>
@@ -277,7 +277,6 @@
             </div>
         </div>
     </div>
-</div>
 </div>
 
 {% endblock %}

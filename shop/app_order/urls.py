@@ -10,17 +10,18 @@ urlpatterns = [
     path('order_list/', OrderList.as_view(), name='order_list'),
     path('order_list/<slug:status>/', OrderList.as_view(), name='order_progress'),
 
-    path('address/create/', AddressCreate.as_view(), name='address_create'),
-    path('address/list/', AddressList.as_view(), name='address_list'),
-    path('address/edit/<int:pk>/', AddressUpdate.as_view(), name='address_edit'),
-    path('address/remove/<int:pk>/', AddressDelete.as_view(), name='address_remove'),
-
 
     path('order_detail/<int:pk>/', OrderDetail.as_view(), name='order_detail'),
+    path('order_update/<int:pk>/update/', OrderUpdatePayWay.as_view(), name='order_update'),
     path('order_detail/<int:order_id>/confirm/', ConfirmReceiptPurchase.as_view(), name='order_confirm'),
     path('order_list/<int:order_id>/cancel/', RejectOrder.as_view(), name='order_cancel'),
     path('success_order/', SuccessOrdered.as_view(), name='success_order'),
     path('failed_order/', FailedOrdered.as_view(), name='failed_order'),
+
+    path('address/create/', AddressCreate.as_view(), name='address_create'),
+    path('address/list/', AddressList.as_view(), name='address_list'),
+    path('address/edit/<int:pk>/', AddressUpdate.as_view(), name='address_edit'),
+    path('address/remove/<int:pk>/', AddressDelete.as_view(), name='address_remove'),
 
     path('progress_payment/<int:pk>/', PaymentView.as_view(), name='progress_payment'),
     path("validate_username/", validate_username, name="validate_username"),

@@ -49,6 +49,10 @@
                 <div class="Sort">
                     <div class="Sort-title">Всего комментариев: </div>
                     <div class="Sort-variants">
+                         <a class="Sort-sortBy"
+                           href="{% url 'app_store:comment_list' %}">
+                            все
+                        </a>
                         {% for store in request.user.store.all %}
                         <a class="Sort-sortBy"
                            href="?store={{ store.slug }}">
@@ -63,7 +67,6 @@
                            href="?{% if request.GET.store %}store={{ request.GET.store }}&{% endif %}is_published=True">
                             опубликованные
                         </a>
-                        <a class="Sort-sortBy">удаленные</a>
                     </div>
                 </div>
                 <!--    SORT BY END    -->
@@ -72,12 +75,13 @@
                 <!--       PAGINATION         -->
                 <div class="Orders">
                     {% for comment in object_list %}
+                    <a href="{{ comment.get_absolute_url }}">
                     <div class="Order Order_anons">
                         <div class="Order-personal">
                             <div class="row">
                                 <!--  ORDER'S TITLE & DATE -->
                                 <div class="row-block">
-                                     <div class="Order-info">
+                                    <div class="Order-info">
                                         <div class="Order-infoType">автор:</div>
                                         <div class="Order-infoContent">
                                             {{ comment.user.get_full_name }}
@@ -86,25 +90,19 @@
                                     <div class="Order-info">
                                         <div class="Order-infoType">магазин:</div>
                                         <div class="Order-infoContent">
-                                            <div class="Order-infoContent" style="display:inline">
-                                                {{ comment.item.store|upper }}
-                                            </div>
+                                            {{ comment.item.store|upper }}
                                         </div>
                                     </div>
                                     <div class="Order-info">
                                         <div class="Order-infoType">товар:</div>
                                         <div class="Order-infoContent">
-                                            <a href="{% url 'app_item:item_detail' comment.item.pk %}">
-                                                <div class="Order-infoContent" style="display:inline">
-                                                    {{ comment.item.title }}
-                                                </div>
-                                            </a>
+                                            {{ comment.item.title }}
                                         </div>
                                     </div>
                                     <div class="Order-info">
                                         <div class="Order-infoType">дата:</div>
                                         <div class="Order-infoContent">
-                                            {{ comment.created_at }}
+                                            {{ comment.created }}
                                         </div>
                                     </div>
                                     <div class="Order-info">
@@ -126,37 +124,11 @@
                                             </span>
                                         </div>
                                     </div>
-                                        <div class="Order-info ">
-                                        <div class="Order-infoType"></div>
-                                        <div class="Order-infoContent">
-                                            <div class="Order-price">
-                                                {% if not comment.is_published %}
-                                                <a class="btn btn_square  btn_success btn_narrow"
-                                                   href="{% url 'app_store:comment_moderate' pk=comment.pk slug='approve' %}">
-                                                    опубликовать
-                                                </a>
-                                                   &#160;&#160;
-                                                {% else %}
-                                                <a class="btn btn_square btn_danger btn_narrow"
-                                                 href="{% url 'app_store:comment_moderate' pk=comment.pk slug='reject'%}">
-                                                    отклонить
-                                                </a>
-                                                 {% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-
-
-
-
-
-
                                 </div>
                             </div>
                         </div>
                     </div>
+                    </a>
                     {% empty %}
                     <div class="Order Order_anons">Ничего не найдено</div>
                     {% endfor %}

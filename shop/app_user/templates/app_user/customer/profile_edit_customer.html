@@ -12,7 +12,7 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">Профиль
+                <h1 class="Middle-title">Профиль {{ form.errors }}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item"><a href="index.html">home</a>
@@ -34,18 +34,20 @@
                     <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
-                            {% if form.errors %}<div class="form-group">{{form.errors}}</div>{% endif %}
+
                             <div class="row-block">
                                 <div class="form-group">
                                     <label class="form-label" for="avatar">Аватар</label>
-
                                     <div class="Profile-avatar">
                                         <div class="Profile-img">
-                                            {{form.non_field_errors}}
                                             {% if user.profile.avatar %}
                                             <img src="{{ user.profile.avatar.url }}" alt="card.jpg"/>
                                             {% endif %}
                                         </div>
+                                        {% if form.errors.avatar %}
+                                        <div class="form-error">{{ form.errors.avatar }}
+                                        </div>
+                                        {% endif %}
                                         <label class="Profile-fileLabel" for="avatar">Выберите аватар</label>
                                         <input class="Profile-file form-input" id="avatar" name="avatar"
                                                data-validate="onlyImgAvatar" type="file"/>
@@ -54,9 +56,17 @@
 
                                 </div>
                                 <div class="form-group">
+                                    {% if form.errors.first_name %}
+                                        <div class="form-error">{{ form.errors.first_name }}
+                                        </div>
+                                        {% endif %}
                                     <label class="form-label" for="first_name">Имя</label>
                                     <input class="form-input" id="first_name" name="first_name" type="text"
                                            value="{{user.first_name}}"/>
+                                    {% if form.errors.last_name %}
+                                        <div class="form-error">{{ form.errors.last_name }}
+                                        </div>
+                                        {% endif %}
                                     <label class="form-label" for="last_name">Фамилия</label>
                                     <input class="form-input" id="last_name" name="last_name" type="text"
                                            value="{{user.last_name}}"/>
@@ -64,25 +74,41 @@
                             </div>
                             <div class="row-block">
                                 <div class="form-group">
+                                    {% if form.errors.telephone %}
+                                        <div class="form-error">{{ form.errors.telephone }}
+                                        </div>
+                                        {% endif %}
                                     <label class="form-label" for="telephone">Телефон</label>
                                     <input class="form-input" id="telephone" name="telephone"
                                            data-mask="+7 (999) 999 99 99"
                                            type="text" value="{{user.profile.telephone}}"/>
                                 </div>
                                 <div class="form-group">
+                                    {% if form.errors.email %}
+                                        <div class="form-error">{{ form.errors.email }}
+                                        </div>
+                                    {% endif %}
                                     <label class="form-label" for="email">E-mail</label>
                                     <input class="form-input" id="email" name="email" type="text"
                                            value="{{user.email}}"/>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="password">Пароль</label>
-                                    <input class="form-input" id="password" name="password" type="password"
-                                           placeholder="Тут можно изменить пароль" readonly/>
+                                    {% if form.errors.password1 %}
+                                        <div class="form-error">{{ form.errors.password }}
+                                        </div>
+                                    {% endif %}
+                                    <label class="form-label" for="password1">Пароль</label>
+                                    <input class="form-input" id="password1" name="password1" type="password"
+                                           placeholder="Тут можно изменить пароль" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="passwordReply">Подтверждение пароля</label>
-                                    <input class="form-input" id="passwordReply" name="passwordReply" type="password"
-                                           placeholder="Введите пароль повторно" readonly/>
+                                    {% if form.errors.password2 %}
+                                        <div class="form-error">{{ form.errors.passwordReply }}
+                                        </div>
+                                    {% endif %}
+                                    <label class="form-label" for="password2">Подтверждение пароля</label>
+                                    <input class="form-input" id="password2" name="password2" type="password"
+                                           placeholder="Введите пароль повторно" />
                                 </div>
                                 <div class="form-group">
                                     <div class="Profile-btn">

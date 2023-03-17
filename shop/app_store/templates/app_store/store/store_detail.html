@@ -43,6 +43,51 @@
                         <strong class="Section-title">{{ store.title }}</strong>
                     </header>
                     <div class="Section-columnContent">
+
+                        <!--    TITLE INPUT -->
+                        <div class="form">
+                            <form method="get" action="{% url 'app_store:store_detail' pk=store.pk %}">
+                                <div class="form-group">
+                                    <input class="form-input form-input_full" name="q" type="search"
+                                           placeholder="название товара"
+                                           value="{% if request.GET.q %} {{ request.GET.q }}{% endif %}"/>
+                                </div>
+                                <div class="Section-columnSection">
+                                <div class="form-group">
+                                    <div class="buttons">
+                                        <button class="btn btn_square btn_dark btn_narrow" type="submit">Применить
+                                            фильтр
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            </form>
+                        </div>
+                        <!--    TITLE INPUT -->
+
+                        <!-- ITEM CATEGORY FILTER  -->
+
+                        <div class="Section-columnSection">
+                            <header class="Section-header">
+                            <strong class="Section-title">фильтр
+                            </strong>
+                        </header>
+
+                        <div class="Section-columnContent">
+                            <div class="buttons">
+                                <a href="{% url 'app_store:store_detail' pk=store.pk  %}"
+                                   class="btn btn_default btn_square btn_full">все товары
+                                </a>
+                                {% for category in categories %}
+                                <a href="{% url 'app_store:category_item' pk=store.pk slug=category.slug %}"
+                                   class="btn btn_default btn_square btn_full">{{ category }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ITEM CATEGORY FILTER  -->
                         <!--    FORM    -->
                         <div class="form">
                             <form>
@@ -57,15 +102,15 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label>стоимость доставки</label>
+                                    <label>скидка</label>
                                     <div class="Card-content Card-title Card-price Cart-total-order">
-                                        {{ store.delivery_fees }}$
+                                        {{ store.discount }}%
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label>минимальная сумма бесплатной доставки</label>
+                                    <label>минимальная сумма для скидки</label>
                                     <div class="Card-content Card-title Card-price Cart-total-order">
-                                        {{ store.min_free_delivery }}$
+                                        ${{ store.min_for_discount|floatformat:"2" }}
                                     </div>
                                 </div>
 
@@ -101,7 +146,7 @@
                         <div class="form-group">
                             <span class="toggle-text">Продано на сумму</span>
                             <div class="Card-content Card-title Card-price Cart-total-order">
-                                {{ total_profit }}$
+                                ${{ total_profit|floatformat:"2" }}
                             </div>
                         </div>
                     </div>
@@ -159,24 +204,6 @@
                     </div>
                     <!--     Загрузить   END     -->
 
-                    <!-- ITEM CATEGORY FILTER  -->
-
-                    <div class="Section-columnSection">
-                        <header class="Section-header">
-                            <strong class="Section-title">фильтр </strong>
-                        </header>
-                        <div class="Section-columnContent">
-                            <div class="buttons">
-                                <a href="{% url 'app_store:store_detail' pk=store.pk  %}"
-                                   class="btn btn_primary btn_full btn_sm">все товары</a>
-                                {% for category in categories %}
-                                <a href="{% url 'app_store:category_item' pk=store.pk slug=category.slug %}"
-                                   class="btn btn_primary btn_full btn_sm">{{category}}</a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    <!-- ITEM CATEGORY FILTER  -->
 
                 </div>
             </div>
@@ -187,23 +214,37 @@
                     <div class="Sort-title">Сортировать по:</div>
                     <div class="Sort-variants">
                         <a class="Sort-sortBy" href="{% url 'app_store:store_detail'  pk=store.pk %}">
-                            <span>все</span>
-                        </a>
-                        <a class="Sort-sortBy" href="?order_by=stock"><span>количеству</span></a>
-                        <a class="Sort-sortBy" href="?order_by=rest"><span class="rest_label">остатки</span></a>
-                        <a class="Sort-sortBy" href="?order_by=limited_edition">
-                            <span class="limited_edition_label">ограниченный тираж</span>
-                        </a>
-                        <a class="Sort-sortBy" href="?order_by=best_seller">
-                            <span><img src="/assets/img/icons/cart.svg" width="15">продажам</span>
-                        </a>
-                        <a class="Sort-sortBy" href="?order_by=best_comment">
-                            <span><img src="/assets/img/icons/comments.svg" width="15">комментариям</span>
+                            <span class="btn btn_default btn_square btn_sm">все
+                            </span>
                         </a>
                         <a class="Sort-sortBy"
-                           href="?{% for key, val in request.GET.items %}{{ key }}={{ val }}&{% endfor %}order_by=best_view">
-                            <span>
-                                <img src="/assets/img/icons/view.svg" width="15">
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=stock">
+                            <span class="btn btn_default btn_square btn_sm">количеству
+                            </span>
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=rest">
+                            <span class="btn btn_danger btn_square btn_sm">остатки
+                            </span>
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=limited_edition">
+                            <span class="btn btn_warning btn_square btn_sm">лимитные
+                            </span>
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=best_seller">
+                            <span class="btn btn_default btn_square btn_sm">продажам
+                            </span>
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=best_comment">
+                            <span class="btn btn_default btn_square btn_sm">комментариям
+                            </span>
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=best_view">
+                            <span class="btn btn_default btn_square btn_sm">
                                 просмотрам
                             </span>
                         </a>
@@ -290,10 +331,17 @@
                                                 </div>
                                                 <div class="Card-icon Card-icon-image">
                                                     <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
-                                                <div class="Card-icon Card-icon-image">{{item.total_views}}</div>
+                                                <div class="Card-icon Card-icon-image">{{item.total_views}}
+                                                </div>
                                                 <div class="Card-icon Card-icon-image">
-                                                    <img src="/assets/img/icons/cart.svg" width="15" height="15"></div>
-                                                <div class="Card-icon Card-icon-image">{{item.cart_item.count}}</div>
+                                                    <a href="{% url 'app_store:delivery_list' %}?item={{ item.pk}}"
+                                                       title="количество проданных {{ item.title }}">
+                                                        <img src="/assets/img/icons/cart.svg" width="15" height="15">
+                                                    </a>
+                                                </div>
+                                                    <div class="Card-icon Card-icon-image">
+                                                        {{ item.cart_item.count }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

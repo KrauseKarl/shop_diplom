@@ -12,7 +12,6 @@ class SingletonModel(models.Model):
     def save(self, *args, **kwargs):
         self.pk = 1
         super(SingletonModel, self).save(*args, **kwargs)
-
         self.set_cache()
 
     @classmethod
@@ -44,13 +43,13 @@ class SiteSettings(SingletonModel):
     PAY_TYPE = (
         ('online', 'Онлайн картой'),
         ('someone', 'Онлайн со случайного чужого счета'),
-        ('bonus', 'бонусами'),
+        # ('bonus', 'бонусами'),
     )
-    express_delivery_price = models.DecimalField(decimal_places=2, max_digits=9, default=500,
+    express_delivery_price = models.DecimalField(decimal_places=2, max_digits=9, default=100,
                                                  verbose_name='стоимость экспресс доставки')
     min_free_delivery = models.DecimalField(decimal_places=2, max_digits=9, default=2000,
                                             verbose_name='минимальная сумма для бесплатной доставки')
-    delivery_fees = models.DecimalField(decimal_places=2, max_digits=9, default=200,
+    delivery_fees = models.DecimalField(decimal_places=2, max_digits=9, default=15,
                                         verbose_name='стоимость доставки')
     cache_detail_view = models.IntegerField(verbose_name='время кэширования страницы товара', default=86400)
     type_of_delivery = models.CharField(max_length=256, verbose_name='тип доставки', choices=DELIVERY,
@@ -73,7 +72,7 @@ class SiteSettings(SingletonModel):
         verbose_name_plural = 'Настройки'
 
     def __str__(self):
-        return 'Configuration'
+        return 'Настройки'
 
     def save(self, *args, **kwargs):
         self.updated = now()
