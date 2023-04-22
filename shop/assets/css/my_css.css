@@ -825,3 +825,61 @@ box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
 .Cart-block_order {
   margin-left: auto;
 }
+
+.warning_label {
+    background-color: #F4CA16;
+    color: white;
+    padding: 2px;
+    border-radius: 10px;
+}
+.danger_label {
+    background-color: #f26d7d;
+    color: white;
+    padding: 2px;
+    border-radius: 10px;
+
+}
+.success_label {
+    background-color: #3CB878;
+    color: white;
+    padding: 2px 5px;
+    margin: 2px;
+    border-radius: 10px;
+  }
+.info_label {
+    background-color:  #e98338;
+    color: white;
+    padding: 2px 5px;
+    margin: 2px;
+    border-radius: 10px;
+}
+.primary_label {
+    background-color: #0063d1;
+    color: white;
+    padding: 2px 5px;
+    margin: 2px;
+    border-radius: 10px;
+}
+
+.secondary_label {
+    background-color: #A5ABBA;
+    color: white;
+    padding: 2px 5px;
+    margin: 2px;
+    border-radius: 10px;
+}
+.warning-text {
+    color:#F4CA16;
+    font-weight:bold;
+    text-transform: uppercase;
+}
+.success-text {
+    color:#3CB878;
+    font-weight:bold;
+    text-transform: uppercase;
+}
+.danger-text {
+    color:#f26d7d;
+    font-weight:bold;
+    text-transform: uppercase;
+}

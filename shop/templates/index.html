@@ -1,25 +1,34 @@
 <!DOCTYPE html>
 <html lang="ru">
 {% load cache %}
+{% load static %}
 <head>
     <title>Megano</title>
     <meta name="description" content="Описание страницы">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <link href="/assets/favicon.ico" rel="shortcut icon">
-    <link href="/assets/img/icons/favicon.ico" rel="shortcut icon">
 
-    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Regular.woff" as="font">
-    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Italic.woff" as="font">
-    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Bold.woff" as="font">
-    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Bold_Italic.woff" as="font">
-    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Light.woff" as="font">
-    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Light_Italic.woff" as="font">
+    <link href="{% static 'favicon.ico' %}"     rel="shortcut icon">
+    <link href="/assets/img/icons/favicon.ico"  rel="shortcut icon">
 
-    <link rel="stylesheet" type="text/css" href="/assets/css/fonts.css?v=65245665">
-    <link rel="stylesheet" type="text/css" href="/assets/css/basic.css?v=65245665">
-    <link rel="stylesheet" type="text/css" href="/assets/css/extra.css?v=65245665">
-    <link rel="stylesheet" type="text/css" href="/assets/css/my_css.css?v=65245665">
+    <link  href="/assets/fonts/Roboto/Roboto-Regular.woff"      rel="preload" as="font">
+    <link  href="/assets/fonts/Roboto/Roboto-Italic.woff"       rel="preload" as="font">
+    <link  href="/assets/fonts/Roboto/Roboto-Bold.woff"         rel="preload" as="font">
+    <link  href="/assets/fonts/Roboto/Roboto-Bold_Italic.woff"  rel="preload" as="font">
+    <link  href="/assets/fonts/Roboto/Roboto-Light.woff"        rel="preload" as="font">
+    <link  href="/assets/fonts/Roboto/Roboto-Light_Italic.woff" rel="preload" as="font">
+
+    <link href="/assets/css/fonts.css?v=65245665"  rel="stylesheet" type="text/css">
+    <link href="/assets/css/basic.css?v=65245665"  rel="stylesheet" type="text/css">
+    <link href="{% static 'css/basic.css?v=65245665' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/basic.css?v=65245665' %}" rel="stylesheet" type="text/css">
+    <link href="/assets/css/extra.css?v=65245665"  rel="stylesheet" type="text/css">
+    <!--    MY CSS FILE -->
+
+    <link href="/assets/css/my_css.css?v=65245665"  rel="stylesheet" type="text/css">
+    <!--  ICONS -->
+    <link href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"  rel="stylesheet">
+    <link  href="path/to/font-awesome/css/font-awesome.min.css"             rel="stylesheet">
     <script src="/assets/plg/CountDown/countdown.js"></script>
 
 </head>
@@ -174,9 +183,11 @@
                     <a class="CartBlock-block" href="{% url 'app_order:order_list'   %}">
                         <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"
                              alt="order.svg"/>
+                        <span class="CartBlock-amount">
+                            {{ order.count }}
+                        </span>
                     </a>
-                       {% endif %}
-
+                    {% endif %}
                     <!--    ORDERS  END-->
                 </div>
             </div>

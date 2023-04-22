@@ -1,19 +1,17 @@
 import os
 from pathlib import Path
+from os import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d'
+SECRET_KEY = 'django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d' #environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True #int(environ.get('DEBUG', default=0))
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1'] #environ.get('ALLOWED_HOSTS').split(' ')
 
 # Application definition
 
@@ -99,14 +97,27 @@ DATABASES = {
     }
 }
 
+#
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'dbPostgreSQL',
-#         'USER': 'postgres',
-#         'PASSWORD': 'admin@123',
-#         'HOST': '127.0.0.1',
-#         'PORT': '5432'
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'HOST': 'database',
+#         'NAME': 'postgres',
+#         'USER': 'postgresUSER',
+#         'PASSWORD': 'postgresPASS',
+#         'PORT': 5432,
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': environ.get('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
+#         'NAME': environ.get('POSTGRES_DB', os.path.join(BASE_DIR, 'db.sqlite3')),
+#         'USER': environ.get('POSTGRES_USER', 'user'),
+#         'PASSWORD': environ.get('POSTGRES_PASSWORD', 'password'),
+#         'HOST': environ.get('POSTGRES_HOST', 'localhost'),
+#         'PORT': environ.get('POSTGRES_PORT', '5432'),
+#
 #     }
 # }
 
@@ -137,17 +148,17 @@ TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = '/assets/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'), ]
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+# STATIC_ROOT = BASE_DIR / "assets"
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / "media"
 
 FIXTURE_ROOT = os.path.join(BASE_DIR, 'fixtures')
 # Default primary key field type
@@ -178,8 +189,8 @@ USE_CACHE = True
 
 # Celery settings
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_TIMEZONE = 'Europe/Moscow'
 # CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 # CELERY_ACCEPT_CONTENT = ['application/json']

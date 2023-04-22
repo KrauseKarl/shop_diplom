@@ -1,7 +1,7 @@
 from django import forms
 
 from app_cart.models import CartItem
-from app_order.models import Order, Address
+from app_order.models import Order, Address, OrderItem
 
 
 class OrderCreateForm(forms.ModelForm):
@@ -13,9 +13,9 @@ class OrderCreateForm(forms.ModelForm):
         fields = ('email', 'telephone', 'delivery', 'pay', 'city', 'address', 'name', 'post_address', 'comment', 'total_sum')
 
 
-class CartItemUpdateForm(forms.ModelForm):
+class OrderItemUpdateForm(forms.ModelForm):
     class Meta:
-        model = CartItem
+        model = OrderItem
         fields = ('quantity',)
 
 

@@ -1,0 +1,125 @@
+version: '3.7'
+
+services:
+
+
+  # DB POSTGRES
+  database:
+    container_name: db
+    image: postgres:14.1-alpine
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgresUSER
+      - POSTGRES_PASSWORD=postgresPASS
+    ports:
+      - 5432:5432
+
+
+  # PG_ADMIN FOR POSTGRES
+  pgadmin:
+    container_name: pg_admin
+    image: dpage/pgadmin4:5.7
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "habrpguser@habr.com"
+      PGADMIN_DEFAULT_PASSWORD: "pgadmin"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    #    restart: unless-stopped
+    #    deploy:
+    #      resources:
+    #        limits:
+    #          cpus: '0.5'
+    #          memory: 500M
+    #    networks:
+    #      - postgres
+
+
+  # DJANGO APP
+  shop_app:
+    container_name: app
+    build:
+      context: .
+#      dockerfile: Dockerfile
+    image: app:latest
+    command: gunicorn shop.wsgi:application --bind 0.0.0.0:8000
+#      bash -c "python manage.py migrate --noinput  &&
+#               python manage.py loaddata fixtures/data.json &&
+#               python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - static_volume:/usr/src/app/assets
+      - media_volume:/usr/src/app/media
+    ports:
+      - 8000:8000
+#    env_file:
+#      - ./shop .env
+    depends_on:
+             - database
+
+
+  # NGINX
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    volumes:
+      - static_volume:/usr/src/app/assets
+      - media_volume:/usr/src/app/media
+    ports:
+      - 1337:80
+    depends_on:
+      - shop_app
+
+#   REDIS
+
+  # REDIS
+  redis:
+    image: redis:7.0.5-alpine
+    container_name: redis
+
+  # CELERY
+  celery:
+    restart: always
+    build:
+      context: .
+    hostname: worker
+    command:  celery --app=shop worker --loglevel=info
+    volumes:
+      - celery_volume:/usr/scr/app
+    environment:
+     - POSTGRES_DB=postgres
+     - POSTGRES_USER=postgresUSER
+     - POSTGRES_PASSWORD=postgresPASS
+     - POSTGRES_HOST=db
+    links:
+      - redis
+    container_name: celery
+    depends_on:
+      - database
+      - redis
+
+  # FLOWER
+  flower:
+    build:
+      context: .
+    hostname: flower
+    container_name: flower
+    entrypoint: celery
+    command: -A celery_app.app flower
+    volumes:
+      - celery_volume:/usr/scr/app
+    links:
+      - redis
+    depends_on:
+      - redis
+    ports:
+      - "5555:5555"
+
+volumes:
+  pg_data:
+  static_volume:
+  media_volume:
+  celery_volume:

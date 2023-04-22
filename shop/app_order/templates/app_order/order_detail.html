@@ -63,7 +63,9 @@
                   <div class="row-block">
                     <div class="Order-info Order-info_delivery">
                       <div class="Order-infoType">Тип доставки:</div>
-                      <div class="Order-infoContent">{{ order.get_delivery_display }}</div>
+                      <div class="Order-infoContent {% if order.delivery == 'express' %}warning-text{% endif %}">
+                        {{ order.get_delivery_display }}
+                      </div>
                     </div>
                     <div class="Order-info">
                       <div class="Order-infoType">Город:</div>
@@ -78,7 +80,7 @@
                       <div class="Order-infoContent">{{ order.get_pay_display }}</div>
                     </div>
                       <div class="Order-info Order-info_status">
-                          <div class="Order-infoType">Статус:</div>
+                          <div class="Order-infoType">Статус доставки:</div>
                           <div class="Order-infoContent">{{ order.get_status_display }}
                           </div>
                       </div>
@@ -86,20 +88,23 @@
                           <div class="Order-infoType">Статус оплаты:</div>
                         <div class="Order-infoContent">
                           {% if order.is_paid %}
-                            <span class="btn btn_success btn_square btn_sm">оплачен</span>
+                          <a class="success-text"
+                             href="{% url 'app_invoice:invoices_detail' order.invoices.first.pk %}">
+                            {{ order.invoices.first }}
+                          </a>
                           {% else %}
-                            <span class="btn btn_danger btn_square btn_sm"> не оплачен</span>
+                          <span class="danger-text"> не оплачен</span>
                           {% endif %}
                         </div>
                       </div>
-                    {% if order.error %}
+                    {% if  order.error %}
                       <div class="Order-info Order-info_error">
-                        <div class="Order-infoType">Оплата не прошла:</div>
+                        <div class="Order-infoType">Оплата не прошла:
+                        </div>
                         <div class="Order-infoContent">{{ order.error }}
+                        </div>
                       </div>
                     {% endif %}
-                    </div>
-                  </div>
                 </div>
               </div>
               <div class="Cart Cart_order">
@@ -116,23 +121,26 @@
                   <div class="Cart-block Cart-block_row">
                     <div class="Cart-block Cart-block_pict">
                       <a class="Cart-pict" href="{% url 'app_item:item_detail' pk=item.item.pk %}">
-                        <img class="Cart-img" src="{{ item.item.item.image.first.image.url }}" alt="{{ item.item.item.title }}"/>
+                        <img class="Cart-img" src="{{ item.item.item.image.first.image.url }}"
+                             alt="{{ item.item.item.title }}"/>
                       </a>
                     </div>
                     <div class="Cart-block Cart-block_info">
-                      <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.pk %}">{{ item.item.item.title }}</a>
-                      <div class="Cart-desc">{{ item.item.description|truncatechars:50 }}</div>
+                      <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.pk %}">{{ item.item.item.title }}
+                      </a>
+                      <div class="Cart-desc">{{ item.item.item.store }}
+                      </div>
+                      <div class="Cart-desc">${{ item.item.price }}
+                      </div>
                     </div>
-                      <div class="Cart-block Cart-block_row"> {{ item.get_status_display }}</div>
-                      <div class="Cart-block Cart-block_row"></div>
-                    <div class="Cart-block Cart-block_price">
-                      <div class="Cart-price">{{ item.item.price }}$
+                    <div class="Cart-block Cart-block_info">
+                      <div class="Cart-title">{{ item.get_status_display }}
                       </div>
                     </div>
                   </div>
                   <div class="Cart-block Cart-block_row">
-                    <div class="Cart-block Cart-block_amount">{{ item.item.quantity }} шт.</div>
-                    <div class="Cart-price">{{ item.item.total }}</div>
+                    <div class="Cart-block Cart-block_amount">{{ item.quantity }} шт.</div>
+                    <div class="Cart-price">{{ item.total }}</div>
                   </div>
                 </div>
                 {% endfor %}
@@ -146,8 +154,6 @@
                       <span class="Cart-price">${{ order.delivery_fees }}</span>
                       {% endif %}
                   </div>
-
-
                 </div>
                 <div class="Cart-block Cart-block_total">
                   <div class="Cart-total-order">
@@ -155,16 +161,20 @@
                     <form method="post" action="{% url 'app_order:order_confirm' order_id=order.pk %}">
                       {% csrf_token %}
                       <input type="hidden" name="status" value="completed">
-                      <button class="btn btn_success">подтвердить получение</button>
+                      <button class="btn btn_primary btn_sm">подтвердить получение</button>
                     </form>
                     {% endif %}
-                  </div>
-                  <div class="Cart-total-order">
                     {% if not order.is_paid %}
-                    <a class="btn btn_success "
+                    <a class="btn btn_success btn_sm" style="margin-right:20px"
                        href="{% url 'app_order:progress_payment' order.id %}">
                       оплатить
                     </a>
+                    <form style="margin-right:20px" method="post" action="{% url 'app_order:order_cancel' order_id=order.pk  %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="deactivated"
+                             id="form_{{ order.id }}">
+                      <input type="submit" class="btn btn_warning  btn_sm" value="отменить"/>
+                    </form>
                     {% endif %}
                   </div>
                 </div>

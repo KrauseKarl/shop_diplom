@@ -16,6 +16,7 @@ class SingletonModel(models.Model):
 
     @classmethod
     def load(cls):
+
         if cache.get(cls.__name__) is None:
             obj, created = cls.objects.get_or_create(pk=1)
             if not created:

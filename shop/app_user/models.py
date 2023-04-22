@@ -1,4 +1,4 @@
-from PIL import Image
+# from PIL import Image
 import os
 from django.db import models
 from django.contrib.auth.models import User

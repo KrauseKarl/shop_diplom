@@ -5,9 +5,11 @@ import random
 from urllib.parse import parse_qs
 from datetime import date, timedelta
 from django.core.cache import cache
+from django.core.checks import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query import QuerySet
 from django.db.models import Min, Max, Q, Count
+from django.http import Http404
 
 from app_item.models import Item, Category, Tag, IpAddress, FeatureValue, Comment
 from utils.my_utils import query_counter
@@ -19,19 +21,20 @@ def get_colors(queryset: QuerySet) -> List[str]:
     :param queryset: queryset товаров,
     :return: список цветов всех выбранных товаров
     """
-
-    colors = queryset.exclude(color=None).values('color').distinct()
-    colors = list(colors.values('color'))
-    colors_list = []
-    for color in colors:
-        for key, val in color.items():
-            colors_list.append(val)
-    colors = list(set(colors_list))
-    return colors if queryset else None
+    try:
+        colors = queryset.exclude(color=None).values('color').distinct()
+        colors = list(colors.values('color'))
+        colors_list = []
+        for color in colors:
+            for key, val in color.items():
+                colors_list.append(val)
+        colors = list(set(colors_list))
+        return colors
+    except:
+        return []
 
 
 class ItemHandler:
-
     COLOR_DICT = {
 
     }
@@ -45,7 +48,7 @@ class ItemHandler:
         try:
             return Item.objects.select_related('category').get(id=item_id)
         except ObjectDoesNotExist:
-            return None
+            raise Http404('Не найден ни один товар, соответствующий запросу')
 
     @staticmethod
     def min_and_max_price(min_price: int, max_price: int) -> QuerySet:
@@ -344,8 +347,8 @@ class ItemHandler:
         }
         query_get_param_dict = parse_qs(request.META.get('QUERY_STRING'))
         all_queryset_list = []
-        object_list = object_list.select_related('category', 'store').\
-                        prefetch_related('tag', 'views', 'image', 'feature_value')
+        object_list = object_list.select_related('category', 'store'). \
+            prefetch_related('tag', 'views', 'image', 'feature_value')
 
         for param, value in query_get_param_dict.items():
             if param in filter_dict.keys():
@@ -370,8 +373,8 @@ class ItemHandler:
                     query = str(request.GET.get('q'))  # [:-1]
                     title = query.title()
                     lower = query.lower()
-                    queryset = object_list.select_related('category', 'store').\
-                        prefetch_related('tag', 'views', 'image', 'feature_value').\
+                    queryset = object_list.select_related('category', 'store'). \
+                        prefetch_related('tag', 'views', 'image', 'feature_value'). \
                         filter(
                         Q(category__title__icontains=title) |
                         Q(title__icontains=title) |
@@ -412,19 +415,21 @@ class TagHandler:
         При наличии параметра отфильтрованный queryset-тегов.
         :param item_id: id-товара
         :param queryset: queryset-товаров
-        :return: queryset-тегов.
+        :return: queryset-тегов
         """
-
-        if queryset:
-            tags = Tag.objects.prefetch_related('item_tags').\
-                filter(item_tags__in=queryset).\
-                annotate(item_count=Count('item_tags')). \
-                order_by('-item_count')
-        elif item_id:
-            tags = Tag.objects.prefetch_related('item_tags').filter(item_tags=item_id)
-        else:
-            tags = Tag.objects.all()
-        return tags
+        try:
+            if queryset:
+                tags = Tag.objects.prefetch_related('item_tags'). \
+                    filter(item_tags__in=queryset). \
+                    annotate(item_count=Count('item_tags')). \
+                    order_by('-item_count')
+            elif item_id:
+                tags = Tag.objects.prefetch_related('item_tags').filter(item_tags=item_id)
+            else:
+                tags = Tag.objects.all()
+            return tags
+        except ObjectDoesNotExist:
+            raise Http404
 
     @staticmethod
     def get_tag(slug: str):
@@ -432,12 +437,13 @@ class TagHandler:
            Функция возвращает один экземпляр тега.
            :param slug: slug-тега товара
            :return: если есть параметр возвращает
-                    экземпляр тега  или None.
+                    экземпляр тега или Http404.
            """
         try:
-            return Tag.objects.prefetch_related('item_tags').get(slug=slug)
+            tag = Tag.objects.prefetch_related('item_tags').get(slug=slug)
+            return tag
         except ObjectDoesNotExist:
-            return None
+            raise Http404('такого тега не существует')
 
     @staticmethod
     def filter_queryset_by_tag(queryset: QuerySet, tag) -> QuerySet:
@@ -448,8 +454,8 @@ class TagHandler:
             :return: queryset.
         """
         tag = TagHandler.get_tag(slug=tag)
-        queryset = queryset.select_related('category', 'store').\
-            prefetch_related('tag', 'views', 'image', 'feature_value').\
+        queryset = queryset.select_related('category', 'store'). \
+            prefetch_related('tag', 'views', 'image', 'feature_value'). \
             filter(tag=tag.id)
 
         return queryset
@@ -482,11 +488,14 @@ class CategoryHandler:
         :param slug: slug-товара
         :return: queryset-категорий.
         """
-        if slug:
-            category = Category.objects.select_related('parent_category').get(slug=slug)
-        else:
-            category = Category.objects.select_related('parent_category').exclude(items=None)
-        return category
+        try:
+            if slug:
+                category = Category.objects.select_related('parent_category').get(slug=slug)
+            else:
+                category = Category.objects.select_related('parent_category').exclude(items=None)
+            return category
+        except ObjectDoesNotExist:
+            raise Http404('Не найдена ни одина категория товаров, соответствующий запросу')
 
     @staticmethod
     def get_related_category_list(queryset: QuerySet) -> QuerySet:
@@ -497,9 +506,9 @@ class CategoryHandler:
 
           """
 
-        related_categories = Category.objects.\
-            values_list('parent_category__sub_categories', flat=True).\
-            filter(items__in=queryset).\
+        related_categories = Category.objects. \
+            values_list('parent_category__sub_categories', flat=True). \
+            filter(items__in=queryset). \
             distinct()
         related_categories = Category.objects.filter(id__in=related_categories)
         category = Category.objects.filter(items__in=queryset).distinct()
@@ -508,7 +517,8 @@ class CategoryHandler:
 
     @staticmethod
     def get_related_items(queryset: QuerySet) -> QuerySet:
-        return Category.objects.select_related('items').filter(items__in=queryset).values_list('id', flat=True).distinct()
+        return Category.objects.select_related('items').filter(items__in=queryset).values_list('id',
+                                                                                               flat=True).distinct()
 
     @staticmethod
     def get_categories_by_id(category_id=None):

@@ -4,6 +4,7 @@ from django.db.models import Sum
 from app_cart.models import CartItem
 from app_item.services.item_services import ItemHandler
 from app_invoice.models import Invoice
+from app_order.models import OrderItem
 from app_store.models import Store
 
 
@@ -15,8 +16,8 @@ class StoreHandler:
         :param store - магазин (экземпляр класса Store),
         :return total_profit - сумму всех проданных товаров.
         """
-        return CartItem.objects.filter(item__store=store).select_related('order').aggregate(
-            total_profit=Sum('order__total_sum')).get('total_profit', 0)
+        return OrderItem.objects.filter(item__item__store=store).aggregate(
+            total_profit=Sum('total')).get('total_profit', 0)
 
     @classmethod
     def get_store(cls, store_id):

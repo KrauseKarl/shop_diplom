@@ -96,8 +96,8 @@ class Store(models.Model):
 
     @property
     def cash(self):
-        return self.items.values_list('cart_item', flat=True).aggregate(total=Sum('cart_item__total')).get('total')
+        return self.orders.filter(order_items__item__item__store=self.id).aggregate(total=Sum('order_items__item__total')).get('total')
 
     @property
     def paid_item(self):
-        return self.items.values_list('cart_item', flat=True).aggregate(total=Count('cart_item')).get('total')
+        return self.orders.filter(order_items__item__item__store=self.id).aggregate(total=Sum('order_items__item__quantity')).get('total')

@@ -156,13 +156,15 @@ class UserLoginView(LoginView):
     def form_valid(self, form):
         """Логинит пользователя и вызывает функцию удаления cookies['cart] & cookies['has_cart]. """
         login(self.request, form.get_user())
-        response = delete_cart_cookies(self.request, path=self.get_success_url())
-        return response
+        if self.request.user.groups.first() == 'customer':
+            response = delete_cart_cookies(self.request, path=self.get_success_url())
+            return response
+        return HttpResponseRedirect(redirect_to=self.get_success_url().url)
 
     def get_success_url(self):
         next_page = self.request.GET.get('next')
         if next_page is not None:
-            return redirect(quote(next_page))
+            return redirect(next_page)
         return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
 
 

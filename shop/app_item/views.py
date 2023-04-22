@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from urllib.parse import parse_qs
+
+from django.http import Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
@@ -236,6 +238,7 @@ class ItemDetail(DetailView, CreateView):
         и добавляет IP-адрес пользователя к товару.
         """
         item = self.get_object()
+
         user = request.user
         context = cache.get(item.id)
         if context is None:
@@ -278,7 +281,7 @@ class ItemDetail(DetailView, CreateView):
                 'already_in_cart_count': cart_item_in_cart_quantity  # кол-во всех товаров добавленных (CartItem) в корзину
             }
             settings = SiteSettings.objects.get(id=1)
-            cache.set(item.id, context, settings.cache_detail_view)
+            # cache.set(item.id, context, settings.cache_detail_view)
 
         return self.render_to_response(context)
 

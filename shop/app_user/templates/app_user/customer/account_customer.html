@@ -56,7 +56,6 @@
                             <a class="Account-editLink" href="{% url 'app_user:password_change' %}">
                                 Сменить пароль
                             </a>
-
                             <!-- SELLER ADMIN -->
                             <!-- CREATE STORE -->
                             {% if user.profile.role == 'SLR' %}
@@ -66,10 +65,9 @@
                             {% endif %}
                             <!-- CREATE STORE -->
                             <!-- SELLER ADMIN -->
-
                         </div>
                     </div>
-                   {% if last_order %}
+                    {% if last_order %}
                     {% with order=last_order %}
                     <div class="Account-group">
                         <div class="Account-column Account-column_full">
@@ -121,9 +119,8 @@
                     {% endwith %}
                     {% endif %}
                 </div>
+            </div>
         </div>
-        </div>
-
     </div>
 </div>
 

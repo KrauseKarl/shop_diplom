@@ -16,7 +16,7 @@ urlpatterns = [
     path('delivery/<slug:status>/', DeliveryListView.as_view(), name='delivery_progress'),
     path('delivery/detail/<int:pk>/', DeliveryDetailView.as_view(), name='delivery_detail'),
     path('delivery/detail/<int:pk>/edit/', DeliveryUpdateView.as_view(), name='delivery_edit'),
-    path('delivery/cart_item/<int:pk>/edit/', CartItemUpdateView.as_view(), name='cart_item_edit'),
+    path('delivery/order_item/<int:pk>/edit/', OrderItemUpdateView.as_view(), name='order_item_edit'),
     path('delivery/detail/<int:order_id>/sent/', SentPurchase.as_view(), name='sent_purchase'),
 
     path('comment/list/', CommentListView.as_view(), name='comment_list'),

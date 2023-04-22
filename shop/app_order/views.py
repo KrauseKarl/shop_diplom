@@ -2,10 +2,7 @@ from time import sleep
 
 from celery.result import AsyncResult
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.core.cache import cache
-from django.db import transaction
-from django.db.models import Q, Sum
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -19,19 +16,17 @@ from app_invoice.forms import PaymentForm
 from app_item.models import Item
 from app_settings.models import SiteSettings
 from app_user.services.register_services import ProfileHandler
-from utils.my_utils import MixinPaginator
-
+from utils.my_utils import MixinPaginator, CustomerOnlyMixin
 from app_order.forms import OrderCreateForm, AddressForm
-from app_order.models import Order, Address, OrderItem
+from app_order import models
 from app_order.services.order_services import CustomerOrderHandler, AddressHandler, Payment
-from app_store.form import UpdateOrderStatusForm
-from app_store.models import Store
-from app_order.models import Order
 from app_order.tasks import pay_order
+from app_store.forms import UpdateOrderStatusForm
+from app_store.models import Store
 
 
 class OrderCreate(CreateView):
-    model = Order
+    model = models.Order
     form_class = OrderCreateForm
     extra_context = {'type_of_delivery': SiteSettings.DELIVERY, 'type_of_payment': SiteSettings.PAY_TYPE}
 
@@ -58,7 +53,7 @@ class SuccessOrdered(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        context['order'] = Order.objects.filter(user=request.user).order_by('-id')
+        context['order'] = models.Order.objects.filter(user=request.user).order_by('-id')
         return self.render_to_response(context)
 
 
@@ -66,53 +61,58 @@ class FailedOrdered(TemplateView):
     template_name = 'app_order/failed_order.html'
 
 
-class OrderList(ListView, MixinPaginator):
-    model = Order
+class OrderList(CustomerOnlyMixin, ListView, MixinPaginator):
+    model = models.Order
     template_name = 'app_order/order_list.html'
     context_object_name = 'orders'
     paginate_by = 5
-    extra_context = {}
+    login_url = '/accounts/login/'
+    redirect_field_name = 'login'
 
     # permission_required = ('app_order.view_order', 'app_order.change_order')
+
+    def get_queryset(self, delivery_status=None):
+        return CustomerOrderHandler.get_customer_order_list(self.request, delivery_status)
 
     def get(self, request, status=None, **kwargs):
         super().get(request, **kwargs)
         if self.request.user.is_authenticated:
             delivery_status = self.request.GET.get('status')
-            queryset = CustomerOrderHandler.get_customer_order_list(self.request, delivery_status)
-            # queryset = CartItem.objects.filter(user=request.user)
+            queryset = self.get_queryset(delivery_status)
             object_list = self.my_paginator(queryset, self.request, self.paginate_by)
             context = {'object_list': object_list, 'status_list': CartItem.STATUS}
-            print(queryset)
         else:
             context = {'object_list': None, 'status_list': CartItem().STATUS}
         return render(request, self.template_name, context=context)
 
 
-class OrderDetail(UserPassesTestMixin, DetailView):  # UserPassesTestMixin PermissionsMixin
-    model = Order
+class OrderDetail(UserPassesTestMixin, DetailView):
+    model = models.Order
     template_name = 'app_order/order_detail.html'
     context_object_name = 'order'
 
     def test_func(self):
         user = self.request.user
         order = self.get_object()
-        if user == order.user:
-            return True
-        return False
+        return True if user == order.user else False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['order_items'] = OrderItem.objects.filter(
-            order=self.get_object()).order_by('item__store')  # TODO service def _get_has_paid_items
+        context['order_items'] = CustomerOrderHandler.get_order_items(order=self.get_object())
+        print(context['order_items'])
         return context
 
 
-class OrderUpdatePayWay(UpdateView):
-    model = Order
+class OrderUpdatePayWay(UserPassesTestMixin, UpdateView):
+    model = models.Order
     template_name = 'app_order/order_update_pay_way.html'
     fields = ['pay']
     extra_context = {'type_of_payment': SiteSettings().PAY_TYPE}
+
+    def test_func(self):
+        user = self.request.user
+        order = self.get_object()
+        return True if user == order.user else False
 
     def get_success_url(self):
         return reverse('app_order:progress_payment', kwargs={'pk': self.object.pk})
@@ -124,7 +124,7 @@ class SuccessPaid(TemplateView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
-        order = Order.objects.get(id=kwargs['order_id'])
+        order = models.Order.objects.get(id=kwargs['order_id'])
         context['order'] = order
         context['invoice'] = order.invoices.first
         return self.render_to_response(context)
@@ -137,13 +137,13 @@ class FailedPaid(TemplateView):
         super().get(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
         context['order'] = kwargs['order_id']
-        order = Order.objects.get(id=kwargs['order_id'])
+        order = models.Order.objects.get(id=kwargs['order_id'])
         context['error'] = order.error
         return self.render_to_response(context)
 
 
-class PaymentView(DetailView, CreateView):
-    model = Order
+class PaymentView(CustomerOnlyMixin, DetailView, CreateView):
+    model = models.Order
     form_class = PaymentForm
     template_name = 'app_order/order_pay_account.html'
     success_url = reverse_lazy('app_order:progress_payment')
@@ -161,8 +161,7 @@ class PaymentView(DetailView, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        order_id = self.kwargs['pk']
-        order = Order.objects.get(id=order_id)
+        order = self.get_object()
         context['order'] = order
         return context
 
@@ -205,22 +204,29 @@ def get_status_payment(request, task_id, order_id):
         response.update(error_dict)
     return JsonResponse(response)
 
+
 class ChangePayWay(TemplateView):
     pass
+
+
 class PaymentProgress(TemplateView):
     template_name = 'app_order/progress_payment.html'
 
 
-class ConfirmReceiptPurchase(UpdateView):
+class ConfirmReceiptPurchase(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
     """Класс-представления для подтверждения получения заказа."""
-    model = Order
+    model = models.Order
     template_name = 'app_order/order_detail.html'
     context_object_name = 'order'
     form_class = UpdateOrderStatusForm
 
+    def test_func(self):
+        user = self.request.user
+        order = self.get_object()
+        return True if user == order.user else False
+
     def post(self, request, *args, **kwargs):
-        order_id = self.kwargs['order_id']
-        order = Order.objects.get(id=order_id)
+        order = self.get_object()
         form = UpdateOrderStatusForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data.get('status')
@@ -231,16 +237,20 @@ class ConfirmReceiptPurchase(UpdateView):
             return redirect(path)
 
 
-class RejectOrder(UpdateView):
+class RejectOrder(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
     """Класс-представления для отмены заказа."""
-    model = Order
+    model = models.Order
     template_name = 'app_order/order_list.html'
     context_object_name = 'order'
     form_class = UpdateOrderStatusForm
 
+    def test_func(self):
+        user = self.request.user
+        order = self.get_object()
+        return True if user == order.user else False
+
     def post(self, request, *args, **kwargs):
-        order_id = self.kwargs['order_id']
-        order = Order.objects.get(id=order_id)
+        order = self.get_object()
         form = UpdateOrderStatusForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data.get('status')
@@ -251,11 +261,15 @@ class RejectOrder(UpdateView):
             return redirect(path)
 
 
-
-class AddressList(ListView):
-    model = Address
+class AddressList(CustomerOnlyMixin, UserPassesTestMixin, ListView):
+    model = models.Address
     template_name = 'app_user/customer/address_list.html'
     context_object_name = 'addresses'
+
+    def test_func(self):
+        user = self.request.user
+        address = self.get_object()
+        return True if user == address.user else False
 
     def get(self, request, *args, **kwargs):
         super(AddressList, self).get(request, *args, **kwargs)
@@ -266,7 +280,7 @@ class AddressList(ListView):
 
 
 class AddressCreate(AddressList, CreateView):
-    model = Address
+    model = models.Address
     form_class = AddressForm
 
     def form_valid(self, form):
@@ -281,17 +295,27 @@ class AddressCreate(AddressList, CreateView):
         return redirect('app_order:address_list')
 
 
-class AddressUpdate(AddressList, UpdateView):
-    model = Address
+class AddressUpdate( AddressList, UpdateView):
+    model = models.Address
     form_class = AddressForm
+
+    def test_func(self):
+        user = self.request.user
+        address = self.get_object()
+        return True if user == address.user else False
 
     def get_success_url(self):
         messages.add_message(self.request, messages.INFO, f"Данные адреса доставки изменены")
         return redirect('app_order:address_list')
 
 
-class AddressDelete(DeleteView):
-    model = Address
+class AddressDelete(CustomerOnlyMixin, UserPassesTestMixin, DeleteView):
+    model = models.Address
+
+    def test_func(self):
+        user = self.request.user
+        address = self.get_object()
+        return True if user == address.user else False
 
     def get(self, request, *args, **kwargs):
         address_id = kwargs['pk']

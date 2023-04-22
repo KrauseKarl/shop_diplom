@@ -249,7 +249,7 @@ def order_items_in_cart(cart) -> dict:
                     'is_not_enough': False
                 }
         # проверяем достаточно ли товара на складе
-        # если товара на складе меньше, то меняем булевое-False значение на  кол-во товара
+         # если товара на складе меньше, то меняем булевое-False значение на  кол-во товара
         if cart_item.quantity > item_stock:
             sort_by_store[shop]['items'][f'{cart_item.id}']['is_not_enough'] = item_stock
     return sort_by_store

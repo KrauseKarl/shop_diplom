@@ -1,4 +1,7 @@
 import datetime
+
+import django
+from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q, Count, Sum
@@ -28,10 +31,9 @@ class IpAddress(models.Model):
         null=True,
     )
     created = models.DateTimeField(
-            auto_now_add=True,
-            verbose_name='дата создания'
-        )
-
+        auto_now_add=True,
+        verbose_name='дата создания'
+    )
     objects = models.Manager()
 
     class Meta:
@@ -321,7 +323,6 @@ class Tag(models.Model):
 
     def get_absolute_url(self):
         return reverse('app_item:item_tag', kwargs={'tag': self.slug})
-
 
     class Meta:
         db_table = 'app_tags'

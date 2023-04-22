@@ -13,6 +13,7 @@ from app_cart.services.cart_services import get_current_cart
 from app_invoice.models import Invoice
 from app_item.models import Item, Comment
 from app_item.services.item_services import ItemHandler
+from app_order import models
 from app_order.models import Order, Address, OrderItem
 from app_settings.models import SiteSettings
 from app_store.models import Store
@@ -90,10 +91,10 @@ class CustomerOrderHandler:
     def get_customer_order_list(request, delivery_status=None):
         try:
             if delivery_status:
-                orders = CartItem.objects.filter(user=request.user).filter(status=delivery_status).order_by('-created')
+                orders = Order.objects.filter(user=request.user).filter(status=delivery_status).order_by('-updated')
             else:
                 # orders = CartItem.objects.exclude(status='in_cart').filter(user=request.user).order_by('-created')
-                orders = CartItem.objects.filter(user=request.user)
+                orders = Order.objects.filter(user=request.user).order_by('-updated')
             return orders
         except ObjectDoesNotExist:
             return None
@@ -114,6 +115,12 @@ class CustomerOrderHandler:
             return res
         return 0
 
+    @staticmethod
+    def get_order_items(order):
+        try:
+            return models.OrderItem.objects.filter(order=order).order_by('item__store')
+        except ObjectDoesNotExist:
+            return None
 
 class SellerOrderHAndler:
 
@@ -172,9 +179,11 @@ class SellerOrderHAndler:
 
 class Payment:
     ERROR_DICT = {
-        '1': 'способствует вымиранию юго-восточных туканов  ',
-        '2': 'способствует глобальному потеплению',
-        '3': 'заблокирована мировым правительством',
+        '1': 'Оплата не выполнена, т.к. способствует вымиранию юго-восточных туканов',
+        '2': 'Оплата не выполнена, т.к. способствует глобальному потеплению',
+        '3': 'Оплата не выполнена, т.к. заблокирована мировым правительством',
+        '4': 'Оплата не выполнена, т.к. была произведена не по  фэншую',
+        '5': 'Оплата не выполнена, т.к. ретроградный Меркурий был в созведии Козерога',
     }
 
     @classmethod

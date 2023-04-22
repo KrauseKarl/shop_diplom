@@ -1,0 +1,5 @@
+Collecting Pillow
+  Downloading Pillow-9.5.0-cp39-cp39-win_amd64.whl (2.5 MB)
+     ---------------------------------------- 2.5/2.5 MB 102.0 kB/s eta 0:00:00
+Installing collected packages: Pillow
+Successfully installed Pillow-9.5.0

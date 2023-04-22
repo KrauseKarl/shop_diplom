@@ -15,16 +15,16 @@ from app_cart.services.cart_services import get_current_cart, create_cart_item, 
 from app_item.models import Item
 from app_item.services.item_services import ItemHandler
 from app_order.services.order_services import Payment
-from app_settings.models import SiteSettings
 from app_store.models import Store
 from shop.settings import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from app_order.models import Order
 from app_invoice.models import Invoice
 from app_settings.models import SiteSettings
-from shop.celery import app
+from celery import shared_task
+from celery_app import app
 
 
-@app.task
+@shared_task
 def pay_order(order_id, number, pay):
     sleep(10)
     if number % 2 != 0 or number % 10 == 0:
@@ -40,7 +40,7 @@ def pay_order(order_id, number, pay):
             order.is_paid = True
             if pay != order.pay:
                 order.pay = pay
-            order.items_is_paid.update(status='in_progress')
+            order.order_items.update(status='in_progress')
             if order.error:
                 order.error = ''
             order.save()

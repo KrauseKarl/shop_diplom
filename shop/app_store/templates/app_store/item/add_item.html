@@ -184,7 +184,7 @@
 </div>
 
 <script>
-
+        console.log(`start`)
         let birdForm = document.querySelectorAll(".bird-form")
         let container = document.querySelector("#form-container")
         let addButton = document.querySelector("#add-form")
@@ -193,6 +193,7 @@
 
         let formNum = birdForm.length-1 //Get the number of the last form on the page with zero-based indexing
         addButton.addEventListener('click', addForm)
+        console.log(`working`)
 
         function addForm(e){
             e.preventDefault()

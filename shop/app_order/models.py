@@ -74,9 +74,9 @@ class OrderItem(models.Model):
         self.status = self.STATUS[0][0]
         super().save(*args, **kwargs)
 
+
 class Order(models.Model):
     """Модель заказа."""
-
     STATUS = (
         ('created', 'сформирован'),
         ('paid', 'оплачен'),
@@ -182,9 +182,8 @@ class Order(models.Model):
     def __str__(self):
         return f'Заказ №{self.user.id:05}-{self.pk}'
 
-    def get_quantity(self):
-        return self.items_is_paid.count()
-
+    def created_order_quantity(self):
+        return self.filter(status='created').count()
 
 
 class Address(models.Model):

@@ -28,26 +28,27 @@
             <div class="wrap">
                 <div class="form Cart">
                     <!--  CARD_ITEM LIST    -->
-                    {% for item in order.items_is_paid.all %}
+
+
                     <div class="Cart-product">
                         <div class="Cart-block Cart-block_row">
                             <div class="Cart-block Cart-block_pict">
                                 <a class="Cart-pict" href="#">
-                                    {% if item.item.image.first %}
-                                    <img class="Cart-img {% if not item.item.is_available %}Cart-img-not_available{% endif %}"
-                                         src="{{ item.item.image.first.image.url }}"
-                                         alt="{{ item.item.title }}_image"/>
+                                    {% if order_item.item.item.image.first %}
+                                    <img class="Cart-img {% if not order_item.item.item.is_available %}Cart-img-not_available{% endif %}"
+                                         src="{{ order_item.item.item.image.first.image.url }}"
+                                         alt="{{ order_item.item.item.title }}_image"/>
                                     {% else %}
                                     <img class="Cart-img" src="/media/default_images/default_item.png"
-                                         alt="{{ item.item.title }}_image"/>
+                                         alt="{{ order_item.item.item.title }}_image"/>
                                     {% endif %}
                                 </a>
                             </div>
                             <div class="Cart-block Cart-block_info">
                                 <!--   ITEM'S TITLE    -->
-                                <a class="Cart-title {% if not item.item.is_available %}Cart-title-not_available{% endif %}"
-                                   href="{% url 'app_item:item_detail' item.item.pk %}">
-                                    {{ item.item.title }}
+                                <a class="Cart-title {% if not order_item.item.item.is_available %}Cart-title-not_available{% endif %}"
+                                   href="{% url 'app_item:item_detail' order_item.item.item.pk %}">
+                                    {{ order_item.item.item.title }}
                                 </a>
                                 <!--   ITEM'S TITLE    -->
 
@@ -56,10 +57,10 @@
 
                                 <!-- ITEM QUANTITY IS NOT ENOUGH TO MAKE ORDER       -->
                                 <!-- ITEM'S DESCRIPTION -->
-                                {% if item.item.is_available %}
+                                {% if order_item.item.item.is_available %}
                                 <div class="Cart-desc">
-                                    {% if item.item.description %}
-                                    {{ item.item.description|truncatechars:100 }}
+                                    {% if order_item.item.item.description %}
+                                    {{ order_item.item.item.description|truncatechars:100 }}
                                     {% endif %}
 
                                 </div>
@@ -73,9 +74,9 @@
 
                             </div>
                             <div class="Cart-block Cart-block_price">
-                                <div class="Cart-price {% if not item.item.is_available %}Cart-title-not_available{% endif %}"
-                                     id="total_price_{{item.id}}" data-value="{{ item.total_price }}">
-                                    {{ item.total_price }}$
+                                <div class="Cart-price {% if not order_item.item.item.is_available %}Cart-title-not_available{% endif %}"
+                                     id="total_price_{{order_item.id}}" data-value="{{ order_item.total }}">
+                                    ${{ order_item.total }}
                                 </div>
                             </div>
                         </div>
@@ -91,17 +92,16 @@
                                 <div class="Cart-amount">
                                     <!--  ADD & REMOVE ITEM FORM  -->
 
-                                    <form class="Amount" id="{{ item.id }}" method="post"
-                                          action="{% url 'app_store:cart_item_edit' item.pk %}">
+                                    <form class="Amount" id="{{ order_item.id }}" method="post"
+                                          action="{% url 'app_store:order_item_edit' order_item.pk %}">
                                         {% csrf_token %}
-                                        <a type="button" id="update-button-remove" data-index="{{item.id}}"
+                                        <a type="button" id="update-button-remove" data-index="{{order_item.id}}"
                                            class="Amount-remove update-button">
                                         </a>
-                                        <input class="Amount-input form-input" id="input{{item.id}}" readonly
+                                        <input class="Amount-input form-input" id="input{{ order_item.id }}" readonly
                                                name="quantity"
-                                               type="text" value="{{ item.quantity }}"/>
-
-                                        <a type="button" id="update-button-add" data-index="{{  item.id   }}"
+                                               type="text" value="{{ order_item.quantity }}"/>
+                                        <a type="button" id="update-button-add" data-index="{{  order_item.id   }}"
                                            class="Amount-add update-button ">
                                         </a>
                                     </form>
@@ -113,8 +113,9 @@
 
                             <!--    UPDATE ITEM AMOUNT   -->
                             <div class="Cart-block Cart-block_delete">
-                                <button class="Cart-delete" form="{{ item.id }}">
-                                    <img src="/assets/img/icons/update.svg" width="35">
+                                <button class="Cart-delete" form="{{ order_item.id }}">
+                                   {{ order_item.id}}
+<!--                                    <img src="/assets/img/icons/update.svg" width="35">-->
                                 </button>
                             </div>
                             <!--    UPDATE ITEM AMOUNT   -->
@@ -129,7 +130,8 @@
                         </div>
                     </div>
                     <!--  CARD_ITEM LIST    -->
-                    {% endfor %}
+
+
 
 
                 </div>

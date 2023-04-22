@@ -1,3 +1,6 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.models import Group
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.template.defaultfilters import slugify as django_slugify
 from django.db import connection
@@ -40,9 +43,44 @@ class MixinPaginator(Paginator):
         return queryset
 
 
+class CustomerOnlyMixin(LoginRequiredMixin):
+    login_url = '/accounts/login/'
+    permission_denied_message = ''
+    raise_exception = True
+    redirect_field_name = REDIRECT_FIELD_NAME
+    allow_group = Group.objects.filter(name='customer')
+
+    def dispatch(self, request, *args, **kwargs):
+        group = None
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if request.user.groups.exists():
+            group = request.user.groups.all()[0]
+        if group not in self.allow_group:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
+class SellerOnlyMixin(LoginRequiredMixin):
+    login_url = '/accounts/login/'
+    permission_denied_message = ''
+    raise_exception = True
+    redirect_field_name = REDIRECT_FIELD_NAME
+    allow_group = Group.objects.filter(name='seller')
+
+    def dispatch(self, request, *args, **kwargs):
+        group = None
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if request.user.groups.exists():
+            group = request.user.groups.all()[0]
+        if group not in self.allow_group:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
 def query_counter(func):
     """Декоратор для подсчета запросов к БД."""
-
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
         func_name = func.__name__
