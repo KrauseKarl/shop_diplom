@@ -3,7 +3,7 @@ from time import sleep
 from celery.result import AsyncResult
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +18,7 @@ from app_settings.models import SiteSettings
 from app_user.services.register_services import ProfileHandler
 from utils.my_utils import MixinPaginator, CustomerOnlyMixin
 from app_order.forms import OrderCreateForm, AddressForm
-from app_order import models
+from app_order import models as order_models
 from app_order.services.order_services import CustomerOrderHandler, AddressHandler, Payment
 from app_order.tasks import pay_order
 from app_store.forms import UpdateOrderStatusForm
@@ -26,7 +26,7 @@ from app_store.models import Store
 
 
 class OrderCreate(CreateView):
-    model = models.Order
+    model = order_models.Order
     form_class = OrderCreateForm
     extra_context = {'type_of_delivery': SiteSettings.DELIVERY, 'type_of_payment': SiteSettings.PAY_TYPE}
 
@@ -41,8 +41,8 @@ class OrderCreate(CreateView):
         return name
 
     def form_valid(self, form):
-        CustomerOrderHandler.create_order(self.request, form)
-        return redirect('app_order:success_order')
+        order = CustomerOrderHandler.create_order(self.request, form)
+        return redirect('app_order:progress_payment', order.id)
 
     def form_invalid(self, form):
         return render(self.request, 'app_order/failed_order.html', {'error': form.errors})
@@ -53,7 +53,7 @@ class SuccessOrdered(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        context['order'] = models.Order.objects.filter(user=request.user).order_by('-id')
+        context['order'] = order_models.Order.objects.filter(user=request.user).order_by('-id')
         return self.render_to_response(context)
 
 
@@ -62,10 +62,10 @@ class FailedOrdered(TemplateView):
 
 
 class OrderList(CustomerOnlyMixin, ListView, MixinPaginator):
-    model = models.Order
+    model = order_models.Order
     template_name = 'app_order/order_list.html'
     context_object_name = 'orders'
-    paginate_by = 5
+    paginate_by = 3
     login_url = '/accounts/login/'
     redirect_field_name = 'login'
 
@@ -79,15 +79,15 @@ class OrderList(CustomerOnlyMixin, ListView, MixinPaginator):
         if self.request.user.is_authenticated:
             delivery_status = self.request.GET.get('status')
             queryset = self.get_queryset(delivery_status)
-            object_list = self.my_paginator(queryset, self.request, self.paginate_by)
-            context = {'object_list': object_list, 'status_list': CartItem.STATUS}
+            object_list = MixinPaginator(queryset, request, self.paginate_by).my_paginator()
+            context = {'object_list': object_list, 'status_list': order_models.Order.STATUS}
         else:
-            context = {'object_list': None, 'status_list': CartItem().STATUS}
+            context = {'object_list': None, 'status_list': order_models.OrderItem().STATUS}
         return render(request, self.template_name, context=context)
 
 
 class OrderDetail(UserPassesTestMixin, DetailView):
-    model = models.Order
+    model = order_models.Order
     template_name = 'app_order/order_detail.html'
     context_object_name = 'order'
 
@@ -103,8 +103,29 @@ class OrderDetail(UserPassesTestMixin, DetailView):
         return context
 
 
+class OrderCancel(UserPassesTestMixin, DeleteView):
+    """
+    Функция удаляет заказа.
+    :return: возвращает на страницу списка заказов
+    """
+    model = order_models.Order
+    template_name = 'app_order/order_cancel.html'
+    success_url = reverse_lazy('app_order:order_list')
+    message = 'Заказ отменен'
+
+    def test_func(self):
+        user = self.request.user
+        order = self.get_object()
+        return True if user == order.user else False
+
+    def form_valid(self, form):
+        self.object.delete()
+        messages.add_message(self.request, messages.INFO, self.message)
+        return HttpResponseRedirect(self.get_success_url())
+
+
 class OrderUpdatePayWay(UserPassesTestMixin, UpdateView):
-    model = models.Order
+    model = order_models.Order
     template_name = 'app_order/order_update_pay_way.html'
     fields = ['pay']
     extra_context = {'type_of_payment': SiteSettings().PAY_TYPE}
@@ -118,32 +139,46 @@ class OrderUpdatePayWay(UserPassesTestMixin, UpdateView):
         return reverse('app_order:progress_payment', kwargs={'pk': self.object.pk})
 
 
-class SuccessPaid(TemplateView):
+class SuccessPaid(UserPassesTestMixin, TemplateView):
     template_name = 'app_order/successful_pay.html'
+
+    def test_func(self):
+        order_id = self.kwargs['order_id']
+        order = order_models.Order.objects.get(id=order_id)
+        if order.user == self.request.user:
+            return True
+        return False
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
-        order = models.Order.objects.get(id=kwargs['order_id'])
+        order = order_models.Order.objects.get(id=kwargs['order_id'])
         context['order'] = order
         context['invoice'] = order.invoices.first
         return self.render_to_response(context)
 
 
-class FailedPaid(TemplateView):
+class FailedPaid(UserPassesTestMixin, TemplateView):
     template_name = 'app_order/failed_pay.html'
+
+    def test_func(self):
+        order_id = self.kwargs['order_id']
+        order = order_models.Order.objects.get(id=order_id)
+        if order.user == self.request.user:
+            return True
+        return False
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
         context['order'] = kwargs['order_id']
-        order = models.Order.objects.get(id=kwargs['order_id'])
+        order = order_models.Order.objects.get(id=kwargs['order_id'])
         context['error'] = order.error
         return self.render_to_response(context)
 
 
 class PaymentView(CustomerOnlyMixin, DetailView, CreateView):
-    model = models.Order
+    model = order_models.Order
     form_class = PaymentForm
     template_name = 'app_order/order_pay_account.html'
     success_url = reverse_lazy('app_order:progress_payment')
@@ -162,6 +197,8 @@ class PaymentView(CustomerOnlyMixin, DetailView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         order = self.get_object()
+        if order.is_paid:
+            raise Http404('Заказ уже оплачен')
         context['order'] = order
         return context
 
@@ -205,17 +242,13 @@ def get_status_payment(request, task_id, order_id):
     return JsonResponse(response)
 
 
-class ChangePayWay(TemplateView):
-    pass
-
-
 class PaymentProgress(TemplateView):
     template_name = 'app_order/progress_payment.html'
 
 
 class ConfirmReceiptPurchase(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
     """Класс-представления для подтверждения получения заказа."""
-    model = models.Order
+    model = order_models.Order
     template_name = 'app_order/order_detail.html'
     context_object_name = 'order'
     form_class = UpdateOrderStatusForm
@@ -239,7 +272,7 @@ class ConfirmReceiptPurchase(CustomerOnlyMixin, UserPassesTestMixin, UpdateView)
 
 class RejectOrder(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
     """Класс-представления для отмены заказа."""
-    model = models.Order
+    model = order_models.Order
     template_name = 'app_order/order_list.html'
     context_object_name = 'order'
     form_class = UpdateOrderStatusForm
@@ -255,21 +288,22 @@ class RejectOrder(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
         if form.is_valid():
             status = form.cleaned_data.get('status')
             order.status = status
+            order.order_items.update(status='deactivated')
             order.save()
             messages.info(self.request, f"{order} отменен")
             path = self.request.META.get('HTTP_REFERER')
             return redirect(path)
 
 
-class AddressList(CustomerOnlyMixin, UserPassesTestMixin, ListView):
-    model = models.Address
+class AddressList(LoginRequiredMixin, ListView):
+    model = order_models.Address
     template_name = 'app_user/customer/address_list.html'
     context_object_name = 'addresses'
 
-    def test_func(self):
-        user = self.request.user
-        address = self.get_object()
-        return True if user == address.user else False
+    # def test_func(self):
+    #     user = self.request.user
+    #     address = self.get_object()
+    #     return True if user == address.user else False
 
     def get(self, request, *args, **kwargs):
         super(AddressList, self).get(request, *args, **kwargs)
@@ -280,7 +314,7 @@ class AddressList(CustomerOnlyMixin, UserPassesTestMixin, ListView):
 
 
 class AddressCreate(AddressList, CreateView):
-    model = models.Address
+    model = order_models.Address
     form_class = AddressForm
 
     def form_valid(self, form):
@@ -295,8 +329,8 @@ class AddressCreate(AddressList, CreateView):
         return redirect('app_order:address_list')
 
 
-class AddressUpdate( AddressList, UpdateView):
-    model = models.Address
+class AddressUpdate(CustomerOnlyMixin, AddressList, UpdateView):
+    model = order_models.Address
     form_class = AddressForm
 
     def test_func(self):
@@ -310,7 +344,7 @@ class AddressUpdate( AddressList, UpdateView):
 
 
 class AddressDelete(CustomerOnlyMixin, UserPassesTestMixin, DeleteView):
-    model = models.Address
+    model = order_models.Address
 
     def test_func(self):
         user = self.request.user

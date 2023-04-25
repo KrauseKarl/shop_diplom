@@ -183,7 +183,7 @@ class Item(models.Model):
     def get_store_url(self):
         try:
             return self.store.get_absolute_url()
-        except:
+        except ObjectDoesNotExist:
             return reverse('main_page')
 
     def save(self, *args, **kwargs):
@@ -227,11 +227,7 @@ class Item(models.Model):
 
     @property
     def purchases(self):
-        return self.cart_item.aggregate(bestseller=Count('quantity')).get('bestseller')
-
-    @property
-    def pieces(self):
-        return self.cart_item.aggregate(bestseller=Sum('quantity')).get('bestseller')
+        return self.cart_item.aggregate(bestseller=Count('order_item__quantity')).get('bestseller')
 
 
 class Category(models.Model):

@@ -27,18 +27,15 @@ class CustomerOrderHandler:
         """Функция содает заказ."""
         cart = get_current_cart(request).get('cart')
         user = request.user
-
         post_address = form.cleaned_data.get('post_address')
-        if not post_address:
-            city = form.cleaned_data.get('city')
-            address = form.cleaned_data.get('address')
+        city = form.cleaned_data.get('city'),
+        address = form.cleaned_data.get('address')
+        if len(post_address) < 1:
             AddressHandler.get_post_address(request, city, address)
-        else:
-            city = post_address.split(';')[0]
-            address = post_address.split(';')[1]
         delivery_express_cost = CustomerOrderHandler.calculate_express_delivery_fees(form.cleaned_data.get('delivery'))
         delivery_cost = cart.is_free_delivery
         with transaction.atomic():
+            stores = get_cart(request).get('cart_dict').get('book')
             order = Order.objects.create(
                 user=user,
                 name=form.cleaned_data.get('name'),
@@ -52,7 +49,6 @@ class CustomerOrderHandler:
                 delivery_fees=delivery_cost + delivery_express_cost,
                 comment=form.cleaned_data.get('comment'),
             )
-            stores = get_cart(request).get('cart_dict').get('book')
             for store_title, values in stores.items():
                 store = Store.objects.get(title=store_title)
                 order.store.add(store)
@@ -69,8 +65,8 @@ class CustomerOrderHandler:
                         price=cart_item.price,
                         order=order,
                     )
-                cart_item.order = order
-                cart_item.status = 'not_paid'
+                    cart_item.order = order
+                    cart_item.status = 'not_paid'
 
                 # product = Item.objects.get(id=cart_item.item.id)
                 # product.stock -= cart_item.quantity
@@ -93,7 +89,6 @@ class CustomerOrderHandler:
             if delivery_status:
                 orders = Order.objects.filter(user=request.user).filter(status=delivery_status).order_by('-updated')
             else:
-                # orders = CartItem.objects.exclude(status='in_cart').filter(user=request.user).order_by('-created')
                 orders = Order.objects.filter(user=request.user).order_by('-updated')
             return orders
         except ObjectDoesNotExist:
@@ -121,6 +116,14 @@ class CustomerOrderHandler:
             return models.OrderItem.objects.filter(order=order).order_by('item__store')
         except ObjectDoesNotExist:
             return None
+
+    @staticmethod
+    def get_order(order_id):
+        try:
+            return Order.objects.filter(id=order_id).first()
+        except ObjectDoesNotExist:
+            return Http404('Такого заказ нет')
+
 
 class SellerOrderHAndler:
 
@@ -154,6 +157,9 @@ class SellerOrderHAndler:
         items = Item.objects.select_related('store').filter(store__in=stores)
         # все комментарии о товарах в магазинах собственника
         comment_list = Comment.objects.select_related('item').filter(item__in=items)
+        if request.GET.get('is_published'):
+            is_published = request.GET.get('is_published')
+            comment_list = comment_list.filter(is_published=is_published, archived=False)
         return comment_list
 
     @staticmethod
@@ -175,6 +181,36 @@ class SellerOrderHAndler:
         order_total_amount = order_list.values_list('status').filter(status='new').count()
 
         return order_total_amount
+
+    @staticmethod
+    def update_item_in_order(request, form):
+        order_item = form.save()
+        order_item.quantity = form.cleaned_data.get('quantity')
+        order_item.total = order_item.item.price * form.cleaned_data.get('quantity')
+        order_item.save()
+        order_id = order_item.order.id
+        order = Order.objects.get(id=order_id)
+        store = order.store.first()
+        new_total_order = 0
+        for order_item in order.order_items.all():
+            if order_item.total > store.min_for_discount:
+                new_total_order += round(float(order_item.total) * ((100 - store.discount) / 100), 0)
+            else:
+                new_total_order += float(order_item.total)
+        min_free_delivery = SiteSettings().min_free_delivery
+        delivery_fees = SiteSettings().delivery_fees
+        express_delivery_fees = SiteSettings().express_delivery_price
+        if new_total_order < min_free_delivery:
+            new_delivery_fees = delivery_fees
+        else:
+            new_delivery_fees = 0
+        if order.delivery == 'express':
+            new_delivery_fees += express_delivery_fees
+        order.total_sum = new_total_order + new_delivery_fees
+        order.delivery_fees = new_delivery_fees
+        order.save()
+        return order
+
 
 
 class Payment:

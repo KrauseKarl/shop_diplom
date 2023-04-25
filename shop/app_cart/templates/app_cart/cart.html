@@ -10,7 +10,7 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">Корзина | {{ cart.calculate_discount }}</h1>
+                <h1 class="Middle-title">Корзина </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
                         <a href="#">home</a>
@@ -164,13 +164,13 @@
                                                                  src="/assets/img/icons/error.svg"
                                                                  alt="{{ item.item.title }}_image"/>
                                                         </div>
-                                                        УДАЛИТЬ?
+                                                        <span class="Section-title">УДАЛИТЬ?</span>
                                                         <div class="form-group">
-                                                            <h4>{{ item.item.title }}</h4>
+                                                            <h4 class="Section-title">{{ item.item.title }}</h4>
                                                         </div>
                                                         <div class="form-group">
                                                             <a href="{% url 'app_cart:remove_cart' pk=item.pk  %}"
-                                                               class="btn  btn_danger btn_narrow">удалить&#8195;x</a>
+                                                               class="btn  btn_danger btn_narrow">удалить</a>
                                                             <a href="#close" title="Close"
                                                                class="btn  btn_dark btn_narrow">отмена</a>
                                                         </div>
@@ -292,17 +292,17 @@
                 <a href="#close" title="Close" class="close-my">×</a>
             </div>
             <div class="modal-body-my Payment">
-                <img src="/assets/img/icons/delivery.png" width="150">
-                <h2>Оформить заказ?</h2>
-
-            </div>
-
-            <div class="modal-footer-my">
-                <a href="#close" title="Close" class="btn  btn_dark ">проверить все еще раз</a>
-                <a href="{% url 'app_order:order_create'  %}" id="btn_confirm_order " class="btn btn_primary">
+                <img src="/assets/img/icons/delivery.png" width="100">
+                <span class="Section-title">Оформить заказ?</span>
+                <h3>товаров: {{ cart_dict.cart.items.count }} шт.</h3>
+                <h3>
+                    на общую сумму: ${{ cart.total_cost_with_delivery|floatformat:'2' }}
+                </h3>
+                <a class="btn btn_success btn_full" href="{% url 'app_order:order_create'  %}" id="btn_confirm_order" >
                     да
                 </a>
             </div>
+             <div class="modal-footer-my Payment"></div>
         </div>
     </div>
 </div>

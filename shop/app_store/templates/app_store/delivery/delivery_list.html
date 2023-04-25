@@ -11,6 +11,7 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
                     {% if request.GET.store %}
                         Заказы магазина <strong>{{ request.GET.store }}</strong>
                     {% elif request.GET.status %}
@@ -24,9 +25,13 @@
                     {% endif %}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home
+                        </a>
                     </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>История заказов</span>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span id="qwe">История заказов
+                        </span>
                     </li>
                 </ul>
             </div>
@@ -37,85 +42,52 @@
         <div class="wrap">
             <div class="Section-content">
                 <div class="Orders">
-                    <div class="Sort">
-                        <div class="Sort-title">Сортировать по магазинам:</div>
-                        <div class="Sort-variants">
-                              <a class="Sort-sortBy"
-                               href="{% url 'app_store:delivery_list' %}">
-                                <span class="btn btn_square btn_default">все
-                                </span>
-                            </a>
-                            {% for store in user.store.all %}
-                            <a class="Sort-sortBy"
-                               href="{% url 'app_store:delivery_list' %}?store={{ store.title }}">
-                                <span class="btn btn_square{% if request.GET.store == store.title %}
-                                    btn_success
-                                {% else %}
-                                    btn_default
-                                {% endif %}">{{ store.title|upper }}
-                                </span>
-                            </a>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                  <div class="Sort">
-                        <div class="Sort-title">Сортировать по:</div>
-                        <div class="Sort-variants">
-                            <a class="Sort-sortBy" href="{% url 'app_store:delivery_list' %}?{% if request.GET.store %}store={{ request.GET.store }}{% endif %}">
-                                <span>все заказы
-                                </span>
-                            </a>
-                            {% for status in status_list %}
-                            <a class="Sort-sortBy "
-                               href="{% url 'app_store:delivery_list'  %}?{% if request.GET.store %}store={{ request.GET.store }}{% endif %}&status={{ status.0 }}">
-                             <span class="{% if request.GET.status == status.0 %} btn btn_success btn_square btn_sm {% endif %}">{{ status.1 }}
-                            </span>
-                            </a>
-                            {% endfor %}
-                        </div>
-                    </div>
-                <div class="Order">
-                    {% if request.GET.store %}
-                    {% for store in user.store.all %}
-                    {% if request.GET.store == store.title %}
-                    <div class="Order-infoBlock">
-                        <div class="Order-personal">
-                            <div class="row" >
-                                <div class="row-block">
-                                    <div class="btn btn_info btn_square Order-info Order-info_date" >
-                                        <div class="Order-infoType" style="color:white">Количество заказов:</div>
-                                        <div class="Order-infoContent">{{ store.orders.count }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row-block">
-                                    <div class="btn btn_primary btn_square  Order-info Order-info_delivery">
-                                        <div class="Order-infoType" style="color:white">Проданно товаров:</div>
-                                        <div class="Order-infoContent ">{{ store.paid_item }}
-                                        </div>
-                                    </div>
-                                    </div>
-                                    <div class="row-block">
-                                    {% for status in status_list %}
-                                    {% if request.GET.status == status.0  and item_quantity %}
-                                    <div class=" btn btn_success btn_square Order-info">
-                                        <div class="Order-infoType" style="color:white">{{ status.1|title }}:</div>
-                                        <div class="Order-infoContent">{{ item_quantity }}</div>
-                                    </div>
-                                    {% endif %}
+
+                        <form class="Sort" method="get"    action="{% url 'app_store:delivery_list' %}">
+                            <div class="Sort-title"></div>
+                            <div class="Sort-variants" style="margin:10px 0">
+                                <select name="stores" id="stores">
+                                    <option value="all" selected>ВСЕ МАГАЗИНЫ</option>
+                                    {% for store in user.store.all %}
+                                    <option value="{{ store.id }}">{{ store.title|upper }}</option>
                                     {% endfor %}
-
-                                </div>
+                                </select>
                             </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                    {% endif %}
-
-
-                    <div class="Orders">
+                            <div class="Sort-title"></div>
+                            <div class="Sort-variants" style="margin:10px 0">
+                                <select name="status" id="status">
+                                    <option value="all" >--статус заказа--</option>
+                                    <option value="all" selected>ВСЕ ЗАКАЗЫ</option>
+                                    {% for status in status_list %}
+                                    <option value="{{ status.0 }}">{{ status.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="Sort-title"></div>
+                            <div class="Sort-variants" style="margin:10px 0">
+                                <input name="search" placeholder="поиск по номеру заказа">
+                            </div>
+                            <div class="Sort-title"></div>
+                            <div class="Sort-variants" style="margin:10px 0">
+                                <input name="start" id="start" type="date" value="{{ request.GET.start }}"  min="2020-01-01" max="2030-12-31">
+                            </div>
+                            <div class="Sort-title"></div>
+                            <div class="Sort-variants" style="margin:10px 0">
+                                <input name="finish" id="finish" type="date"   value="{{ request.GET.finish }}"  min="2020-01-01" max="2030-12-31">
+                            </div>
+                            <div class="Sort-title"></div>
+                            <div class="Sort-variants" style="margin:10px 0">
+                                <input  id="button_id" class="btn btn_square btn_narrow btn_primary" type="submit" value="найти">
+                            </div>
+                            <div class="Sort-title"></div>
+                            <div class="Sort-variants" style="margin:10px 0">
+                                <a href="{% url 'app_store:delivery_list'%}" class="btn btn_square btn_narrow btn_info">x
+                                </a>
+                            </div>
+                        </form>
+                </div>
+                <div class="Order">
+                      <div class="Orders">
                         {% if orders and cart_items %}
                         <!--    TABLE HEAD      -->
                         <div class="Order Order_anons">
@@ -192,7 +164,14 @@
                                     <div class="row-block Order-list-infoContent-right">
                                         <div class="Order-info Order-list-infoContent-right">
                                             <div class="Order-list-infoContent-right">
-                                                <span>{{ order.get_status_display|upper }}</span>
+                                                <span class="{% if  order.status == 'created' %}secondary_label
+                                                         {% elif order.status == 'paid' %}danger_label
+                                                         {% elif order.status == 'is_preparing' %}warning_label
+                                                         {% elif order.status == 'on_the_way' %}info_label
+                                                         {% elif order.status == 'is_ready' %}success_label
+                                                         {% elif order.status == 'completed' %}primary_label
+                                                         {% elif order.status == 'deactivated' %}danger-text
+                                                         {% endif %}">{{ order.get_status_display|upper }}</span>
                                             </div>
                                         </div>
 
@@ -227,7 +206,7 @@
                             </div>
                         </div>
                         {% empty %}
-                        <div class="Order Order_anons">Ничего не найдено</div>
+                                 <div class="Order"><h2>Ничего не найдено</h2></div>
                         {% endfor %}
                         <!--    TABLE BODY     -->
 

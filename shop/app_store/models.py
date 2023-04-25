@@ -100,4 +100,4 @@ class Store(models.Model):
 
     @property
     def paid_item(self):
-        return self.orders.filter(order_items__item__item__store=self.id).aggregate(total=Sum('order_items__item__quantity')).get('total')
+        return self.orders.filter(order_items__item__item__store=self.id).aggregate(total=Sum('order_items__quantity')).get('total')

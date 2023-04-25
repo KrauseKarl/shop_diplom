@@ -13,105 +13,53 @@
                 <h1 class="Middle-title">Недавно просмотренные товары</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="#">home</a>
+                        <a href="{% url 'main_page' %}">главная стариница</a>
                     </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Корзина</span>
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_user:account' user.id %}">личный кабинет</a>
                     </li>
+
                 </ul>
             </div>
         </div>
     </div>
-
     <div class="Section">
         <div class="wrap">
-            <div>{% include 'message.html' %}</div>
-            <div>{% include 'error_message.html' %}</div>
-            <div class="form Cart">
+              <!--       PAGINATION         -->
+                <div>{% include "pagination.html" %}<br><br></div>
+                <!--       PAGINATION         -->
 
-                <!--  ITEM CARD    -->
-
-
+            <div class="Cards Cards_blog">
                 {% for item in object_list %}
-
-                <div class="Cart-product">
-                    <div class="Cart-block Cart-block_row">
-                        <div class="Cart-block Cart-block_pict">
-                            <a class="Cart-pict" href="{{ item.get_absolute_url }}">
-                                {% if item.image.first %}
-                                <img class="Cart-img {% if not item.is_available %}Cart-img-not_available{% endif %}"
-                                     src="{{ item.image.first.image.url }}"
-                                     alt="{{ item.title }}_image"/>
-                                {% else %}
-                                <img class="Cart-img" src="/media/default_images/default_item.png"
-                                     alt="{{ item.title }}_image"/>
-                                {% endif %}
-
+                <div class="Card">
+                    <a class="Card-picture" href="{{ item.get_absolute_url  }}">
+                        <img src="{{ item.main_image }}" title="{{ item }}" alt="product.png"/>
+                    </a>
+                    <div class="Card-content">
+                        <strong class="Card-title">
+                            <a href="{{ item.get_absolute_url }}" title="{{ item }}">{{ item.title|truncatechars:'20' }}
+                            </a>
+                        </strong>
+                        <div class="Card-description">
+                            <a href="{{ item.get_store_url }}">{{ item.store }}
                             </a>
                         </div>
-                        <div class="Cart-block Cart-block_info">
-                            <!--   ITEM'S TITLE    -->
-                            <a class="Cart-title {% if not item.is_available %}Cart-title-not_available{% endif %}"
-                               href="{{ item.get_absolute_url }}">
-                                {{ item.title }}
+                        <div class="Card-category">{% if item.category.parent_category %}
+                            <a href="{{ item.category.parent_category.get_absolute_url }}">
+                                {{ item.category.parent_category }}
+                            </a> /
+                            <a href="{{ item.get_category_url }}">{{ item.category }}
                             </a>
-                            <!--   ITEM'S TITLE    -->
-
-                            <!-- ITEM'S DESCRIPTION -->
-                            {% if item.is_available %}
-                            <div class="Cart-desc">
-                                {% if item.category.parent_category %}
-                                 <a href="{{ item.category.get_parent_url }}">{{item.category.parent_category}} /
-                                </a> <a href="{{ item.get_category_url }}">{{item.category}}</a>
-                                {% else %}<a>{{item.category}}</a>
-                                    {% endif %}
-                            </div>
                             {% else %}
-                            <div class="Cart-message-not_available">
-                                <span>товар закончился</span>
-                            </div>
+                            <a href="{{ item.get_category_url }}">{{ item.category }}
+                            </a>
                             {% endif %}
-                            <!-- ITEM'S DESCRIPTION -->
-                        </div>
-                        <div class="Cart-block Cart-block_price">
-
-                        </div>
-                    </div>
-                        <!--    UPDATE ITEM AMOUNT   -->
-                        <div class="Cart-block Cart-block_delete">
-
-
-                        </div>
-                        <!--    UPDATE ITEM AMOUNT   -->
-
-                        <!--   REMOVE ITEM FROM CART   -->
-                        <div class="Cart-block Cart-block_delete">
-
-                        </div>
-                        <!--   REMOVE ITEM FROM CART   -->
-                    </div>
-                </div>
-
-                <!--   ITEM CARD  -->
-
-                <!--    EMPTY CART  -->
-                {% empty %}
-                <div class="Middle Middle_top">
-                    <div class="Section">
-                        <div class="wrap">
-                            <div class="ProgressPayment">
-                                <div class="ProgressPayment-title">Список просмотренных товаров пуст</div>
-                            </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
-                <!--    EMPTY CART  -->
-
             </div>
         </div>
     </div>
-    <!-- AVAILABLE ITEMS -->
-
 </div>
 {% endblock %}

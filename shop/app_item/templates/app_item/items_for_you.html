@@ -2,7 +2,7 @@
 {% load static %}
 {% load cache %}
 
-{% block title %}Каталог{% endblock %}
+{% block title %}товары для вас{% endblock %}
 
 {% block heard %}
 {% include 'search_string.html' %}
@@ -18,10 +18,11 @@
                 <h1 class="Middle-title">Товары для вас</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="index.html">home</a>
+                        <a href="{% url 'main_page' %}">главная стариница
+                        </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Blog</span>
+                        <span>товары для вас</span>
                     </li>
                 </ul>
             </div>

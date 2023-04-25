@@ -8,7 +8,10 @@ class AvailableItemManager(models.Manager):
     """Менеджер для доступных товаров."""
 
     def get_queryset(self):
-        return super().get_queryset().filter(is_available=True)
+        return super().get_queryset().filter(
+            Q(is_available=True) &
+            Q(stock__gt=0)
+        )
 
 
 class UnavailableItemManager(models.Manager):

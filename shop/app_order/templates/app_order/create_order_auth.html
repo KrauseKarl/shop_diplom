@@ -137,12 +137,6 @@
                             <input class="form-input" name="address" id="address" data-validate="require"
                                    placeholder="введите адрес доставки">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="comment">Комментарий к заказу</label>
-                            <textarea class="form-textarea" id="comment" name="comment"
-                                      placeholder="введите город доставки"></textarea>
-                        </div>
-
                         <div class="Order-footer">
                             <a class="btn btn_success Order-next" href="#step3">Дальше</a>
                         </div>
@@ -160,7 +154,7 @@
                             <div>
                                 <label class="toggle">
                                     <input type="radio" name="pay" id="pay_{{ type_pay.0|lower }}"
-                                           value="{{ type_pay.0|lower}}"
+                                           value="{{ type_pay.0|lower }}"
                                            {% if forloop.counter == 1 %} checked="checked"{% endif %}/>
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text" id="{{ type_pay.0|lower }}">{{ type_pay.1|lower }}</span>
@@ -195,10 +189,7 @@
                                             <div class="Order-infoType">E-mail:</div>
                                             <div class="Order-infoContent" id="email_result"></div>
                                         </div>
-                                        <div class="Order-info">
-                                            <div class="Order-infoType">Комментарий к заказу:</div>
-                                            <div class="Order-infoContent" id="comment_result"></div>
-                                        </div>
+
                                     </div>
                                     <div class="row-block">
                                         <div class="Order-info Order-info_delivery">
@@ -220,6 +211,16 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="Order-personal">
+                                <div class="row">
+                                    <div class="row-block">
+                                        <label class="form-label" for="comment">Комментарий к заказу</label>
+                                        <textarea class="form-textarea" id="comment" name="comment"
+                                                  placeholder="введите комментарий к заказу"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="Cart Cart_order">
                                 {% for item in cart_dict.cart.items.all  %}
                                     {% if not item.ordered %}
@@ -228,7 +229,8 @@
                                         <div class="Cart-block Cart-block_pict">
                                             <a class="Cart-pict" href="#">
                                                 <img class="Cart-img" src="{{ item.item.image.first.image.url }}"
-                                                     alt="card.jpg"/></a>
+                                                     alt="card.jpg"/>
+                                            </a>
                                         </div>
                                         <div class="Cart-block Cart-block_info">
                                             <a class="Cart-title" href="#">{{ item.item.title }}

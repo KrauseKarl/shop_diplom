@@ -16,7 +16,7 @@
               <a href="index.html">home</a>
             </li>
             <li class="breadcrumbs-item">
-             <a> История заказов</a>
+             <a href="{% url 'app_order:order_list' %}"> История заказов</a>
             </li>
             <li class="breadcrumbs-item breadcrumbs-item_current">
               <span>{{ order }}</span>
@@ -31,7 +31,7 @@
         <div class="Section-content">
           <div class="Orders">
           </div>
-          <div class="Order">
+          <div class="Order {% if order.status == 'deactivated'%}Cart-img-not_available{% endif %}">
             <div class="Order-infoBlock">
               <div class="Order-personal">
                 <div class="row">
@@ -79,12 +79,7 @@
                       <div class="Order-infoType">Оплата:</div>
                       <div class="Order-infoContent">{{ order.get_pay_display }}</div>
                     </div>
-                      <div class="Order-info Order-info_status">
-                          <div class="Order-infoType">Статус доставки:</div>
-                          <div class="Order-infoContent">{{ order.get_status_display }}
-                          </div>
-                      </div>
-                      <div class="Order-info Order-info_status">
+                    <div class="Order-info Order-info_status">
                           <div class="Order-infoType">Статус оплаты:</div>
                         <div class="Order-infoContent">
                           {% if order.is_paid %}
@@ -97,6 +92,11 @@
                           {% endif %}
                         </div>
                       </div>
+                    <div class="Order-info Order-info_status">
+                          <div class="Order-infoType">Статус доставки:</div>
+                          <div class="Order-infoContent">{{ order.get_status_display }}
+                          </div>
+                      </div>
                     {% if  order.error %}
                       <div class="Order-info Order-info_error">
                         <div class="Order-infoType">Оплата не прошла:
@@ -104,6 +104,16 @@
                         <div class="Order-infoContent">{{ order.error }}
                         </div>
                       </div>
+                    {% endif %}
+                    {% if not order.is_paid and order.status != 'deactivated' %}
+                    <div class="Order-info Order-info_error">
+                      <div class="Order-infoType">
+                      </div>
+                      <div class="Order-infoContent">
+                        <a href="{% url 'app_order:order_cancel' order.pk  %}"
+                           class="btn btn_danger btn_sm">отменить заказ</a>
+                      </div>
+                    </div>
                     {% endif %}
                 </div>
               </div>
@@ -146,7 +156,7 @@
                 {% endfor %}
                 <div class="Cart-total">
                   <div class="Cart-block Cart-block_total">
-                    <strong class="Cart-title">сумма заказа:
+                    <strong class="Cart-title">Итого:
                       <span class="Cart-price">${{ order.total_sum }}</span>
                     </strong>
                     {% if order.delivery_fees %}
@@ -164,17 +174,12 @@
                       <button class="btn btn_primary btn_sm">подтвердить получение</button>
                     </form>
                     {% endif %}
-                    {% if not order.is_paid %}
-                    <a class="btn btn_success btn_sm" style="margin-right:20px"
+                    {% if not order.is_paid  and order.status != 'deactivated' %}
+                    <a class="btn btn_primary btn_lg" style="margin-right:20px"
                        href="{% url 'app_order:progress_payment' order.id %}">
                       оплатить
                     </a>
-                    <form style="margin-right:20px" method="post" action="{% url 'app_order:order_cancel' order_id=order.pk  %}">
-                      {% csrf_token %}
-                      <input type="hidden" name="status" value="deactivated"
-                             id="form_{{ order.id }}">
-                      <input type="submit" class="btn btn_warning  btn_sm" value="отменить"/>
-                    </form>
+
                     {% endif %}
                   </div>
                 </div>
@@ -184,7 +189,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-
+    </div>
+ </div>
 {% endblock %}

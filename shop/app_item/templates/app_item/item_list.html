@@ -22,17 +22,30 @@
                         по запросу <strong>"{{ q }}"</strong>
                         найдено <strong>{{ object_list.paginator.count }}</strong> позиций
                     {% else %}
-                        Catalog Megano
+                        Каталог товаров
                     {% endif %}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-                        <!--                        <a href="index.html">home</a>-->
+                        <a href="{% url 'main_page' %}">главная стариница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item">
+                       <span>
+                            {% if category %}категория
+                            {% elif tag %}тег
+                            {% elif store %}магазин
+                            {% elif request.GET.q %}поиск
+                            {% endif %}
+                        </span>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
+                        <span>
+                            {% if category %}{{ category }}
+                            {% elif tag %}{{ tag }}
+                            {% elif store %}{{ store }}
+                            {% endif %}
+                        </span>
                     </li>
                 </ul>
             </div>
@@ -53,7 +66,20 @@
                         <div class="form">
                             <form>
                                 <div class="form-group">
-                                    <div class="ProductCard-title">{{ store.title }}</div>
+                                    <div class="ProductCard-title">
+                                        <i class="uil uil-store-alt"></i>{{ store.title }}</div>
+                                </div>
+                                 <div class="form-group">
+                                    <div class="Card-content Card-title">
+                                        <h4 class="Card-content">
+                                            <b class="success_label">{{ store.discount }}%
+                                        </b>скидка
+                                        </h4>
+                                        <h5 class="Card-content">при заказе от:
+                                            <b class="primary_label">${{ store.min_for_discount }}
+                                        </b>
+                                        </h5>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="Profile-avatar">
@@ -62,23 +88,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <div class="Card-content Card-title">
-                                        <label>при заказе в этом магазине на сумму от
-                                        <span class=" Card-price Cart-total-order">${{ store.min_free_delivery }}</span>
-                                            </label>
-                                    </div>
-                                    <div class="Card-content Card-title">
-                                        <label class="Card-content">доставка </label>
-                                        <span class="seller_label" style="font-weight: 700; padding: 5px                                                                                            ;">
-                                            FREE
-                                        </span>
-                                            иначе
-                                        <span class="limited_edition_label" style="font-weight: 700; padding: 5px 10px;">
-                                            +${{ store.delivery_fees }}
-                                        </span>
-                                    </div>
-                                </div>
+
                             </form>
                         </div>
                         <!--    FORM    -->
@@ -93,7 +103,7 @@
                         </strong>
                     </header>
                     <div>
-                       <div class="btn btn_primary btn_sm" style="margin-bottom: 5px">
+                       <div class="primary-text" style="margin-bottom: 5px">
                             <b>{{ category }}</b>
                         </div>
                     </div>
@@ -110,7 +120,7 @@
                         </strong>
                     </header>
                     <div>
-                       <div class="btn btn_default btn_sm" style="margin-bottom: 5px">
+                       <div class="warning-text" style="margin-bottom: 5px">
                             <b># {{ tag }}</b>
                         </div>
                     </div>
@@ -310,7 +320,7 @@
                             {% for tag in set_tags|slice:10 %}
                             <a class="btn btn_default btn_sm"
                                href="{{ tag.get_absolute_url }}">
-                                #{{tag.title}}({{tag.item_tags.count}})
+                                #{{ tag.title }}
                             </a>
                             {% endfor %}
                         </div>

@@ -110,7 +110,7 @@
                                            placeholder="Введите пароль повторно" required />
                                 </div>
                                 <div class="form-group">
-                                    <a class="btn btn_muted Order-btnReg" href="{% url 'app_user:login' %}">
+                                    <a class="btn btn_muted Order-btnReg" href="{% url 'app_user:login' %}?next={% url 'app_order:order_create' %}">
                                         Я уже зарегистрирован
                                     </a>
                                 </div>

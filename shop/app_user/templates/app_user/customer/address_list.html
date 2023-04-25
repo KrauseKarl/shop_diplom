@@ -13,21 +13,16 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title"> Ваши адреса доставки </h1>
-                {% block breadcrumbs %}
-                <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item">
-
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-
-
-                        <!--  <a href="index.html">home</a>-->
+                   <ul class="breadcrumbs Middle-breadcrumbs">
+                   <li class="breadcrumbs-item">
+                        <a href="{% url 'app_user:account' user.id %}">личный кабинет
+                        </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
+                        <span>список ваших адресов
+                        </span>
                     </li>
                 </ul>
-                {% endblock %}
             </div>
         </div>
     </div>
@@ -41,7 +36,6 @@
                 <div class="Sort">
                     <div class="Sort-title">Ваши адреса доставки </div>
                 </div>
-
                 <div class="Orders">
                     {% for address in object_list %}
                     <div class="Order Order_anons">
@@ -104,12 +98,19 @@
                             </div>
                         </div>
                     {% else %}
-                        <div class="Order Order_anons">Ничего не найдено</div>
+                       <div class="Order">
+                        <h2>Ничего не найдено
+                        </h2>
+                    </div>
                     {% endif %}
                     {% endfor %}
+
                     <div class="Order Order_anons">
+                        <div class="Sort">
+                            <div class="Sort-title">Сохранить новый адрес</div>
+                        </div>
                         <div class="Order-personal">
-                            <form class="form"  id="form" method="post"
+                            <form class="form"  id="form_create_address" method="post"
                                   action="{% url 'app_order:address_create' %}" >
                                 {% csrf_token %}
                                 <div class="form-group">
@@ -121,7 +122,7 @@
                                 <div class="form-group">
                                     <div class="buttons">
                                         <input class="btn btn_square btn_success btn_narrow"
-                                               type="submit" value="+ добавить новый адрес" form="form"/>
+                                               type="submit" value="+ добавить новый адрес" form="form_create_address"/>
                                     </div>
                                 </div>
                             </form>

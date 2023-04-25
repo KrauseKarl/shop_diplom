@@ -10,12 +10,17 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title"> Редактировать - <b>{{ order }}</b></h1>
+                <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
+                    Редактировать</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item"><a href="index.html">home</a>
-                    </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Профиль</span>
+                        <a href="{% url 'app_store:delivery_list' %}">Список заказов
+                        </a>
+                    </li>
+                     <li class="breadcrumbs-item breadcrumbs-item_current">
+                         <a href="{% url 'app_store:delivery_detail' order_item.order.pk %}">{{ order_item.order }}
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -70,8 +75,6 @@
                                 </div>
                                 {% endif %}
                                 <!-- ITEM'S DESCRIPTION -->
-
-
                             </div>
                             <div class="Cart-block Cart-block_price">
                                 <div class="Cart-price {% if not order_item.item.item.is_available %}Cart-title-not_available{% endif %}"
@@ -79,13 +82,8 @@
                                     ${{ order_item.total }}
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="Cart-block Cart-block_row">
-                            <div class="Cart-block Cart-block_seller">
-                                <!-- - var options = setOptions(items, ['value', 'selected', 'disabled']);-->
-
                             </div>
+
 
                             <!--    Добавление или удаление единиц товара  -->
                             <div class="Cart-block Cart-block_amount">
@@ -114,8 +112,7 @@
                             <!--    UPDATE ITEM AMOUNT   -->
                             <div class="Cart-block Cart-block_delete">
                                 <button class="Cart-delete" form="{{ order_item.id }}">
-                                   {{ order_item.id}}
-<!--                                    <img src="/assets/img/icons/update.svg" width="35">-->
+                                    <img src="/assets/img/icons/update.svg" width="35">
                                 </button>
                             </div>
                             <!--    UPDATE ITEM AMOUNT   -->

@@ -21,12 +21,12 @@
                 {% csrf_token %}
                 <div class="Payment-card form-shadow">
                     <div class="form-group">
-                        <strong>Вы точно хотите удалить комментарий ?</strong>
+                        <strong class="Section-title">Вы точно хотите удалить заказ ?</strong>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn_danger btn_square">Удалить
                         </button>
-                        <a class="btn btn_dark btn_square" href="{% url 'app_store:comment_detail' pk=object.pk %}">Нет
+                        <a class="btn btn_dark btn_square" href="{% url 'app_order:order_detail' pk=object.pk %}">Нет
                         </a>
                     </div>
                 </div>

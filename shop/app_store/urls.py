@@ -31,6 +31,7 @@ urlpatterns = [
     path('category/list/', CategoryListView.as_view(), name='category_list'),
     path('category/detail/<slug:slug>/feature/list/', FeatureListView.as_view(), name='feature_list'),
     path('category/create/', CategoryCreateView.as_view(), name='create_category'),
+
     path('feature/create/', CreateFeatureView.as_view(), name='feature_create'),
     path('feature_value/create/', CreateFeatureValueView.as_view(), name='feature_value_create'),
 

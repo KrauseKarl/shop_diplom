@@ -6,7 +6,7 @@ from celery import Celery
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Sum
 from django.shortcuts import redirect
 
@@ -26,7 +26,8 @@ from celery_app import app
 
 @shared_task
 def pay_order(order_id, number, pay):
-    sleep(10)
+    sleep(2)
+
     if number % 2 != 0 or number % 10 == 0:
         error = Payment.error_generator()
         order = Order.objects.get(id=order_id)
@@ -38,7 +39,7 @@ def pay_order(order_id, number, pay):
             order = Order.objects.get(id=order_id)
             order.status = 'paid'
             order.is_paid = True
-            if pay != order.pay:
+            if pay and pay != order.pay:
                 order.pay = pay
             order.order_items.update(status='in_progress')
             if order.error:

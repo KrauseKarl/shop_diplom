@@ -9,17 +9,29 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">{{     item.title     }}</h1>
+                <!--  TITLE -->
+                <h1 class="Middle-title">{{ item.title  }}
+                </h1>
+                <!--  TITLE -->
+
+                <!--    breadcrumbs     -->
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">главная страница</a>
-                    </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <a  href="{% url 'app_item:item_category' category=item.category.slug %}">
-                            <span>{{ item.category }}</span>
+                        <a href="{% url 'main_page' %}">главная стариница
                         </a>
                     </li>
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_item:item_category' category=item.category.slug %}">
+                            <span>{{ item.category }}
+                            </span>
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>{{ item }}
+                        </span>
+                    </li>
                 </ul>
+                <!--    breadcrumbs     -->
             </div>
         </div>
     </div>
@@ -71,7 +83,11 @@
                         </div>
                         <div class="ProductCard-cost">
                             <div class="ProductCard-tagsTitle">Магазин:
-                                <strong><a href="{{ item.get_store_url }}">{{ item.store| upper}}</a></strong>
+                                <strong>
+                                <i class="uil uil-store-alt h2"></i>
+                                <a href="{{ item.get_store_url }}">{{ item.store| upper}}
+                                </a>
+                                </strong>
                             </div>
                         </div>
 
@@ -82,7 +98,7 @@
                                 {% if item in already_in_cart %}
                                     <!-- UPDATE ITEM IN CART FORM & BUTTON -->
                                     {% for cart_item in cart_dict.cart.items.all %}
-                                        {% if cart_item.item == item%}
+                                        {% if cart_item.item == item %}
                                             <div class="ProductCard-cartElement ProductCard-cartElement_amount">
                                     <form class="Amount Amount_product" id="update_form" method="post"
                                           action="{% url 'app_cart:update' pk=cart_dict.cart.pk item_id=cart_item.pk %}">
@@ -100,7 +116,8 @@
                                     {% endfor %}
                                         <div class="ProductCard-cartElement">
                                     <button class="btn btn_dark btn_narrow" form="update_form">
-                                        <img src="/assets/img/icons/update.svg">
+                                        <i class="uil uil-sync" style="font-size:30px"></i>
+
 
                                     </button>
                                 </div>
@@ -249,10 +266,10 @@
                                             <div>
                                                 <strong class="Comment-title">{{ comment.user.get_full_name }}</strong>
                                                 <span class="Comment-date">
-                                                {{ comment.created_at|date:'F' }}&#32;&#32;/
-                                                {{ comment.created_at|date:"j" }}&#32;&#32;/
-                                                {{ comment.created_at|date:"o" }}&#32;&#32;/
-                                                {{ comment.created_at|date:"H:i" }}
+                                                {{ comment.created|date:'F' }}&#32;&#32;/
+                                                {{ comment.created|date:"j" }}&#32;&#32;/
+                                                {{ comment.created|date:"o" }}&#32;&#32;/
+                                                {{ comment.created|date:"H:i" }}
                                                 </span>
                                             </div>
                                         </header>
@@ -292,6 +309,38 @@
                                         </div>
                                     </div>
                                     <!--     MODAL FOR CONFIRM DELETE ITEM    -->
+                                {% endif  %}
+                                {% if comment.archived %}
+                                 <div class="Comment">
+                                    <div class="Comment-column Comment-column_pict">
+                                        {% if comment.user.is_authenticated and comment.user.profile.avatar %}
+                                        <div>
+                                            <img class="Comment-avatar-exist" src="{{ comment.user.profile.avatar.url }}">
+                                        </div>
+                                        {% else %}
+                                        <div class="Comment-avatar"></div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="Comment-column">
+                                        <header class="Comment-header">
+                                            <div>
+                                                <strong class="Comment-title">{{ comment.user.get_full_name }}</strong>
+                                                <span class="Comment-date">
+                                                {{ comment.created|date:'F' }}&#32;&#32;/
+                                                {{ comment.created|date:"j" }}&#32;&#32;/
+                                                {{ comment.created|date:"o" }}&#32;&#32;/
+                                                {{ comment.created|date:"H:i" }}
+                                                </span>
+                                            </div>
+                                        </header>
+                                        <div class="Comment-content" >
+                                            <div class="Comment-title">
+                                                <i class="uil uil-comment-block"></i>
+                                                комментрарий был удален
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% endif %}
                                 {% endfor %}
 
@@ -324,7 +373,6 @@
                                 </div>
                                 {% else %}
                                     <h3 class="Section-title">
-
                                         <a class="btn btn_success"
                                            href="{% url 'app_user:login' %}?next={{ item.get_absolute_url }}">
                                             Войдите

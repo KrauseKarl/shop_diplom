@@ -2,7 +2,7 @@
 {% load static %}
 {% load cache %}
 
-{% block title %}Каталог{% endblock %}
+{% block title %}Комментарии{% endblock %}
 
 {% block heard %} {% include 'search_string.html' %} {% endblock %}
 
@@ -12,23 +12,17 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-
-                <h1 class="Middle-title">
-                    Всего комментариев: {{ paginator.object_list }}
+                <h1 class="Middle-title">Все комментарии
                 </h1>
-
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-
-
-                        <!--  <a href="index.html">home</a>-->
+                        <a href="{% url 'main_page' %}">главная стариница
+                        </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
+                        <span>список коментариев
+                        </span>
                     </li>
                 </ul>
                 {% endblock %}
@@ -74,9 +68,11 @@
                                         <div class="Order-infoType">модерация:</div>
                                         <div class="Order-infoContent">
                                             {% if  comment.is_published %}
-                                            <span class="seller_label">ОПУБЛИКОВАН</span>
+                                            <span class="success-text">ОПУБЛИКОВАН</span>
+                                            {% elif  comment.archived %}
+                                             <span class="secondary-text">удален модератором</span>
                                             {% else %}
-                                              <span class="rest_label">НА МОДЕРАЦИИ</span>
+                                              <span class="warning-text">НА МОДЕРАЦИИ</span>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -102,12 +98,12 @@
                                         <div class="Order-infoType"></div>
                                         <div class="Order-infoContent">
                                             <div class="Order-price">
-                                                <a class="btn btn_square  btn_dark btn_narrow"
+                                                <a class="btn btn_default btn_sm"
                                                    href="{% url 'app_item:comment_edit' pk=comment.item.pk comment_id=comment.pk %}">
                                                     редактировать
                                                 </a>
 
-                                                <a class="btn btn_square btn_danger btn_narrow"
+                                                <a class="btn  btn_danger btn_sm"
                                                    href="#commentDeleteModal">
                                                     удалить
                                                 </a>&#160;&#160;
@@ -147,7 +143,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="Order Order_anons">Ничего не найдено</div>
+                             <div class="Order"><h2>Ничего не найдено</h2></div>
                     {% endfor %}
                 </div>
 

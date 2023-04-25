@@ -17,7 +17,7 @@ from utils.my_utils import CustomerOnlyMixin
 app = Celery('tasks', backend=CELERY_RESULT_BACKEND, broker=CELERY_BROKER_URL)
 
 
-class AddItemToCart(CustomerOnlyMixin, generic.CreateView):
+class AddItemToCart(generic.CreateView):
     """Класс-представление для добавления товара в корзину."""
     model = Cart
     template_name = 'app_item/item_detail.html'
@@ -34,6 +34,7 @@ class AddItemToCart(CustomerOnlyMixin, generic.CreateView):
         if form.is_valid():
             quantity = form.cleaned_data.get('quantity')
             update = form.cleaned_data.get('update')
+            print('++++++++++++++++++++++++++++++++',quantity)
             path = cart_services.add_item_in_cart(request, item_id, quantity)
 
             return path
@@ -42,7 +43,7 @@ class AddItemToCart(CustomerOnlyMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
-class RemoveItemFromCart(CustomerOnlyMixin, generic.TemplateView):
+class RemoveItemFromCart(generic.TemplateView):
     """Класс-представление для удаление товара из корзины."""
 
     def get(self, request, *args, **kwargs):
@@ -52,7 +53,7 @@ class RemoveItemFromCart(CustomerOnlyMixin, generic.TemplateView):
         return redirect(path)
 
 
-class UpdateCountItemFromCart(CustomerOnlyMixin, generic.UpdateView):
+class UpdateCountItemFromCart(generic.UpdateView):
     """Класс-представление для обновление кол-ва товара в корзине. """
     model = Cart
     template_name = 'app_cart/cart.html'
@@ -73,17 +74,17 @@ class UpdateCountItemFromCart(CustomerOnlyMixin, generic.UpdateView):
         return super().form_invalid(form)
 
 
-class CartDetail(CustomerOnlyMixin, UserPassesTestMixin, generic.DetailView):
+class CartDetail(generic.DetailView):
     """Класс-представление для отображение корзины."""
     model = Cart
     template_name = 'app_cart/cart.html'
     context_object_name = 'cart'
 
-    def test_func(self):
-        cart = self.get_object()
-        if self.request.user.id == cart.user.id:
-            return True
-        return False
+    # def test_func(self):
+    #     cart = self.get_object()
+    #     if self.request.user.id == cart.user.id:
+    #         return True
+    #     return False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -94,7 +95,7 @@ class CartDetail(CustomerOnlyMixin, UserPassesTestMixin, generic.DetailView):
         return context
 
 
-class CreateCart(CustomerOnlyMixin, generic.TemplateView):
+class CreateCart(generic.TemplateView):
     model = Cart
     template_name = 'app_cart/cart_detail.html'
 

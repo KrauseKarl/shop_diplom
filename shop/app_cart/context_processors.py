@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from app_cart.services.cart_services import get_current_cart, get_items_in_cart
 
 

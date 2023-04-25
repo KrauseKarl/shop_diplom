@@ -13,9 +13,12 @@
                 <h1 class="Middle-title">Список квитанции об оплате
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_user:account' user.id %}">личный кабинет
+                        </a>
                     </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>История квитанций о оплате</span>
+                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>История квитанций о оплате
+                    </span>
                     </li>
                 </ul>
             </div>
@@ -79,7 +82,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="Order Order_anons">Ничего не найдено</div>
+                              <div class="Order"><h2>Ничего не найдено</h2></div>
                     {% endfor %}
 
                 </div>

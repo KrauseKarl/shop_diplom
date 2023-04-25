@@ -29,23 +29,21 @@
                 <div class="Payment-card">
                     <div class="form-group">
                         <img src="/assets/img/icons/success.svg" width="100">
-                        <label class="form-label">ЗАКАЗ УСПЕШНО ПЛАЧЕН</label>
+                        <label class="form-label Section-title ">ЗАКАЗ УСПЕШНО ПЛАЧЕН</label>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <a href="{% url 'app_order:order_detail' order.id %}">
-                                {{ order }}
-                            </a>
-                        </label>
-                        <label class="form-label">
-                            <a href="{% url 'app_invoice:invoices_detail' invoice.id %}">{{ invoice }}</a>
-                        </label>
-                    </div>
-                    <div class="form-group">
+                     <div class="form-group">
                         <a class="btn btn_success"  href="{% url 'main_page' %}">
                           Вернуться к покупкам
                         </a>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">перейти
+                            <a href="{% url 'app_order:order_list'  %}">
+                               в мои заказы
+                            </a>
+                        </label>
+                    </div>
+
                 </div>
             </div>
         </div>

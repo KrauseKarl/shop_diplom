@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.template.defaultfilters import slugify as django_slugify
 from django.db import connection
@@ -27,12 +28,18 @@ def slugify_for_cyrillic_text(string) -> str:
 
 
 class MixinPaginator(Paginator):
-    def my_paginator(self, queryset, request, paginate_by):
+    def __init__(self, object_list, request, per_page):
+        super().__init__(object_list, per_page)
+        self.queryset = object_list
+        self.request = request
+        self.paginate_by = per_page
+
+    def my_paginator(self):
         try:
-            page = int(request.GET.get('page', '1'))
-        except:
+            page = int(self.request.GET.get('page', '1'))
+        except ObjectDoesNotExist:
             page = 1
-        paginator = Paginator(queryset, paginate_by)
+        paginator = Paginator(self.queryset, self.paginate_by)
 
         try:
             queryset = paginator.page(page)

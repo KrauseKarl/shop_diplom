@@ -24,7 +24,7 @@ class OrderItem(models.Model):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        related_name='cart_item'
+        related_name='order_item'
     )
     quantity = models.PositiveIntegerField(
         default=1,
@@ -82,7 +82,7 @@ class Order(models.Model):
         ('paid', 'оплачен'),
         ('is_preparing', 'собирается'),
         ('on_the_way', 'доставляется'),
-        ('is_ready', 'готов к выдаче'),
+        ('is_ready', 'готов'),
         ('completed', 'доставлен'),
         ('deactivated', 'отменен')
     )
@@ -166,6 +166,10 @@ class Order(models.Model):
         default='',
         blank=True
     )
+    archived = models.BooleanField(
+        default=False,
+        verbose_name='в архив'
+    )
 
     objects = models.Manager()
 
@@ -177,6 +181,12 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         self.updated = now()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self.archived = True
+        self.status = 'deactivated'
+        self.order_items.update(status='deactivated')
         super().save(*args, **kwargs)
 
     def __str__(self):

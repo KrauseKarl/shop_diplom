@@ -153,3 +153,15 @@ class UpdateOrderStatusForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ('status',)
+
+
+class OrderSearchForm(forms.ModelForm):
+    start = forms.DateTimeField(required=False)
+    finish = forms.DateTimeField(required=False)
+    store = forms.CharField(required=False)
+    status = forms.CharField(required=False)
+    search = forms.CharField(required=False)
+
+    class Meta:
+        model = Order
+        fields = ('status', 'search', 'store', 'start', 'finish',)

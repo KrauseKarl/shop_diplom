@@ -10,7 +10,9 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">{{ order }}
+                <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
+                    {{ order }}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
@@ -77,7 +79,7 @@
                                     <div class="Order-info Order-info_delivery">
                                         <div class="Order-infoType">Тип доставки:
                                         </div>
-                                        <div class="Order-infoContent{% if order.delivery == 'express' %}warning-text{% endif %}">
+                                        <div class="Order-infoContent {% if order.delivery == 'express' %} warning-text {% endif %}">
                                             {{ order.get_delivery_display }}
                                         </div>
                                     </div>
@@ -98,13 +100,18 @@
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoType">Статус:</div>
                                         <div class="Order-infoContent">{{ order.get_status_display }}
-                                            {% if order.invoices.first %}
-                                            <span class="seller_label">
-                                                {{ order.invoices.first }}
-                                            </span>
-                                            {% endif %}
+
                                         </div>
                                     </div>
+                                    {% if order.invoices.first %}
+                                    <div class="Order-info Order-info_pay">
+                                        <div class="Order-infoType">Квитанция:</div>
+                                        <div class="Order-infoContent">{{ order.invoices.first }}
+
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
 
                                     {% if order.error %}
                                     <div class="Order-info Order-info_error">
@@ -147,6 +154,7 @@
                                     <div class="Cart-block Cart-block_price">
                                         <span class="Cart-price">${{ order_item.total }}
                                         </span>
+
                                     </div>
                                     <div class="Cart-block Cart-block_price">
                                         {% if order.status == 'created' %}
@@ -205,13 +213,14 @@
 
                             {% endfor %}
                         </div>
-                        <div class="Cart-total">
-                            <div class="Cart-block Cart-block_total">
-                                <strong class="Cart-title">
-                                    <span class="Cart-price Cart-total-order">Итого:$ {{ total|floatformat:'2' }}</span>
-                                </strong>
-                            </div>
-                        </div>
+                         <div class="Cart-total">
+                             <div class="Cart-block Cart-block_total">
+                                 <strong class="Cart-title">Итого:
+                                     <span class="Cart-price">${{ total|floatformat:'2' }}</span>
+                                 </strong>
+                             </div>
+                         </div>
+
                         </div>
                     </div>
                 </div>

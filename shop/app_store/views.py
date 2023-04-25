@@ -1,13 +1,15 @@
 import csv
-from datetime import datetime
+from datetime import date
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db import transaction
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Count
 from django.http import Http404, HttpRequest, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.timezone import datetime
+
 from django.views import generic
 from django.http import HttpResponse
 # models
@@ -148,6 +150,7 @@ class CreateItemView(SellerOnlyMixin, generic.CreateView):
             'tag_formset': formset_tag,
             'image_formset': formset_image,
             'form': self.form_class,
+            'store': self.get_object(),
             'colors': item_services.get_colors(item_models.Item.available_items.all())
         }
         return self.render_to_response(context=context)
@@ -485,24 +488,39 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
     def get(self, request, status=None, **kwargs):
         super().get(request, **kwargs)
         orders = self.get_queryset()
-        item_quantity = None
-        if self.request.GET.get('store'):
-            current_store = self.request.GET.get('store')
-            orders = orders.filter(order__store__title=current_store)
-        if request.GET.get('status'):
-            status = request.GET.get('status')
-            orders = orders.filter(status=status)
-            item_quantity = orders.aggregate(total=Sum('item__quantity')).get('total')
-
-        if request.GET.get('number'):
-            order_number = request.GET.get('number')
-            orders = orders.filter(order__id__icontains=order_number)
+        # TODO remove to service
+        if request.GET.get('stores') != 'all':
+            stores = [request.GET.get('stores')]
+        else:
+            stores = list(store_models.Store.objects.filter(owner=self.request.user).values_list('id', flat=True))
+        if request.GET.get('status') != 'all':
+            status = [request.GET.get('status')]
+        else:
+            status = [name for name, title in order_models.Order.STATUS]
+        search = request.GET.get('search')
+        if request.GET.get('start') != '':
+            start = request.GET.get('start')
+        else:
+            start = '1970-01-01'
+        if request.GET.get('finish') != '':
+            finish = request.GET.get('finish')
+        else:
+            request.GET._mutable = True
+            finish = date.today()
+            request.GET['finish'] = finish
+        if request.GET:
+            orders = orders.filter(
+                store__id__in=stores,
+                status__in=status,
+                id__icontains=search,
+                created__range=[start, finish]
+            )
+        else:
+            orders = self.get_queryset()
         context = {
             'orders': orders,
-            'status_list': order_models.OrderItem.STATUS,
-            'item_quantity': item_quantity,
+            'status_list': order_models.Order.STATUS,
         }
-
         return render(request, self.template_name, context=context)
 
 
@@ -515,7 +533,7 @@ class DeliveryDetailView(UserPassesTestMixin, generic.DetailView):
     def test_func(self):
         # user = self.request.user
         # order = self.get_object()
-        return True #if user == order.store.all()  else False
+        return True  # if user == order.store.all()  else False
 
     def get(self, request, *args, category=None, **kwargs):
         super().get(request, *args, **kwargs)
@@ -539,7 +557,6 @@ class DeliveryUpdateView(UserPassesTestMixin, generic.UpdateView):
         return True if user == order.store.first().owner else False
 
     def form_valid(self, form):
-        print(form)
         form.save()
         order = self.get_object()
         messages.add_message(self.request, messages.SUCCESS, f"Данные {order} успешно обновлены")
@@ -550,47 +567,20 @@ class DeliveryUpdateView(UserPassesTestMixin, generic.UpdateView):
 
 
 class OrderItemUpdateView(generic.UpdateView):
+    """Класс-представление для обновления кол-во товаров в заказе."""
     model = order_models.OrderItem
     template_name = 'app_store/delivery/delivery_edit.html'
     form_class = order_form.OrderItemUpdateForm
     context_object_name = 'order_item'
 
     def form_valid(self, form):
-        order_item = form.save()
-        order_item.quantity = form.cleaned_data.get('quantity')
-        order_item.total = order_item.item.price * form.cleaned_data.get('quantity')
-        order_item.save()
-        order_id = order_item.order.id
-        order = order_models.Order.objects.get(id=order_id)
-        store = order.store.first()
-        new_total_order = 0
-        for order_item in order.order_items.all():
-            if order_item.total > store.min_for_discount:
-                new_total_order += round(float(order_item.total) * ((100 -store.discount) / 100), 0)
-            else:
-                new_total_order += float(order_item.total)
-        min_free_delivery = SiteSettings().min_free_delivery
-        delivery_fees = SiteSettings().delivery_fees
-        express_delivery_fees = SiteSettings().express_delivery_price
-        if new_total_order < min_free_delivery:
-           new_delivery_fees = delivery_fees
-        else:
-            new_delivery_fees = 0
-        if order.delivery == 'express':
-            new_delivery_fees += express_delivery_fees
-        order.total_sum = new_total_order + new_delivery_fees
-        order.delivery_fees = new_delivery_fees
-        order.save()
-
-        messages.add_message(self.request, messages.SUCCESS, f"Количество товара({self.get_object()}) в заказе обновлено.")
-
-
+        order_services.SellerOrderHAndler.update_item_in_order(self.request, form)
+        messages.add_message(self.request, messages.SUCCESS, f"Количество товара({self.get_object()}) обновлено.")
         return redirect('app_store:order_item_edit', self.get_object().pk)
 
     def form_invalid(self, form):
         order_item = self.get_object()
-        messages.add_message(self.request, messages.ERROR,
-                             f"Произошла ошибка при обновлении количества товара в заказе.")
+        messages.add_message(self.request, messages.ERROR, f"Произошла ошибка при обновлении количества товара.")
         return redirect('app_store:order_item_edit', order_item.pk)
 
 
@@ -609,31 +599,24 @@ class SentPurchase(generic.UpdateView):
             status = form.cleaned_data.get('status')
             order.status = status
             order.save()
-
             delivery_in_progress.delay(order.id)
             path = self.request.META.get('HTTP_REFERER')
             messages.success(self.request, f"Заказ  {order} отправлен")
             return redirect(path)
 
 
-class CommentListView(generic.ListView):
+class CommentListView(generic.ListView, MixinPaginator):
     """Класс-представление для отображения списка всех заказов продавца."""
     model = item_models.Comment
     template_name = 'app_store/comment/comment_list.html'
     context_object_name = 'comments'
+    paginate_by = 5
 
     def get(self, request, status=None, **kwargs):
         super().get(request, **kwargs)
-        comments = store_services.SellerOrderHAndler.get_seller_comment_list(request)
-        if self.request.GET.get('store'):
-            current_store = self.request.GET.get('store')
-            comments = comments.filter(item__store__slug=current_store)
-        if request.GET.get('is_published'):
-            status = request.GET.get('is_published')
-            comments = comments.filter(is_published=status)
-        else:
-            comments = comments
-        return render(request, self.template_name, {'object_list': comments})
+        object_list = order_services.SellerOrderHAndler.get_seller_comment_list(request)
+        object_list = self.my_paginator(object_list, self.request, self.paginate_by)  # пагинация результата
+        return render(request, self.template_name, {'object_list': object_list})
 
 
 class CommentList(generic.ListView):
@@ -672,7 +655,6 @@ class CommentDelete(generic.DeleteView):
     template_name = 'app_store/comment/comment_delete.html'
 
     def form_valid(self, form):
-        success_url = self.success_url
         self.object.archived = True
         self.object.save()
         return HttpResponseRedirect(self.object.get_absolute_url())

@@ -14,6 +14,7 @@
             <div class="Middle-header">
 
                 <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
                     {% if request.GET.sort_by_letter %}
                     Все категории на букву <strong>"{{ request.GET.sort_by_letter }}"</strong>
                     {% else %}
@@ -22,6 +23,7 @@
                 </h1>
 
                 {% block breadcrumbs %}
+
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
 
@@ -179,7 +181,7 @@
                             </div>
                         </div>
                     {% else %}
-                        <div class="Order Order_anons">Ничего не найдено</div>
+                                 <div class="Order"><h2>Ничего не найдено</h2></div>
                     {% endif %}
                     {% endfor %}
                 </div>

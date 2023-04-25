@@ -27,7 +27,7 @@ def my_permission_denied(request, exception):
 
 
 def my_page_not_found(request, exception):
-    return render(request=request, template_name='errors/error500.html', context={'exception': exception}, status=404)
+    return render(request=request, template_name='errors/error404.html', context={'exception': exception}, status=404)
 
 
 def my_server_error(request):

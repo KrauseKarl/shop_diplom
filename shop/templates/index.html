@@ -18,17 +18,17 @@
     <link  href="/assets/fonts/Roboto/Roboto-Light.woff"        rel="preload" as="font">
     <link  href="/assets/fonts/Roboto/Roboto-Light_Italic.woff" rel="preload" as="font">
 
-    <link href="/assets/css/fonts.css?v=65245665"  rel="stylesheet" type="text/css">
-    <link href="/assets/css/basic.css?v=65245665"  rel="stylesheet" type="text/css">
-    <link href="{% static 'css/basic.css?v=65245665' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'css/basic.css?v=65245665' %}" rel="stylesheet" type="text/css">
-    <link href="/assets/css/extra.css?v=65245665"  rel="stylesheet" type="text/css">
+    <link href="/assets/css/fonts.css"  rel="stylesheet" type="text/css">
+    <link href="/assets/css/basic.css"  rel="stylesheet" type="text/css">
+    <link href="{% static 'css/basic.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/basic.css' %}" rel="stylesheet" type="text/css">
+    <link href="/assets/css/extra.css"  rel="stylesheet" type="text/css">
     <!--    MY CSS FILE -->
 
-    <link href="/assets/css/my_css.css?v=65245665"  rel="stylesheet" type="text/css">
+    <link href="/assets/css/my_css.css"  rel="stylesheet" type="text/css">
     <!--  ICONS -->
     <link href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"  rel="stylesheet">
-    <link  href="path/to/font-awesome/css/font-awesome.min.css"             rel="stylesheet">
+    <link  href="/assets/css/font-awesome.min.css"  rel="stylesheet">
     <script src="/assets/plg/CountDown/countdown.js"></script>
 
 </head>
@@ -71,7 +71,7 @@
     <div class="ControlPanel">
         <div class="wrap">
             <div class="row ControlPanel-row">
-                {% cache 3600 delivery %}
+                {% cache 360000 delivery %}
                 <div class="row-block">
                     <div class="row ControlPanel-rowSplit">
                         <div class="row-block">
@@ -179,15 +179,27 @@
                     <!--  ITEM'S COST COUNTER OF THE CART   -->
 
                     <!--    ORDERS  -->
-                    {% if order %}
-                    <a class="CartBlock-block" href="{% url 'app_order:order_list'   %}">
+                    {% if new_order.count != 0  and new_order.count%}
+                    <a class="CartBlock-block" href="{% url 'app_order:order_list' %}">
                         <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"
                              alt="order.svg"/>
-                        <span class="CartBlock-amount">
-                            {{ order.count }}
+                        <span class="CartBlock-amount" title="новые заказы">
+                            {{ new_order.count }}
                         </span>
                     </a>
                     {% endif %}
+                    {% if ready_order.count != 0 and ready_order.count %}
+                    <a class="CartBlock-block" href="{% url 'app_order:order_list' %}?status=is_ready">
+                        <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"
+                             alt="order.svg"/>
+                        <span class="CartBlock-amount" title="готовые заказы" style="background-color:#3CB878;">
+                            {{ ready_order.count }}
+                        </span> </a>
+                    {% endif %}
+
+
+
+
                     <!--    ORDERS  END-->
                 </div>
             </div>
@@ -199,13 +211,13 @@
             {% include 'app_store/seller_navbar.html' %}
             <!--    NAVBAR FOR SELLER END -->
             <!--    DELIVERY   -->
-            <div class="row-block"  >
+            <div class="row-block">
                 <div class="CartBlock">
                     <a class="CartBlock-block" href="{% url 'app_store:delivery_list' %}">
                         <img class="CartBlock-img" src="/assets/img/icons/delivery.svg" alt="delivery"/>
                         <!--  ORDER'S COUNTER FOR DELIVERY  -->
-                        {% if all_order_amount %}
-                            <span class="CartBlock-amount">{{ all_order_amount  }}</span>
+                        {% if new_order %}
+                            <span class="CartBlock-amount">{{ new_order }}</span>
                         {% endif %}
                         <!--  ORDER'S COUNTER FOR DELIVERY    -->
                     </a>
@@ -214,7 +226,7 @@
                         <span class="CartBlock-price">
                             {% if cart_total_sum > 0 %}
                             {{ cart_total_sum  }}$
-                            {% else  %}0
+                            {% else  %} 0
                             {% endif %}</span>
                     </div>
                     <!--  ITEM'S COST COUNTER OF THE CART   -->
@@ -222,8 +234,6 @@
             </div>
             <!--    DELIVERY END -->
             {% endif %}
-
-
             <div class="row-block Header-trigger">
                 <a class="menuTrigger" href="#navigate">
                     <div class="menuTrigger-content">

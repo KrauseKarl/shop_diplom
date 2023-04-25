@@ -2,7 +2,7 @@
 {% load static %}
 {% load cache %}
 
-{% block title %}Каталог{% endblock %}
+{% block title %}ХИТ продаж{% endblock %}
 
 {% block heard %}
 {% include 'search_string.html' %}
@@ -18,10 +18,11 @@
                 <h1 class="Middle-title">ХИТ продаж</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="index.html">home</a>
+                        <a href="{% url 'main_page' %}">главная стариница
+                        </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Blog</span>
+                        <span>ХИТ продаж</span>
                     </li>
                 </ul>
             </div>
@@ -30,7 +31,8 @@
     <div class="Section">
         <div class="wrap">
             <div class="Cards Cards_blog">
-                  {% for item in object_list %}
+                  {% for order_item in object_list %}
+                {% with item=order_item %}
                 <div class="Card">
                     <a class="Card-picture" href="{{ item.get_absolute_url  }}">
                     <img  src="{% if item.image.first %}
@@ -41,7 +43,7 @@
 
                     <div class="Card-date" >
                         <strong class="Card-date-number" style="{% if item in in_cart %}background-color:  #3CB878;{% endif %}">
-                            {{ item.cart_item.count }}
+                            {{ item.purchases }}
                         </strong>
                     </div>
                     <div class="Card-pin">
@@ -55,7 +57,7 @@
                                         ${{ item.price }}</span>
                         </div>
                         <div class="Card-description">
-                                <a href="{{ item.get_store_url }}">{{ item.store }}</a>
+                                <a href="#">{{ item.store }}</a>
                         </div>
                         <div class="Card-category">{% if item.category.parent_category %}
                             <a href="{{ item.category.parent_category.get_absolute_url }}">
@@ -72,6 +74,7 @@
                         </div>
                     </div>
                 </div>
+                {% endwith %}
                 {% endfor %}
             </div>
         </div>

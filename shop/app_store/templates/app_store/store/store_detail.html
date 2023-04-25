@@ -10,6 +10,7 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
                     {% if not message %}
                     Каталог товаров магазина <b>{{ store.title }}</b>
                     {% else %}
@@ -19,15 +20,11 @@
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-
-
-                        <!--                        <a href="index.html">home</a>-->
+                        <a href="{% url 'app_store:store_list' %}">мои магазины</a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
+                        <span>{{ store }}
+                        </span>
                     </li>
                 </ul>
                 {% endblock %}
@@ -406,7 +403,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="Order Order_anons">Ничего не найдено</div>
+                             <div class="Order"><h2>Ничего не найдено</h2></div>
                     {% endfor %}
 
                 </div>

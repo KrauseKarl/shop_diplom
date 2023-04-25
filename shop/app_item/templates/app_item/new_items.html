@@ -2,7 +2,7 @@
 {% load static %}
 {% load cache %}
 
-{% block title %}Каталог{% endblock %}
+{% block title %}новинки{% endblock %}
 
 {% block heard %}
 {% include 'search_string.html' %}
@@ -18,10 +18,11 @@
                 <h1 class="Middle-title">Новинки</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="index.html">home</a>
+                        <a href="{% url 'main_page' %}">главная стариница
+                        </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Blog</span>
+                        <span>новинки</span>
                     </li>
                 </ul>
             </div>
@@ -33,10 +34,7 @@
                   {% for item in object_list %}
                 <div class="Card">
                     <a class="Card-picture" href="{{ item.get_absolute_url  }}">
-                    <img  src="{% if item.image.first %}
-                                    {{ item.image.first.image.url }}
-                                    {% else %}/media/default_images/default_item.png
-                                    {% endif %}" alt="product.png"/>
+                    <img  src="{{ item.main_image }}"  alt="{{item}}"/>
                     </a>
                     <div class="Card-date">
                         <strong class="Card-date-number">NEW

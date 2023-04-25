@@ -66,7 +66,6 @@ function calculateOrder (){
             var post_address = $('#post_address').val()
             var city = $('#city').val()
             var address = $('#address').val()
-            var comment = $('#comment').val()
             var total_item_cost = parseFloat($('span[id="total_item_cost"]').text())
             var deliveryExpress = parseFloat($('#express_delivery_price').val())
             var deliverStandard = parseFloat($('#fees').val())
@@ -97,7 +96,6 @@ function calculateOrder (){
             $('#address_result').html($('#address').val());
             $('#delivery_result').html(delivery);
             $('#pay_result').html(pay);
-            $('#comment_result').html($('#comment').val())
 }
 /* АВТОЗАПОЛЕНИЕ ПОЛЕ ЗАКАЗА  */
 
@@ -159,9 +157,7 @@ $( document ).ready(function() {
 /* ОПЛАТА ТОВАРА */
 $('#form').submit(function () {
     $('#spinner').show('slow');
-//    ('style', 'display:block');
     $('#form_container').hide('slow');
-//    attr('style', 'display:none');
     $.ajax({
         data: $(this).serialize(),
         url: `/order/validate_username/`,

@@ -15,7 +15,7 @@ from app_user.models import Profile
 class GroupHandler:
 
     def get_group(self):
-        return Group.objects.get(name='unverified')
+        return Group.objects.get(name='customer')
 
     def set_group(self, user):
         group = self.get_group()

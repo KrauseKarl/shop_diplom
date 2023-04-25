@@ -16,7 +16,9 @@ def customer_order_list(request) -> dict:
     """
     if request.user.is_authenticated and request.user.profile.is_customer:
         orders = CustomerOrderHandler.get_customer_order_list(request)
-        return {'order': orders}
+        new_order = orders.filter(status='created')
+        ready_order = orders.filter(status='is_ready')
+        return {'order': orders, 'new_order': new_order, 'ready_order':ready_order}
     else:
         return {'order': None}
 
@@ -36,5 +38,5 @@ def seller_order_list(request) -> dict:
         reviews = SellerOrderHAndler.get_seller_comment_new_amount(request)
         return {'orders': all_order_list, 'all_new_order_amount': order_total_amount, 'reviews': reviews}
     else:
-        return {'orders': None, 'all_new_order_amount': 0, 'reviews': None}
+        return {'orders': None, 'all_new_order_amount': None, 'reviews': None}
 

@@ -72,6 +72,26 @@ def get_current_cart(request) -> dict:
         return {'cart': cart}
 
 
+def create_or_update_cart_item(request, cart, item, quantity):
+    #   проверяем есть ли данный товар в корзине
+    cart_item = cart.items.filter(item=item, is_paid=False).first()
+    #   если ли данный товар в корзине
+    if cart_item:
+        # увеличиваем его на переданное кол-во
+        cart_item.quantity += quantity
+        cart_item.save()
+        messages.add_message(request, messages.SUCCESS,
+                             f"Количество товара обновлено до {cart_item.quantity} шт.")
+    else:
+        #   если ли данный товар отсутствует в корзине,
+        #   то создаем экземпляр класса CartItem
+        cart_item = create_cart_item(item=item, user=request.user, quantity=quantity)
+        #  добавляем его в корзину
+        cart.items.add(cart_item)
+        messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+    return cart
+
+
 def add_item_in_cart(request, item_id, quantity=1):
     """
      Функция для добавления товара из корзины.
@@ -85,33 +105,7 @@ def add_item_in_cart(request, item_id, quantity=1):
     item = ItemHandler.get_item(item_id)
     if request.user.is_authenticated:
         if request.user.profile.is_customer:
-            # all_cart_item = CartItem.objects.filter(Q(item=item) & Q(is_paid=False))
-            # # находим общее кол-во этих товаров для корзины
-            # all_cart_item = all_cart_item.aggregate(total_sum=Sum('quantity')).get('total_sum')
-            # # сравниваем кол-во в корзине с кол-вом на складе
-            # if item.stock == all_cart_item:
-            #     item.is_available = False
-            #     item.save()
-            # # сравниваем кол-во в корзине с кол-вом на складе
-            # if item.stock + 1 > all_cart_item + 1:
-            # cart_items = get_items_in_cart(request)
-            #   проверяем есть ли данный товар в корзине
-            is_already_added = cart.items.filter(item_id=item.id).first()
-            #   если ли данный товар в корзине
-            if is_already_added:
-                # увеличиваем его на переданное кол-во
-                cart_item = cart.items.get(item=item)
-                cart_item.quantity += quantity
-                cart_item.save()
-                messages.add_message(request, messages.SUCCESS,
-                                     f"Количество товара обновлено до {cart_item.quantity} шт.")
-            else:
-                #   если ли данный товар отсутствует в корзине,
-                #   то создаем экземпляр класса CartItem
-                cart_item = create_cart_item(item, user=request.user)
-                #  добавляем его в корзину
-                cart.items.add(cart_item)
-                messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+            create_or_update_cart_item(request, cart, item, quantity)
     else:
         #   если корзины не существует
         if not cart:
@@ -128,22 +122,7 @@ def add_item_in_cart(request, item_id, quantity=1):
                 messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
         #   если анонимная корзина существует
         else:
-            #   проверяем есть ли товар(Item) в  добавленных товарах(CartItem)
-            cart_item = cart.items.filter(item=item).first()
-            #   если ли данный товар в корзине
-            if cart_item:
-                #  увеличиваем его на переданное кол-во
-                cart_item.quantity += quantity
-                cart_item.save()
-                messages.add_message(request, messages.SUCCESS,
-                                     f"Количество товара обновлено до {cart_item.quantity} шт.")
-            #   если ли данный товар отсутствует в корзине
-            else:
-                #   то создаем экземпляр класса CartItem
-                cart_item = create_cart_item(item)
-                #  добавляем его в корзину
-                cart.items.add(cart_item)
-                messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+            create_or_update_cart_item(request, cart, item, quantity)
         cart.save()
         response = set_cart_cookies(request)
     cache.delete(get_cache_key(request))
@@ -158,7 +137,6 @@ def remove_from_cart(request, item_id):
     :return:
     """
     cart = get_current_cart(request).get('cart')
-
     cart_item = get_object_or_404(CartItem, id=item_id, all_items=cart, is_paid=False)
     messages.add_message(request, messages.INFO, f"{cart_item.item.title} удален из корзины")
     try:
@@ -288,9 +266,15 @@ def get_anon_user_cart(session_key):
     return cart
 
 
-def create_cart_item(item, user=None):
+def create_cart_item(item, quantity=1, user=None):
     """Функция создает экземпляр 'CartItem'."""
-    cart_item = CartItem.objects.create(item=item, price=item.price, is_paid=False, user=user)
+    cart_item = CartItem.objects.create(item=item, quantity=quantity, price=item.price, is_paid=False)
+    try:
+        cart_item.user = user
+        cart_item.save()
+    except ValueError:
+        pass
+
     return cart_item
 
 
@@ -307,6 +291,7 @@ def identify_cart(request, user):
                     cart_item.user = user
                     cart_item.save()
                 cart.save()
+
 
 def merge_anon_cart_with_user_cart(request, cart):
     """
@@ -325,8 +310,10 @@ def merge_anon_cart_with_user_cart(request, cart):
         if anonymous_cart:
             items_from_anon_cart = anonymous_cart.items.prefetch_related('item').all()
             for cart_item in items_from_anon_cart:
+                print('1_cart_item', cart_item.user)
                 cart_item.user = request.user
                 cart_item.save()
+                print('2_cart_item', cart_item.user)
                 already_in_cart_item = cart.items.filter(item__id=cart_item.item.id).first()
                 if already_in_cart_item:
                     already_in_cart_item.quantity += cart_item.quantity
@@ -429,7 +416,7 @@ def delete_cart_cookies(request, path):
     :return: response.
 
     """
-    if is_customer(request.user):
+    if request.user.is_authenticated:
         cart = get_current_cart(request).get('cart')
         merge_anon_cart_with_user_cart(request, cart)
         if request.COOKIES.get('cart'):

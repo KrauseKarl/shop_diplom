@@ -9,16 +9,20 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">Добавить товар
-                    {% if form.errors %}
-                    <b style="color:red">{{ form.errors }}</b>
-                    {% endif %}
+                <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
+                    Добавить товар {{ store }}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item"><a href="index.html">home</a>
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:store_list' %}">мои магазины</a>
+                    </li>
+                     <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:store_detail' store.pk %}">{{ store }}</a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Профиль</span>
+                        <span>добавить новый товар
+                        </span>
                     </li>
                 </ul>
             </div>

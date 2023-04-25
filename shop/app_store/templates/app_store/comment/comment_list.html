@@ -10,28 +10,14 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-
                 <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
                     Комментарии
-                    {% if request.GET.is_published == 'True' %}
-                    опубликованные
-                    {% elif request.GET.is_published == 'False' %}
-                    ожидающие модерацию
-                    {% endif %}
                 </h1>
-
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item">
-
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-
-
-                        <!--  <a href="index.html">home</a>-->
-                    </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
+                        <span>список комментариев</span>
                     </li>
                 </ul>
                 {% endblock %}
@@ -53,18 +39,12 @@
                            href="{% url 'app_store:comment_list' %}">
                             все
                         </a>
-                        {% for store in request.user.store.all %}
                         <a class="Sort-sortBy"
-                           href="?store={{ store.slug }}">
-                            {{ store.title| upper }}
-                        </a>
-                        {% endfor %}
-                        <a class="Sort-sortBy"
-                           href="?{% if request.GET.store %}store={{ request.GET.store }}&{% endif %}is_published=False">
+                           href="?is_published=False">
                             новые
                         </a>
                         <a class="Sort-sortBy"
-                           href="?{% if request.GET.store %}store={{ request.GET.store }}&{% endif %}is_published=True">
+                           href="?is_published=True">
                             опубликованные
                         </a>
                     </div>
@@ -75,11 +55,11 @@
                 <!--       PAGINATION         -->
                 <div class="Orders">
                     {% for comment in object_list %}
-                    <a href="{{ comment.get_absolute_url }}">
+
                     <div class="Order Order_anons">
-                        <div class="Order-personal">
+                        <a href="{{ comment.get_absolute_url }}">
+                            <div class="Order-personal">
                             <div class="row">
-                                <!--  ORDER'S TITLE & DATE -->
                                 <div class="row-block">
                                     <div class="Order-info">
                                         <div class="Order-infoType">автор:</div>
@@ -109,28 +89,24 @@
                                         <div class="Order-infoType">модерация:</div>
                                         <div class="Order-infoContent">
                                             {% if  comment.is_published %}
-                                            <span class="seller_label">ОПУБЛИКОВАН</span>
+                                            <span class="success-text">опубликован</span>
+                                            {% elif  comment.archived  %}
+                                             <span class="secondary-text">удален в архиве</span>
                                             {% else %}
-                                              <span class="rest_label">НА МОДЕРАЦИИ</span>
+                                              <span class="warning-text">на модерации</span>
                                             {% endif %}
-                                        </div>
-                                    </div>
-
-                                    <div class="Order-info ">
-                                        <div class="Order-infoType">комментарий:</div>
-                                        <div class="Order-infoContent">
-                                            <span class="Order-price">
-                                                {{ comment.review|truncatechars:200 }}
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        </a>
                     </div>
-                    </a>
                     {% empty %}
-                    <div class="Order Order_anons">Ничего не найдено</div>
+                    <div class="Order">
+                        <h2>Ничего не найдено
+                        </h2>
+                    </div>
                     {% endfor %}
                 </div>
 

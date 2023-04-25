@@ -171,10 +171,10 @@ var form = function(){
                         case 'pay':
                             var val = $this.val().replace(' ', '');
                             val = val + '';
-                            if (parseFloat(val)%2!==0) {
-                                message += 'Номер должен быть четным. ';
-                                error = true;
-                            }
+//                            if (parseFloat(val)%2!==0) {
+//                                message += 'Номер должен быть четным. ';
+//                                error = true;
+//                            }
                             break;
 
                     }
@@ -729,7 +729,7 @@ var Payment = function(){
                 do {
                     billNumber = Math.random() + '';
                     billNumber = billNumber.slice(-9, -1);
-                } while(parseFloat(billNumber)%2!==0);
+                } while(parseFloat(billNumber)%2!== 0);
                 billNumber = billNumber.slice(0, 4) + ' ' + billNumber.slice(4, 8);
                 $bill.val(billNumber);
             });

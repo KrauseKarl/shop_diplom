@@ -1,8 +1,8 @@
 from django.db.models import QuerySet, Q
 
 from app_item.forms import CommentForm
-from app_item.models import Item, Comment
-from app_item.services.item_services import ItemHandler
+from app_item import models as item_models
+from app_item.services import item_services
 
 
 class CommentHandler:
@@ -13,7 +13,7 @@ class CommentHandler:
         :param item_id: id товара
         :return: кол-во комментариев
         """
-        item = ItemHandler.get_item(item_id=item_id)
+        item = item_services.ItemHandler.get_item(item_id=item_id)
         return item.comments.count()
 
     @staticmethod
@@ -31,7 +31,7 @@ class CommentHandler:
     @staticmethod
     def get_comment(comment_id):
         """Функция для получения одного комментария."""
-        return Comment.objects.select_related('item', 'user').filter(id=comment_id)[0]
+        return item_models.Comment.objects.select_related('item', 'user').filter(id=comment_id)[0]
 
     @staticmethod
     def set_comment_approved(comment_id):
@@ -55,15 +55,15 @@ class CommentHandler:
         comment.delete()
 
     @staticmethod
-    def get_comment_list_by_user(request) -> QuerySet[Comment]:
+    def get_comment_list_by_user(request) -> QuerySet[item_models.Comment]:
         """Функция возвращает список всех комментариев пользователя. """
-        comments = Comment.objects.select_related('item').filter(user=request.user)
+        comments = item_models.Comment.objects.select_related('item').filter(user=request.user)
         return comments
 
     @staticmethod
     def get_comment_cont(item_id):
         """Функция возвращает общее количество комментариев товара. """
-        return Comment.objects.filter(Q(item_id=item_id) & Q(is_published=True)).count()
+        return item_models.Comment.objects.filter(Q(item_id=item_id) & Q(is_published=True)).count()
 
     @staticmethod
     def add_comment(user, item_id, data):
@@ -74,7 +74,7 @@ class CommentHandler:
         :param data: словарь с данными из формы комментария.
         :return: новый комментарий.
         """
-        item = ItemHandler.get_item(item_id)
+        item = item_services.ItemHandler.get_item(item_id)
         form = CommentForm(data)
         new_comment = form.save(commit=False)
         new_comment.item = item
@@ -84,7 +84,7 @@ class CommentHandler:
         return new_comment
 
     @staticmethod
-    def delete_comment(user, comment_id, item_id):
+    def delete_comment(user, comment_id, item_id=None):
         """
         Функция для удаления комментария.
         Проверят право на удаления комментария.
@@ -95,7 +95,6 @@ class CommentHandler:
         """
         comment = CommentHandler.get_comment(comment_id)
         permission = CommentHandler.get_permission(user, comment)
-        item = ItemHandler.get_item(item_id)
         if permission:
             comment.delete()
             return True

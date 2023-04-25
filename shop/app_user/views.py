@@ -19,8 +19,8 @@ from django.contrib.auth.models import User, Group
 
 from app_item.services.item_services import ItemHandler
 
-from app_user.services.user_services import is_customer
-from utils.my_utils import MixinPaginator
+from app_user.services.user_services import is_customer, user_in_group
+from utils.my_utils import MixinPaginator, CustomerOnlyMixin
 from app_cart.models import Cart
 from app_cart.services.cart_services import get_current_cart, merge_anon_cart_with_user_cart, delete_cart_cookies, \
     get_items_in_cart, identify_cart
@@ -116,17 +116,19 @@ class DetailProfile(DetailView):
     context_object_name = 'user'
 
 
-class DetailHistoryView(DetailView):
+class HistoryDetailView(CustomerOnlyMixin, ListView, MixinPaginator ):
     """Класс-представление список просмотренных товаров."""
     model = User
     template_name = 'app_user/customer/history_view.html'
     context_object_name = 'user'
+    paginate_by = 8
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        user = self.get_object()
+        user = self.request.user
         already_in_cart = get_items_in_cart(self.request)
         queryset = ItemHandler.get_history_views(user)
+        queryset = self.my_paginator(queryset, self.request, self.paginate_by)
         context = {
             'object_list': queryset,
             'already_in_cart': already_in_cart
@@ -156,16 +158,13 @@ class UserLoginView(LoginView):
     def form_valid(self, form):
         """Логинит пользователя и вызывает функцию удаления cookies['cart] & cookies['has_cart]. """
         login(self.request, form.get_user())
-        if self.request.user.groups.first() == 'customer':
+        if user_in_group(self.request.user, 'customer'):
             response = delete_cart_cookies(self.request, path=self.get_success_url())
             return response
-        return HttpResponseRedirect(redirect_to=self.get_success_url().url)
+        if self.request.GET.get('next'):
+            return HttpResponseRedirect(reverse(self.request.GET.get('next')))
+        return HttpResponseRedirect(reverse('app_user:account', kwargs={'pk': self.request.user.pk}))
 
-    def get_success_url(self):
-        next_page = self.request.GET.get('next')
-        if next_page is not None:
-            return redirect(next_page)
-        return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
 
 
 class UserLogoutView(LogoutView):

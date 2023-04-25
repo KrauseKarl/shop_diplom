@@ -10,7 +10,11 @@
     <div class="Middle-top">
       <div class="wrap">
         <div class="Middle-header">
-          <h1 class="Middle-title">{{ comment }}</h1>
+          <h1 class="Middle-title">
+              <a href="{% url 'app_store:comment_list' %}" class="btn btn_default btn_square" >назад
+              </a>
+            {{ comment }}
+          </h1>
           <ul class="breadcrumbs Middle-breadcrumbs">
             <li class="breadcrumbs-item">
               <a href="index.html">home</a>
@@ -52,13 +56,32 @@
                     <div class="Order-info">
                       <div class="Order-infoType">статус:</div>
                       {% if comment.archived %}
-                      <div class="Order-infoContent progress-bar_width Order-progress-bar-deactivated">удален в архив</div>
+                      <div class="Order-infoContent secondary-text">удален в архив</div>
                       {% elif comment.is_published %}
-                      <div class="Order-infoContent  progress-bar_width Order-progress-bar-on_the_way">опубликован</div>
+                      <div class="Order-infoContent  success-text ">опубликован</div>
                       {% else %}
-                      <div class="Order-infoContent  progress-bar_width Order-progress-bar-in_progress">на модерации</div>
+                      <div class="Order-infoContent  warning-text ">на модерации</div>
                       {% endif %}
                     </div>
+                     <div class="Order-info">
+                     </div>
+                      <div class="Order-info">
+                          <div class="Order-infoType">
+                              {% if not comment.is_published  and not comment.archived %}
+                              <a href="{% url 'app_store:comment_update' comment.pk %}"
+                                 class="btn  {% if comment.is_published %}btn_warning{% else %} btn_success{% endif %} btn_square btn_sm">
+                                  опубликовать
+                              </a>
+                              {% endif %}
+                          </div>
+                          <div class="Order-infoContent secondary-text">
+                              {% if not comment.archived %}
+                              <a href="{% url 'app_store:comment_delete' comment.pk %}"
+                                 class="btn btn_danger btn_square btn_sm">удалить в архив
+                              </a>
+                              {% endif %}
+                          </div>
+                      </div>
                   </div>
                   <div class="row-block">
                     <div class="Order-info Order-info_delivery">
@@ -73,20 +96,7 @@
         </div>
       </div>
     </div>
-     <div class="Section">
-        <div class="wrap">
-          <div class="form Payment">
-            <div class="Payment-card">
-              <div class="form-group">
-                <a href="{% url 'app_store:comment_update' comment.pk %}"  class="btn btn_success btn_full"> опубликовать</a>
-              </div>
-                <div class="form-group">
-               <a href="{% url 'app_store:comment_delete' comment.pk %}"  class="btn btn_danger btn_full">удалить</a>
-              </div>
-            </div>
-          </div>
-        </div>
-    </div>
+
   </div>
 
 

@@ -9,28 +9,20 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">Редактировать магазин
+                <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
+                    Редактировать магазин
                 </h1>
-                <div>
-    {% if form.errors %}
-    <div class="form-error form-textarea_error" role="alert">
-        <h3>Ошибка:</h3>
-        <ul>{% for field, errors in form.errors.items %}
-              {% for error in errors %}
-                <li>- {{ field }} {{ error}}</li>
-              {% endfor %}
-            {% endfor %}
-        </ul>
-        Пожалуйста, попробуйте еще раз!
-    </div>
-    {% endif %}
-</div>
-                <ul class="breadcrumbs Middle-breadcrumbs">
+                   <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="index.html">home</a>
+                        <a href="{% url 'app_store:store_list' %}">мои магазины</a>
+                    </li>
+                          <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:store_detail' store.pk %}">{{ store }}</a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Профиль</span>
+                        <span>редактировнаие
+                        </span>
                     </li>
                 </ul>
             </div>

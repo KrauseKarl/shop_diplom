@@ -14,7 +14,7 @@
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="index.html">home</a>
+                        <a href="{% url 'main_page' %}">главная стариница</a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>История заказов</span>
@@ -62,92 +62,57 @@
                     <div class="Order Order_anons {% if order.status == 'deactivated' %}Order_anons_rest{% endif %}">
                         <div class="Order-personal">
                             <div class="row">
-                                <!--  ORDER'S TITLE & DATE -->
                                 <div class="row-block">
-                                    <a class="Order-title" href="{% url 'app_order:order_detail' pk=order.pk %}">
-                                        <span class="Order-numberOrder">{{ order }}
-                                        </span>
+                                    <a class="Order-title" href="{% url 'app_order:order_detail' order.id %}">Заказ&#32;
+                                        <span class="Order-numberOrder">№{{ order.id }}</span>&#32;от&#32;
+                                        <span class="Order-dateOrder">{{ order.created|date:"j M o" }}</span>
                                     </a>
-                                    <div class="Order-info">
-                                        <span class="Order-infoType">{{ order.created|date:"j M o" }}
-                                        </span>
-                                    </div>
-                                    <div class="Order-info">
-                                        <span class="Order-info_status">
-                                             <span >{{ order.order_items.count }} шт.
-                                            </span>
-                                        </span>
+                                    <div class="Account-editLink">
+                                       <span class="{% if order.status == 'created' %}secondary_label
+                                                    {% elif order.status == 'paid' %}warning_label
+                                                    {% elif order.status == 'is_preparing' %}info_label
+                                                    {% elif order.status == 'on_the_way' %}info_label
+                                                    {% elif order.status == 'is_ready' %}success_label
+                                                    {% elif order.status == 'completed' %}primary_label
+                                                    {% endif %}">
+                                           {{ order.get_status_display}}
+                                    </span>
                                     </div>
                                 </div>
-                                <!--  ORDER'S TITLE & DATE -->
-
-
-
-                                <!--TOTAL SUM & STATUS -->
                                 <div class="row-block">
-                                    <!--  TOTAL SUM -->
+                                    <div class="Order-info Order-info_delivery">
+                                        <div class="Order-infoType">Тип доставки:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.get_delivery_display }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info Order-info_pay">
+                                        <div class="Order-infoType">Оплата:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.get_pay_display }}
+                                        </div>
+                                    </div>
                                     <div class="Order-info">
-                                        <div class="Order-infoType">сумма:</div>
-                                        <div class="Order-infoContent">
-                                            <span class="Order-price">${{order.total_sum|floatformat:"2"}}</span>
+                                        <div class="Order-infoType">Общая стоимость:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.total_sum }} $
                                         </div>
                                     </div>
-                                    <!--  TOTAL SUM -->
-
-                                    <!-- STATUS -->
                                     <div class="Order-info Order-info_status">
-                                        <div class="Order-infoType">статус:</div>
-                                        <div class="Order-infoContent">
-                                            {{ order.get_status_display }}
+                                        <div class="Order-infoType">Статус:
                                         </div>
-
-                                    </div>
-                                    <div class="Order-info Order-info_status">
-                                        <div class="Order-infoType">оплата:</div>
-                                         <div class="Order-infoContent">
-                                            {% if order.is_paid %}
-                                            <span class="success-text">оплачено</span>
-                                            {% else %}
-                                            <span class="danger-text">не оплачено</span>
+                                        <div class="Order-infoContent">
+                                            {% if order.is_paid %} оплачен
+                                            {% else %} не ополачен
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <!-- STATUS -->
-                                          <!-- STATUS -->
-                                    <div class="Order-info Order-info_status">
-
-                                    </div>
-                                    <!-- STATUS -->
-
-                                    <!--   PAY BOTTOM -->
-                                    {% if not order.is_paid and order.status == 'created' %}
-                                      <div class="Order-info Order-info_error">
-                                        <div class="Order-infoType">
-                                        </div>
-                                        <div class="Order-infoContent">
-                                            <a class="btn btn_success btn_square btn_sm"
-                                                   href="{% url 'app_order:progress_payment' order.id %}">оплатить
-                                            </a>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    <!--   PAY BOTTOM -->
-
-                                    {% if order.error %}
-                                    <div class="Order-info Order-info_error">
-                                        <div class="Order-infoType">Оплата не прошла:
-                                        </div>
-                                        <div class="Order-infoContent">{{ order.error }}
-                                        </div>
-                                    </div>
-                                    {% endif %}
                                 </div>
-                                <!--TOTAL SUM & STATUS -->
                             </div>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="Order Order_anons">Ничего не найдено</div>
+                    <div class="Order"><h2>Ничего не найдено</h2></div>
                     {% endfor %}
                 </div>
                 <!--       PAGINATION         -->
@@ -156,6 +121,5 @@
             </div>
         </div>
     </div>
-</div>
 </div>
 {% endblock %}
