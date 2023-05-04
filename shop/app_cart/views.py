@@ -2,7 +2,7 @@ from collections import Counter
 
 from celery import Celery
 from django.contrib import messages
-from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin, LoginRequiredMixin
 from django.db import connection
 from django.shortcuts import redirect
 from django.views import generic

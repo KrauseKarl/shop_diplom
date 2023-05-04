@@ -46,15 +46,19 @@
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a class="menu-link" href="#">My Cart
+                        <a class="menu-link" href="{% if cart_dict.cart %}
+                       {% url 'app_cart:cart' pk=cart_dict.cart.pk  %}
+                       {% else %}
+                       {% url 'app_cart:cart_create' %}
+                       {% endif %}">Корзина
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a class="menu-link" href="#">Delivery
+                        <a class="menu-link" href="#">Доставка
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a class="menu-link" href="#">Order Info
+                        <a class="menu-link" href="{% url 'app_order:order_list' %}">Заказы
                         </a>
                     </li>
                     <li class="menu-item">

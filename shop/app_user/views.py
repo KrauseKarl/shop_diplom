@@ -2,6 +2,7 @@ import logging
 
 from urllib.parse import quote
 from django.contrib import messages
+
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
@@ -16,7 +17,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, TemplateView, ListView
 from django.contrib.auth.models import User, Group
-
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin, LoginRequiredMixin
 from app_item.services.item_services import ItemHandler
 
 from app_user.services.user_services import is_customer, user_in_group
@@ -86,10 +87,15 @@ class UpdateProfile(UpdateView):
 
 # ACCOUNT SIDE BAR PAGE #
 
-class DetailAccount(DetailView):
+class DetailAccount(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """Класс-представление для детальной страницы профиля пользователя."""
     model = User
     context_object_name = 'user'
+
+    def test_func(self):
+        if self.request.user == self.get_object():
+            return True
+        return False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

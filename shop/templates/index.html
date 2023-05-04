@@ -178,28 +178,31 @@
                     </div>
                     <!--  ITEM'S COST COUNTER OF THE CART   -->
 
+                    <a class="CartBlock-block"
+                       href="#">
+                       <i class="uil  uil-chart " style="font-size:30px;color:#555555"></i>
+                        <!--  ITEM'S COUNTER OF THE CART   -->
+
+                        <span class="CartBlock-amount">
+                           2
+                        </span>
+
+                        <!--  ITEM'S COUNTER OF THE CART   -->
+                    </a>
+
                     <!--    ORDERS  -->
-                    {% if new_order.count != 0  and new_order.count%}
+                    {% if new_order.count != 0  and new_order.count %}
                     <a class="CartBlock-block" href="{% url 'app_order:order_list' %}">
-                        <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"
-                             alt="order.svg"/>
+<!--                        <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"-->
+<!--                             alt="order.svg"/>-->
+                        <i class="uil  uil-box" style="font-size:30px;color:#555555"></i>
+
+
                         <span class="CartBlock-amount" title="новые заказы">
                             {{ new_order.count }}
                         </span>
                     </a>
                     {% endif %}
-                    {% if ready_order.count != 0 and ready_order.count %}
-                    <a class="CartBlock-block" href="{% url 'app_order:order_list' %}?status=is_ready">
-                        <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"
-                             alt="order.svg"/>
-                        <span class="CartBlock-amount" title="готовые заказы" style="background-color:#3CB878;">
-                            {{ ready_order.count }}
-                        </span> </a>
-                    {% endif %}
-
-
-
-
                     <!--    ORDERS  END-->
                 </div>
             </div>
