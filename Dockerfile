@@ -20,10 +20,10 @@ EXPOSE 8000
 RUN adduser --force-badname postgresUSER
 USER postgresUSER
 
-COPY shop/entrypoint.sh /usr/src/app/entrypoint.sh
+COPY entrypoint.sh /usr/src/app/entrypoint.sh
 #COPY shop/entrypoint.sh /usr/src/app/entrypoint.sh
 
 #CMD ["/bin/ping", "localhost"]
-CMD ["python", "manage.py", "migrate"]
-CMD ["python", "manage.py", "runserver", "127.0.0.1:8000"]
+#CMD ["python", "manage.py", "migrate"]
+#CMD ["python", "manage.py", "runserver", "127.0.0.1:8000"]
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

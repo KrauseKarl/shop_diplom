@@ -46,7 +46,8 @@ services:
       context: .
 #      dockerfile: Dockerfile
     image: app:latest
-    command: gunicorn shop.wsgi:application --bind 0.0.0.0:8000
+    command: bash entrypoint.sh
+#    gunicorn shop.wsgi:application --bind 0.0.0.0:8000
 #      bash -c "python manage.py migrate --noinput  &&
 #               python manage.py loaddata fixtures/data.json &&
 #               python manage.py runserver 0.0.0.0:8000"
