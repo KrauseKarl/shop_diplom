@@ -410,6 +410,13 @@ class Image(models.Model):
 
     objects = models.Manager()
 
+    def save(self, *args, **kwargs):
+        """Функция по ...."""
+        # 600x800 64X64
+
+        super(Image, self).save(*args, **kwargs)
+
+
     class Meta:
         db_table = 'app_images'
         ordering = ['title']
