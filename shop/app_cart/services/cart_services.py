@@ -47,29 +47,44 @@ def set_cart_cache(request, instance):
     cache.set(cache_key, instance, 60 * 60)
 
 
+def delete_cart_cache(request):
+    cache_key = get_cache_key(request)
+    cache.delete(cache_key)
+
+
 def get_current_cart(request) -> dict:
     """
-    Функция возвращает словарь из трех ключей(
-        - корзина с товарами ('cart'),
-        - отсортированные товары по магазинам('book'),
-        - стоимость доставки товаров по магазинам('fees')
-        )
+    Функция берет из кеша словарь "cart_dict" или создает новый кеш
+    возвращает словарь "cart_dict"
     :param request:
     :return: словарь
     """
     cart = cart_(request)
-
     try:
         cart_dict = get_cart_cache(request)
         if cart_dict is None:
-            ordered_cart_by_store = order_items_in_cart(cart)
-            items_and_fees = calculate_discount(ordered_cart_by_store)
-            total_delivery_fees = fees_total_amount(items_and_fees)
-            cart_dict = {'cart': cart, 'book': ordered_cart_by_store, 'fees': total_delivery_fees}
+            cart_dict = create_or_update_cart_book(cart)
             set_cart_cache(request, cart_dict)
         return cart_dict
     except (KeyError, AttributeError):
         return {'cart': cart}
+
+def create_or_update_cart_book(cart) -> dict:
+    """
+      Функция возвращает словарь из трех ключей(
+          - корзина с товарами ('cart'),
+          - отсортированные товары по магазинам('book'),
+          - стоимость доставки товаров по магазинам('fees')
+          )
+      :param cart:
+      :return: словарь
+      """
+    ordered_cart_by_store = order_items_in_cart(cart)
+    items_and_fees = calculate_discount(ordered_cart_by_store)
+    total_delivery_fees = fees_total_amount(items_and_fees)
+    cart_dict = {'cart': cart, 'book': ordered_cart_by_store, 'fees': total_delivery_fees}
+
+    return cart_dict
 
 
 def create_or_update_cart_item(request, cart, item, quantity):
@@ -312,7 +327,7 @@ def merge_anon_cart_with_user_cart(request, cart):
             for cart_item in items_from_anon_cart:
                 print('1_cart_item', cart_item.user)
                 cart_item.user = request.user
-                cart_item.save()
+                cart_item.save(update_fields=['user'])
                 print('2_cart_item', cart_item.user)
                 already_in_cart_item = cart.items.filter(item__id=cart_item.item.id).first()
                 if already_in_cart_item:
@@ -320,6 +335,9 @@ def merge_anon_cart_with_user_cart(request, cart):
                     already_in_cart_item.save()
                 else:
                     cart.items.add(cart_item)
+
+            delete_cart_cache(request)
+            create_or_update_cart_book(cart)
             # удаляем анонимную корзину
             anonymous_cart.delete()
     except KeyError:

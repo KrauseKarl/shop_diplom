@@ -1,6 +1,7 @@
 {% extends 'index.html' %}
 {% load static  %}
 {% load cache %}
+{% load thumbnail %}
 {% block title %}
 
 {% endblock %}
@@ -34,22 +35,22 @@
                 <h4>{{ shop }}
                     {% if book.fees != 0 %}
                     <small class="seller_label"> - {{ book.fees }}% скидка</small>
-                    <span class="Cart-desc-delivery-conditions">
-                            при заказе свыше $
+                    <span class="Cart-desc-delivery-conditions">при заказе свыше $
                         <b>{{ shop.min_for_discount }}</b> магазин дарит скидку в размере
                          - {{ shop.discount }}%
-                        </span>
-
-                    {% endif %}</h4>
+                    </span>
+                    {% endif %}
+                </h4>
                 {% endifchanged %}
                 <div class="Cart-product">
                     <div class="Cart-block Cart-block_row">
                         <div class="Cart-block Cart-block_pict">
                             <a class="Cart-pict" href="{% url 'app_item:item_detail' item.item.pk %}">
-                                {% if item.item.image.first %}
+                                {% if item.item.main_image %}
+
                                 <img class="Cart-img {% if not item.item.is_available %}Cart-img-not_available{% endif %}"
-                                     src="{{ item.item.image.first.image.url }}"
-                                     alt="{{ item.item.title }}_image"/>
+                                     src="{{ item.item.main_image }}"
+                                     alt="{{ item.item.title }}"/>
                                 {% else %}
                                 <img class="Cart-img" src="/media/default_images/default_item.png"
                                      alt="{{ item.item.title }}_image"/>

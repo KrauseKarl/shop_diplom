@@ -1,9 +1,13 @@
 {% extends 'index.html' %}
+
 {% load static  %}
 {% load cache %}
+{% load thumbnail %}
 
 {% block title %}{{ item.title }}{% endblock %}
+
 {% block heard %} {% include 'search_string.html' %} {% endblock %}
+
 {% block content %}
 <div class="Middle Middle_top">
     <div class="Middle-top">
@@ -42,7 +46,10 @@
                 <div class="ProductCard  ">
                     <div class="ProductCard-look">
                         <div class="ProductCard-photo">
-                            <img src="{{ item.main_image }}" alt="{{ item.title }}.png"/>
+                            <img src="{{ item.main_image }}" alt="{{ item.title }}"/>
+
+
+
                         </div>
                         <div class="ProductCard-picts">
                                 <a class="ProductCard-pict ProductCard-pict_ACTIVE"
@@ -255,7 +262,8 @@
                                     <div class="Comment-column Comment-column_pict">
                                         {% if comment.user.is_authenticated and comment.user.profile.avatar %}
                                         <div>
-                                            <img class="Comment-avatar-exist" src="{{ comment.user.profile.avatar.url }}">
+                                            <img class="Comment-avatar-exist"
+                                                 src=" {% thumbnail comment.user.profile.avatar 99x0 %}">
                                         </div>
                                         {% else %}
                                         <div class="Comment-avatar"></div>

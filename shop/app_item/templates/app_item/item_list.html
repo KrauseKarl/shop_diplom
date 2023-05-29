@@ -244,12 +244,13 @@
                                  </header>
                                 {% for feature in  category.feature.all %}
                                  <div class="form-group">
-                                     <label class="toggle">{{   feature|lower     }} </label>
+                                     <label class="toggle">{{ feature|lower }} </label>
                                      {% for value in feature.values.all %}
                                     <div>
                                      <label class="toggle">
-                                         <input type="checkbox"  {% if value.slug in get_params.values  %}checked="checked"{% endif %}
-                                                name="{{ value.feature.slug }}" value="{{  value.slug  }}"/>
+                                         <input type="checkbox"
+                                                {% if value.slug in get_params.values  %}checked="checked"{% endif %}
+                                                name="{{ value.feature.slug }}" value="{{ value.slug }}" multiple/>
                                          <span class="toggle-box"></span>
                                          <span class="toggle-text">{{ value }}</span>
                                      </label></div>
@@ -286,8 +287,7 @@
                             <div class="Section-columnSection">
                                 <div class="form-group">
                                     <div class="buttons">
-                                        <button class="btn btn_square btn_dark btn_narrow" type="submit">Применить
-                                            фильтр
+                                        <button class="btn btn_square btn_dark btn_narrow" type="submit">Применить фильтр
                                         </button>
                                     </div>
                                 </div>
@@ -392,11 +392,11 @@
                            title="{{ item.title }}">
                             <img class="card-picture-image
                             {% if not item.is_available %} not_available {% endif %}"
-                                 src="{% if item.image.first %}
-                                    {{ item.image.first.image.url }}
+                                 src="{% if item.main_image %}
+                                    {{ item.main_image }}
                                     {% else %}/media/default_images/default_item.png
                                     {% endif %}"
-                                 alt="{{    item.title|truncatechars:'6'    }}.jpg"/>
+                                 alt="{{ item.title|truncatechars:'6'    }}"/>
                         </a>
 
                          {% if not item.is_available %}

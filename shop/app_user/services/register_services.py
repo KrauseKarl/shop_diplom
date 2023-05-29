@@ -37,7 +37,8 @@ class RoleHandler:
 class ProfileHandler:
     @staticmethod
     def telephone_formatter(telephone):
-        telephone = str(telephone).split('7')[1].replace('(', '').replace(')', '').replace(' ', '')
+        if str(telephone).startswith('+7'):
+            telephone = str(telephone).split('7')[1].replace('(', '').replace(')', '').replace(' ', '')
         return telephone
 
     @staticmethod
@@ -84,6 +85,8 @@ class ProfileHandler:
     @staticmethod
     def update_profile(request):
         from app_user.forms import UpdateProfileForm, UpdateUserForm
+        user = request.user
+        profile = request.user.profile
         user_form = UpdateUserForm(
             data=request.POST,
             instance=request.user
@@ -93,12 +96,22 @@ class ProfileHandler:
             files=request.FILES,
             instance=request.user.profile
         )
-        user_form.save()
-        profile = profile_form.save(commit=False)
-        telephone = profile_form.cleaned_data['telephone']
-        telephone = ProfileHandler.telephone_formatter(telephone)
-        profile.telephone = telephone
-        profile.save()
+        if user_form.has_changed():
+            fields_for_update = []
+            for field in user_form.changed_data:
+                if user_form.data[field] != '' and user_form.data[field]:
+                    fields_for_update.append(field)
+                    user.i = user_form.data[field]
+                    user.__setattr__(field, user_form.data[field])
+            user.save(update_fields=[*fields_for_update])
+        if profile_form.has_changed():
+            fields_for_update = []
+            for field in profile_form.changed_data:
+                if profile_form.data[field] != '' and profile_form.data[field]:
+                    fields_for_update.append(field)
+                    profile.i = profile_form.data[field]
+                    profile.__setattr__(field, profile_form.data[field])
+            profile.save(update_fields=[*fields_for_update])
 
 
 class SendVerificationMail:

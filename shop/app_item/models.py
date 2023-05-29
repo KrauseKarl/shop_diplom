@@ -1,19 +1,15 @@
 import datetime
 
-import django
-from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MinLengthValidator
 
 from utils.my_utils import slugify_for_cyrillic_text
 from app_store.models import Store
-from app_item.managers.app_item_managers import (AvailableItemManager, UnavailableItemManager,
-                                                 LimitedEditionManager, CategoryWithItemsManager,
-                                                 ModeratedCommentsManager)
+from app_item.managers import app_item_managers
 
 
 class IpAddress(models.Model):
@@ -98,6 +94,10 @@ class Item(models.Model):
         default=False,
         verbose_name='в наличии'
     )
+    is_active = models.BooleanField(
+        default=False,
+        verbose_name='архивный товар'
+    )
     limited_edition = models.BooleanField(
         default=False,
         verbose_name='ограниченный тираж'
@@ -138,11 +138,12 @@ class Item(models.Model):
         blank=True,
         verbose_name='просмотры'
     )
-    image = models.ManyToManyField(
+    images = models.ManyToManyField(
         'Image',
         blank=True,
         related_name='item_images',
-        verbose_name='изображение'
+        verbose_name='изображение',
+
     )
     tag = models.ManyToManyField(
         'Tag',
@@ -161,9 +162,9 @@ class Item(models.Model):
     )
 
     objects = models.Manager()
-    available_items = AvailableItemManager()
-    unavailable_items = UnavailableItemManager()
-    limited_items = LimitedEditionManager()
+    available_items = app_item_managers.AvailableItemManager()
+    unavailable_items = app_item_managers.UnavailableItemManager()
+    limited_items = app_item_managers.LimitedEditionManager()
 
     class Meta:
         db_table = 'app_items'
@@ -197,7 +198,7 @@ class Item(models.Model):
     def main_image(self):
         """Функция возвращает URL главного изображения товара."""
         try:
-            return self.image.first().image.url
+            return self.images.first().image.url
         except (ObjectDoesNotExist, AttributeError):
             return '/media/default_images/default_item.png'
 
@@ -205,7 +206,7 @@ class Item(models.Model):
     def other_images(self):
         """Функция возвращает все изображения товара кроме первого."""
         try:
-            return self.image.all()[1:]
+            return self.images.all()[1:]
         except (ObjectDoesNotExist, AttributeError):
             return None
 
@@ -267,7 +268,7 @@ class Category(models.Model):
         verbose_name='характеристика'
     )
 
-    objects = CategoryWithItemsManager()
+    objects = app_item_managers.CategoryWithItemsManager()
 
     class Meta:
         db_table = 'app_categories'
@@ -365,7 +366,7 @@ class Comment(models.Model):
     archived = models.BooleanField(default=False,
                                    verbose_name='удален в архив')
     objects = models.Manager()
-    published_comments = ModeratedCommentsManager()
+    published_comments = app_item_managers.ModeratedCommentsManager()
 
     class Meta:
         db_table = 'app_comments'
@@ -402,20 +403,13 @@ class Image(models.Model):
     )
     image = models.ImageField(
         upload_to='gallery/%Y/%m/%d',
-        default='static/img/default_flat.jpg',
+        default='assets/img/default/default_item.png',
         null=True,
         blank=True,
         verbose_name='изображение'
     )
 
     objects = models.Manager()
-
-    def save(self, *args, **kwargs):
-        """Функция по ...."""
-        # 600x800 64X64
-
-        super(Image, self).save(*args, **kwargs)
-
 
     class Meta:
         db_table = 'app_images'
@@ -531,3 +525,43 @@ class FeatureValue(models.Model):
 #
 #     def __str__(self):
 #         return self.pk
+import os
+from io import BytesIO
+from PIL import Image as PilImage
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
+
+def resize_uploaded_image(image, max_width, max_height):
+        size = (max_width, max_height)
+
+        # Uploaded file is in memory
+        if isinstance(image, InMemoryUploadedFile):
+            print('2# Uploaded file is in Memory')
+            memory_image = BytesIO(image.read())
+            pil_image = PilImage.open(memory_image)
+            print('+++++++++++++++++++++++++++++++++++')
+            img_format = os.path.splitext(image.name)[1][1:].upper()
+            img_format = 'JPEG' if img_format == 'JPG' else img_format
+            print(img_format)
+            print('+++++++++++++++++++++++++++++++++++')
+            if pil_image.width > max_width or pil_image.height > max_height:
+                pil_image.thumbnail(size)
+
+            new_image = BytesIO()
+            pil_image.save(new_image, format=img_format)
+
+            new_image = ContentFile(new_image.getvalue())
+            return InMemoryUploadedFile(new_image, None, image.name, image.content_type, None, None)
+
+        # Uploaded file is in disk
+        elif isinstance(image, TemporaryUploadedFile):
+            print('3# Uploaded file is in disk')
+            path = image.temporary_file_path()
+            pil_image = PilImage.open(path)
+
+            if pil_image.width > max_width or pil_image.height > max_height:
+                pil_image.thumbnail(size)
+                pil_image.save(path)
+                image.size = os.stat(path).st_size
+
+        return image

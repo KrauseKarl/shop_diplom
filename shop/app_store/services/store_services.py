@@ -49,6 +49,7 @@ class StoreHandler:
             'best_view': ItemHandler.get_popular_items(queryset),
             'best_comment': ItemHandler.get_comments_items(queryset),
             'stock': queryset.order_by('stock'),
+            '-stock': queryset.order_by('-stock'),
             'limited_edition': queryset.filter(stock__range=(6, 16)).order_by('-stock'),
             'rest': queryset.filter(stock__lt=5).order_by('-stock'),
         }
@@ -59,7 +60,8 @@ class StoreHandler:
         message_book = {
             'best_seller': 'продажам',
             'best_view': 'просмотрам',
-            'stock': 'количеству на складе',
+            'stock': 'количеству на складе  (по возрастанию)',
+            '-stock': 'количеству на складе (по убыванию)',
             'best_comment': 'комментариев',
             'limited_edition': 'ограниченному тиражу',
             'rest': 'остаткам'

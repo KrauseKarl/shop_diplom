@@ -59,6 +59,11 @@
 
                     <!--    TELEPHONE FIELD REQUIRED                -->
                     <div class="form-group">
+                         {% if form.errors.telephone %}
+                        <div class="form-error ">
+                            {{ form.errors.telephone }}
+                        </div>
+                        {% endif %}
                         <input class="form-input" id="telephone" name="telephone" type="text"
                                placeholder="телефон" value="{{ request.POST.telephone }}" data-mask="+7 (999) 999 99 99"/>
                     </div>

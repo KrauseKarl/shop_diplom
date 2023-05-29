@@ -1,0 +1,50 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+
+{% block title %}Добавить характеристику{% endblock %}
+
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Добавить новую характеристику </h1>
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Payment">
+                <div class="Payment-card form-shadow">
+                    <div class="form-group">
+                        <form class="form" action="." method="post">
+                            {% csrf_token %}
+                            {% if form.errors %}
+                                {% for field, err in form.errors.items %}
+                                    <div class="form-error">{{ field}}
+                                        <p>{{ err }}</p>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            <div class="form-group">
+                                <input class="form-input" id="title" name="title"
+                                       placeholder="Введите название характеристик"
+                                       value="{{ request.POST.title }}"/>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn_square btn_success btn_narrow" type="submit">
+                                    добавить характеристику
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -20,8 +20,8 @@ class ItemFeatureInline(admin.TabularInline):
 
 
 class ItemImageInline(admin.TabularInline):
-    model = Item.image.through
-    raw_id_fields = ['image', ]
+    model = Item.images.through
+    # raw_id_fields = ['image', ]
     extra = 1
 
 

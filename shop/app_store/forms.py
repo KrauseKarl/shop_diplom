@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import modelformset_factory
 
-from app_item.models import Item, Tag, Image, Category, FeatureValue, Feature
+from app_item.models import Item, Tag, Image, Category, FeatureValue, Feature, resize_uploaded_image
 from app_order.models import Order
 from app_store.models import Store
 
@@ -75,8 +75,9 @@ class UpdateItemImageForm(forms.ModelForm):
         label='Изображения',
         required=False)
 
-    class Meta(UpdateItemForm.Meta):
-        fields = UpdateItemForm.Meta.fields + ('image',)
+    class Meta:
+        model = Image
+        fields = ('image', )
 
 
 TagFormSet = modelformset_factory(
@@ -127,11 +128,10 @@ class CreateCategoryForm(forms.ModelForm):
 
 class CreateFeatureForm(forms.ModelForm):
     """Форма для создания характеристики."""
-    category = forms.CharField(max_length=200)
 
     class Meta:
         model = Feature
-        fields = ('title', 'category')
+        fields = ('title', )
 
 
 class CreateValueForm(forms.ModelForm):
@@ -139,7 +139,7 @@ class CreateValueForm(forms.ModelForm):
 
     class Meta:
         model = FeatureValue
-        fields = ('value', 'feature',)
+        fields = ('value',)
 
 
 class ImportDataFromCVS(forms.Form):

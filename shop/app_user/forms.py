@@ -1,15 +1,11 @@
 from django import forms
-from django.contrib.auth import password_validation
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
-from django.core.exceptions import ValidationError
 from app_user.models import Profile
 from app_user.services.register_services import ProfileHandler
 
 
 class AuthForm(AuthenticationForm):
-
     """
     Форма для аутентификации пользователя
     (model User)
@@ -73,6 +69,12 @@ class RegisterUserForm(UserCreationForm):
             raise forms.ValidationError("Это электронная почта уже используется")
         return email
 
+    def clean_telephone(self):
+        telephone = ProfileHandler.telephone_formatter(self.cleaned_data.get('telephone'))
+        if Profile.objects.filter(telephone=telephone).exists():
+            raise forms.ValidationError("Этот телефон уже используется")
+        return telephone
+
 
 class RegisterUserFormFromOrder(UserCreationForm):
     username = forms.CharField(max_length=30,
@@ -132,7 +134,7 @@ class RegisterUserFormFromOrder(UserCreationForm):
         return telephone
 
 
-class UpdateUserForm(forms.ModelForm):
+class UpdateUserForm(UserChangeForm):
     first_name = forms.CharField(max_length=150, required=False)
     last_name = forms.CharField(max_length=150, required=False)
     email = forms.EmailField()
@@ -143,14 +145,14 @@ class UpdateUserForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(email__iexact=email):
             raise forms.ValidationError("Это электронная почта уже используется")
         return email
 
 
 class UpdateProfileForm(forms.ModelForm):
     telephone = forms.CharField(max_length=18)
-    avatar = forms.ImageField()
+    avatar = forms.ImageField(required=False)
 
     class Meta:
         model = Profile
@@ -158,6 +160,6 @@ class UpdateProfileForm(forms.ModelForm):
 
     def clean_telephone(self):
         telephone = ProfileHandler.telephone_formatter(self.cleaned_data.get('telephone'))
-        if Profile.objects.filter(telephone=telephone).exists():
+        if Profile.objects.exclude(pk=self.instance.pk).filter(telephone__iexact=telephone):
             raise forms.ValidationError("Этот номер телефона уже используется")
         return telephone

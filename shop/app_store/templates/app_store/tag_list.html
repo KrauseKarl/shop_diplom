@@ -14,7 +14,8 @@
             <div class="Middle-header">
 
                 <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
+<!--                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>-->
+                    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn_default btn_square" >Назад</a>
                     {% if request.GET.sort_by_letter %}
                     Все теги на букву <strong>"{{ request.GET.sort_by_letter }}"</strong>
                     {% else %}
@@ -25,16 +26,9 @@
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-
-
-                        <!--  <a href="index.html">home</a>-->
+                        <a href="{% url 'app_store:tag_list' %}">Список тегов</a>
                     </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
-                    </li>
+
                 </ul>
                 {% endblock %}
             </div>

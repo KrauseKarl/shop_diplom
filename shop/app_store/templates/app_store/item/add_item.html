@@ -41,6 +41,37 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="row-block">
+                                 <!-- ADD IMAGE FORM BEGIN -->
+                                <div  class="form-group">
+                                      <div class="form-group">
+                                    <div class="image-form Profile-avatar Profile-avatar_noimg">
+                                        <div class="Profile-img" >
+                                            <img src="/assets/img/default/default_item.png" alt="#.png"/>
+                                        </div>
+                                        <label class="Profile-fileLabel" for="image">Выберите изображение товара</label>
+                                        <input class="Profile-file form-input" id="image" multiple  name="image" type="file"
+                                               data-validate="onlyImgAvatar"/>
+                                    </div>
+                                </div>
+
+                                <!--    ADD IMAGE FORM END      -->
+
+
+
+
+                                <div class="form-group">
+                                    <label class="form-label" for="description">описание</label>
+                                    <textarea class="form-input" id="description" name="description"
+                                              placeholder="Описание"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <div class="Profile-btn">
+                                        <button class="btn btn_square btn_success btn_narrow " type="submit">Сохранить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                            <div class="row-block">
                                 <div class="form-group">
                                      <label class="form-label" for="title">категория</label>
                                     <select id="category" name="category" class="form-input">
@@ -93,8 +124,6 @@
                                     <span class="toggle-text">ограниченное количество</span>
                                 </div>
 
-
-
                                 <div id="form-container" class="form-group">
                                     {{ tag_formset.management_form }}
                                         {% for form in tag_formset %}
@@ -114,38 +143,6 @@
                                         style="margin-top:10px;"  type="button">
                                         создать тег
                                     </a>
-                                </div>
-
-                            </div>
-
-                            <div class="row-block">
-                                 <!-- ADD IMAGE FORM BEGIN -->
-                                <div  class="form-group">
-                                      <div class="form-group">
-                                    <div class="image-form Profile-avatar Profile-avatar_noimg">
-                                        <div class="Profile-img" >
-                                            <img src="/assets/img/default/default_item.png" alt="#.png"/>
-                                        </div>
-                                        <label class="Profile-fileLabel" for="image">Выберите изображение товара</label>
-                                        <input class="Profile-file form-input" id="image" multiple  name="image" type="file"
-                                               data-validate="onlyImgAvatar"/>
-                                    </div>
-                                </div>
-
-                                <!--    ADD IMAGE FORM END      -->
-
-
-
-
-                                <div class="form-group">
-                                    <label class="form-label" for="description">описание</label>
-                                    <textarea class="form-input" id="description" name="description"
-                                              placeholder="Описание"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <div class="Profile-btn">
-                                        <button class="btn btn_square btn_success btn_narrow " type="submit">Сохранить</button>
-                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -42,8 +42,9 @@
                 <div class="Cards">
                     {% for item in popular %}
                         <div class="Card">
-                        <a class="Card-picture {% if not item.is_available %} non_available {% endif %}" href="{% url 'app_item:item_detail' item.pk %}">
-                            <img src="{{item.image.first.image.url}}" alt="card.jpg"/></a>
+                        <a class="Card-picture {% if not item.is_available %} non_available {% endif %}"
+                           href="{% url 'app_item:item_detail' item.pk %}">
+                            <img src="{{ item.main_image }}" alt="{{ item }}"/></a>
                         {% if not item.is_available %}
                             <div class="sold_out">
                                 <span style="padding-top:20px">РАЗОБРАЛИ</span>
@@ -161,7 +162,7 @@
                             <div class="Slider-content">
                                 <div class="Card">
                                     <a class="Card-picture" href="{{ itemLE.get_absolute_url }}">
-                                        <img src="{{ itemLE.image.first.image.url }}" alt="card.jpg"/>
+                                        <img src="{{ itemLE.main_image }}" alt="card.jpg"/>
                                     </a>
                                     <div class="Card-content">
                                         <strong class="Card-title">

@@ -35,8 +35,8 @@
                 {% with item=order_item %}
                 <div class="Card">
                     <a class="Card-picture" href="{{ item.get_absolute_url  }}">
-                    <img  src="{% if item.image.first %}
-                                    {{ item.image.first.image.url }}
+                    <img  src="{% if item.main_image %}
+                                    {{ item.main_image }}
                                     {% else %}/media/default_images/default_item.png
                                     {% endif %}" alt="product.png"/>
                     </a>

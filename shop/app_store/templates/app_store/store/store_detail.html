@@ -10,7 +10,7 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
+
                     {% if not message %}
                     Каталог товаров магазина <b>{{ store.title }}</b>
                     {% else %}
@@ -216,36 +216,24 @@
                         </a>
                         <a class="Sort-sortBy"
                            href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=stock">
-                            <span class="btn btn_default btn_square btn_sm">количеству
+                            <span class="btn btn_default btn_square btn_sm">количеству &#8593;
+                            </span>
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=-stock">
+                            <span class="btn btn_default btn_square btn_sm">количеству &#8595;
                             </span>
                         </a>
                         <a class="Sort-sortBy"
                            href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=rest">
-                            <span class="btn btn_danger btn_square btn_sm">остатки
+                             <span class="btn btn_default btn_square btn_sm"><span class="danger-text">остатки</span>
                             </span>
                         </a>
                         <a class="Sort-sortBy"
                            href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=limited_edition">
-                            <span class="btn btn_warning btn_square btn_sm">лимитные
+                            <span class="btn btn_default btn_square btn_sm"><span class="warning-text">лимитные</span>
                             </span>
                         </a>
-                        <a class="Sort-sortBy"
-                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=best_seller">
-                            <span class="btn btn_default btn_square btn_sm">продажам
-                            </span>
-                        </a>
-                        <a class="Sort-sortBy"
-                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=best_comment">
-                            <span class="btn btn_default btn_square btn_sm">комментариям
-                            </span>
-                        </a>
-                        <a class="Sort-sortBy"
-                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=best_view">
-                            <span class="btn btn_default btn_square btn_sm">
-                                просмотрам
-                            </span>
-                        </a>
-
 
                     </div>
                 </div>
@@ -258,13 +246,9 @@
                 <!--    ITEMS LIST -->
                 <div class="Orders">
                     {% for item in object_list %}
-                    <div class="Order {% if item.stock < 6 %} Order_anons_rest
-                    {% elif item.stock < 17 %} Order_anons_limited_edit
-                    {% else %}Order_anons
-                    {% endif %}">
+                    <div class="Order Order_anons">
                         <div class="Order-personal">
                             <div class="row">
-
                                 <!--    ITEM ID    -->
                                 <div class="row-block">
                                     <div class="Order-info">
@@ -279,7 +263,9 @@
                                 <div class="row-block">
                                     <div class="Order-info">
                                         <div class="Order-infoType">
-                                            <img class="store-item-image" src="{{ item.image.first.image.url }}">
+                                            <img class=""
+                                                 src="{{ item.main_image }}"
+                                                width="50" >
                                         </div>
                                     </div>
                                 </div>
@@ -297,7 +283,7 @@
                                 <div class="row-block">
                                     <div class="Order-info">
                                         <div class="Card-icon-view-and-sell">
-                                            ${{ item.price }}
+                                            ${{ item.price|floatformat:2 }}
                                         </div>
                                     </div>
                                 </div>
@@ -306,43 +292,25 @@
                                 <!--    ITEM QUANTITY  -->
                                 <div class="row-block">
                                     <div class="Order-info">
-                                        <div class="Card-icon-view-and-sell
-                                            {% if item.stock < 6  %} rest_label
-                                            {% elif item.stock < 17 %} limited_edition_label
-                                            {% endif %}">
-                                            {{ item.stock }} шт.
+                                        <div class="Card-icon-view-and-sell">{{ item.stock }} шт.
                                         </div>
                                     </div>
+                                    {% if item.stock < 6 %}
+                                    <div class="Order-info">
+                                        <div class="Card-icon-view-and-sell danger-text">остатки
+                                        </div>
+                                    </div>
+                                    {% elif item.stock < 17 %}
+                                    <div class="Order-info">
+                                        <div class="Card-icon-view-and-sell warning-text">лимит
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <!--    ITEM QUANTITY  -->
 
                                 <!--    COMMENTS, VIEWS & ORDERS ITEM    -->
-                                <div class="row-block">
-                                    <div class="Order-info ">
-                                        <div class="Order-infoContent">
-                                            <div class="Card-icon-view-and-sell">
-                                                <div class="Card-icon Card-icon-image">
-                                                    <img src="/assets/img/icons/comments.svg" width="20" height="20">
-                                                </div>
-                                                <div class="Card-icon Card-icon-image">{{item.item_comments.count }}
-                                                </div>
-                                                <div class="Card-icon Card-icon-image">
-                                                    <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
-                                                <div class="Card-icon Card-icon-image">{{item.total_views}}
-                                                </div>
-                                                <div class="Card-icon Card-icon-image">
-                                                    <a href="{% url 'app_store:delivery_list' %}?item={{ item.pk}}"
-                                                       title="количество проданных {{ item.title }}">
-                                                        <img src="/assets/img/icons/cart.svg" width="15" height="15">
-                                                    </a>
-                                                </div>
-                                                    <div class="Card-icon Card-icon-image">
-                                                        {{ item.cart_item.count }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+
                                 <!--    COMMENTS, VIEWS & ORDERS ITEM    -->
 
                                 <!--  EDIT ITEM -->
@@ -350,7 +318,7 @@
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoContent">
                                             <div class="Card-icon-view-and-sell">
-                                                <a style="color: #555555"
+                                                <a class="btn btn_success btn_square btn_sm"
                                                    href="{% url 'app_store:edit_item' item.pk %}">
                                                     <img src="/assets/img/icons/edit.png" width="32">
                                                 </a>
@@ -365,7 +333,7 @@
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoContent">
                                             <div class="Card-icon-view-and-sell">
-                                                <a href="#itemDeleteModal">
+                                                <a href="#itemDeleteModal" class="btn btn_danger btn_square btn_sm">
                                                     <img src="/assets/img/icons/card/delete.svg">
                                                 </a>
                                             </div>

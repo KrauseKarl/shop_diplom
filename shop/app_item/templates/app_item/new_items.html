@@ -34,7 +34,7 @@
                   {% for item in object_list %}
                 <div class="Card">
                     <a class="Card-picture" href="{{ item.get_absolute_url  }}">
-                    <img  src="{{ item.main_image }}"  alt="{{item}}"/>
+                    <img  src="{{ item.main_image }}"  alt="{{ item }}"/>
                     </a>
                     <div class="Card-date">
                         <strong class="Card-date-number">NEW

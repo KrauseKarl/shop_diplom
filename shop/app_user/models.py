@@ -7,6 +7,7 @@ from django.urls import reverse
 from app_item.models import Item
 
 
+
 def profile_directory_path(path):
     """Функция для переименования файла с изображением аватара пользователя."""
     def wrapper(instance, filename):
@@ -60,8 +61,8 @@ class Profile(models.Model):
         verbose_name_plural = 'профили'
 
     def save(self, *args, **kwargs):
-        if not self.telephone:
-            self.telephone = self.telephone.split('7')[1].replace('(', '').replace(')', '').replace(' ', '')
+        from app_user.services.register_services import ProfileHandler
+        self.telephone = ProfileHandler.telephone_formatter(self.telephone)
         super(Profile, self).save(*args, **kwargs)
 
     def __str__(self):

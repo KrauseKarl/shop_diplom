@@ -35,10 +35,7 @@
                 {% for item in object_list %}
                 <div class="Card">
                     <a class="Card-picture " href="{{ item.get_absolute_url  }}">
-                        <img src="{% if item.image.first %}
-                                    {{ item.image.first.image.url }}
-                                    {% else %}/media/default_images/default_item.png
-                                    {% endif %}" alt="product.png"/>
+                        <img src="{{ item.main_image }}" alt="product.png"/>
                     </a>
                     <div class="Card-date">
                         <strong class="Card-date-number {% if item in in_cart %}rest_label{% else %} seller_label{% endif %}">

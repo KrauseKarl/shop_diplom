@@ -10,21 +10,30 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
                     Редактировать - <b>{{item.title}} </b></h1>
-                <ul class="breadcrumbs Middle-breadcrumbs">
-                    <li class="breadcrumbs-item">
-                        <a href="index.html">home</a>
-                    </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Профиль</span>
-                    </li>
-                </ul>
+<!--                <ul class="breadcrumbs Middle-breadcrumbs">-->
+<!--                    <li class="breadcrumbs-item">-->
+<!--                        <a href="{% url 'app_store:store_detail' pk=item.store.pk %}">{{ item.store }}</a>-->
+<!--                    </li>-->
+<!--                    <li class="breadcrumbs-item breadcrumbs-item_current">-->
+<!--                        <span>Редактировать товар</span>-->
+<!--                    </li>-->
+<!--                </ul>-->
+            <div class="breadcrumbs">
+                <a href="{% url 'app_store:store_list' %}">home
+                    {% block crumbs %}
+                    {% if item %} &rsaquo;
+                        {{ item }}
+                    {% endif %}
+                    {% endblock %}
+                </a>
+            </div>
+
+
             </div>
         </div>
     </div>
     {% include 'message.html' %}
-
 
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
@@ -32,12 +41,51 @@
                 {% include 'app_user/seller/sidebar_seller.html' %}
             </div>
             <div class="Section-content">
-
-
                 <div class="Profile">
                     <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
+                            <div class="row-block">
+                                <div class="form-group">
+                                    {% for img in item.images.all %}
+                                    <!--  IMAGE  -->
+                                    <div class="Profile-avatar">
+                                        <div class="Profile-img">
+                                            <img src="{{ img.image.url }}" alt="#.png"/>
+                                        </div>
+                                    </div>
+                                    <!--  IMAGE END -->
+                                    <div>
+                                        <a href="{% url 'app_store:delete_image' pk=img.pk  %}"
+                                           style="color:red">удалить&#8195;x</a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+
+                                <!-- ADD IMAGE FORM BEGIN -->
+                                <div id="form-container-image" class="form-group input-collect">
+                                    {{ image_formset.management_form }}
+                                    {% for form in image_formset %}
+                                    <div class="image-form Profile-avatar Profile-avatar-noimg">
+                                        <input class="form-input Profile-file"
+                                               id="output-0"
+                                               onchange="loadFile(event)"
+                                               name="image"
+                                               type="file"
+                                               data-validate="onlyImgAvatar"/>
+                                            <img id="im-0" src="/media/default_images/default_image.png" width="200" height="200">
+                                    </div>
+                                    {% endfor %}
+                                    <button id="add-form-image" class="btn" type="button">
+                                        + добавить изображение
+                                    </button>
+
+
+                                </div>
+                                <!--    ADD IMAGE FORM END      -->
+
+                            </div>
                             <div class="row-block">
                                 {% include 'error_message.html' %}
                                 <div class="form-group">
@@ -69,14 +117,14 @@
                                 </div>
                                 <div class="form-group">
                                     <input type="checkbox" name="is_available" id="is_available"
-                                           {% if item.is_available %} checked {% endif %}/>
+                                           {% if item.is_available %} checked value="True"{% else %} value="False"{% endif %}/>
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text">Доступно для продажи</span>
                                 </div>
 
                                 <div class="form-group">
                                     <input type="checkbox" name="limited_edition" id='limited_edition'
-                                           {% if item.limited_edition %} checked {% endif %}/>
+                                           {% if item.limited_edition %} checked value="True"{% else %} value="False"{% endif %}/>
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text">Ограниченное количество</span>
                                 </div>
@@ -100,23 +148,37 @@
 
                                 </div>
                                 <!-- CATEGORY -->
+
                                 <div class="form-group">
                                     <label class="form-label">Характеристики</label>
-                                    <a class="btn btn_narrow btn_square btn_dark btn_sm" style="margin-top: 10px;"
-                                       href="{% url 'app_store:feature_list' item.category.slug  %}">
+                                    <a class="btn btn_narrow btn_square btn_primary btn_sm" style="margin-top: 10px;"
+                                       href="{% url 'app_store:feature_list' slug=item.category.slug  %}">
                                         + добавить характеристику
                                     </a>
                                 </div>
                                 <!-- FEATURES -->
+
                                 <div class="form-group">
-                                    {% for feature_val in item.category.feature.all %}
-                                    <label class="form-label" >{{ feature_val| lower }}</label>
+                                    {% for features in item.category.feature.all %}
+                                    <label class="form-label">{{ features | lower }}
+                                          {% for value in features.values.all %}
+                                            {% if value in item.feature_value.all %}
+                                                <a href="{% url 'app_store:value_remove' slug=features.slug pk=item.id %}"
+                                                    class="danger-text">&#215;
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                    </label>
                                     <select name="value" class="form-input">
-                                        <option disabled>{{ feature_val }}</option>
-                                        {% for value in feature_val.values.all %}
-                                            <option value="{{ value.id }}">
-                                                {{ value }}
-                                            </option>
+
+                                        <option></option>
+                                        {% for value in features.values.all %}
+                                            {% if value in item.feature_value.all %}
+                                                <option value="{{ value.id  }}" selected>{{ value }}</option>
+                                            {% else %}
+                                                <option value="{{ value.id  }}">{{ value }}</option>
+                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                     {% endfor %}
@@ -128,25 +190,43 @@
                                     <label class="form-label" for="description">Описание</label>
                                     <textarea class="form-input" id="description" name="description"
                                               cols="40" rows="5"
-                                              placeholder="Описание">{{ item.description    }}</textarea>
+                                              placeholder="Описание">{{ item.description }}</textarea>
                                 </div>
                                 <!--DESCRIPTION -->
 
                                 <!--COLOR ITEM -->
                                 <div class="form-group">
-                                    <select id="color" name="color" class="form-input" data-value="{{item.color}}">
-                                        <option value="" selected>{{    item.color      }}</option>
-                                        {% for color in colors %}
-                                            {% if color == item.color %}
-                                                <option selected="selected" style="background-color:{{color}};
-                                                        font-weight: bolder;font-size: 30px;" value="{{color}}">
-                                            {% else %}
-                                                <option style="background-color:{{color}};font-weight: bolder;font-size: 30px;"  value="{{color}}">
-                                            {% endif %}
-                                            &#8195;{{ color }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
+                                    <div class="form-group" id="color">
+                                    {% for color in colors %}
+                                    {% if color == item.color %}
+                                    <input  name="color" type="radio" checked="checked" value="{{ color }}">
+                                    <span style="border:1px solid grey; background-color:{{ color }}; padding:2px; border-radius:50%;">&emsp;
+                                    </span>
+
+                                    {% else %}
+                                    <input name="color" type="radio"   value="{{color}}">
+                                    <span style="border:1px solid grey; background-color:{{ color }}; padding:2px; border-radius:10%;">&emsp;
+                                    </span>
+                                    {% endif %}
+                                    {% endfor %}
+                                    </div>
+
+<!--                                    <select id="color" name="color"  -->
+<!--                                            style="background-color:{{color}};"-->
+<!--                                            class="form-input" data-value="{{item.color}}">-->
+<!--                                        <option value="" selected >{{ item.color }}-->
+<!--                                        </option>-->
+<!--                                        {% for color in colors %}-->
+<!--                                            {% if color == item.color %}-->
+<!--                                                <option selected="selected" style="background-color:{{color}};-->
+<!--                                                        font-weight: bolder;font-size: 30px;" value="{{ color }}">-->
+<!--                                            {% else %}-->
+<!--                                                <option style="background-color:{{color}};font-weight: bolder;font-size: 30px;"  value="{{color}}">-->
+<!--                                            {% endif %}-->
+<!--                                            &#8195;{{ color }}-->
+<!--                                        </option>-->
+<!--                                        {% endfor %}-->
+<!--                                    </select>-->
                                 </div>
                                 <!-- COLOR ITEM -->
 
@@ -165,50 +245,6 @@
                                 </div>
 
                             </div>
-
-                            <div class="row-block">
-                                <div class="form-group">
-                                    {% for img in item.image.all %}
-                                    <!--  IMAGE  -->
-                                    <div class="Profile-avatar">
-                                        <div class="Profile-img">
-                                            <img src="{{ img.image.url }}" alt="#.png"/>
-                                        </div>
-                                    </div>
-                                    <!--  IMAGE END -->
-                                    <div>
-                                        <a href="{% url 'app_store:delete_image' image_id=img.pk item_id=item.pk %}"
-                                           style="color:red">удалить&#8195;x</a>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-
-
-                                <!-- ADD IMAGE FORM BEGIN -->
-                                <div id="form-container-image" class="form-group input-collect">
-                                    {{ image_formset.management_form }}
-                                    {% for form in image_formset %}
-                                    <div class="image-form Profile-avatar Profile-avatar-noimg">
-                                        <input class="form-input Profile-file"
-                                               id="output-0"
-                                               onchange="loadFile(event)"
-                                               name="image"
-                                               type="file"
-                                               data-validate="onlyImgAvatar"/>
-
-                                            <img id="im-0" src="/media/default_images/default_image.png" width="200" height="200">
-
-                                    </div>
-                                    {% endfor %}
-                                    <button id="add-form-image" class="btn" type="button">
-                                        + добавить изображение
-                                    </button>
-
-
-                                </div>
-                                <!--    ADD IMAGE FORM END      -->
-
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -216,12 +252,6 @@
         </div>
     </div>
 </div>
-
-
-
-
-
-
 
     <!--    MODAL FOR CONFIRM DELETE ITEM    -->
 <div id="openModal" class="modal-my">
