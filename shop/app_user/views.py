@@ -56,8 +56,8 @@ class UpdateProfile(generic.UpdateView):
     model = User
     second_model = user_modals.Profile
     template_name = 'app_user/profile_edit.html'
-    form_class = user_form.UpdateProfileForm
-    # second_form_class = user_form.UpdateProfileForm
+    form_class = user_form.UpdateUserForm
+    second_form_class = user_form.UpdateProfileForm
 
     def form_valid(self, form):
         register_services.ProfileHandler.update_profile(self.request)

@@ -38,7 +38,7 @@ class ProfileHandler:
     @staticmethod
     def telephone_formatter(telephone):
         if str(telephone).startswith('+7'):
-            telephone = str(telephone).split('7')[1].replace('(', '').replace(')', '').replace(' ', '')
+            telephone = str(telephone).split('+7')[1].replace('(', '').replace(')', '').replace(' ', '')
         return telephone
 
     @staticmethod
@@ -96,22 +96,27 @@ class ProfileHandler:
             files=request.FILES,
             instance=request.user.profile
         )
-        if user_form.has_changed():
-            fields_for_update = []
-            for field in user_form.changed_data:
-                if user_form.data[field] != '' and user_form.data[field]:
-                    fields_for_update.append(field)
-                    user.i = user_form.data[field]
-                    user.__setattr__(field, user_form.data[field])
-            user.save(update_fields=[*fields_for_update])
-        if profile_form.has_changed():
-            fields_for_update = []
-            for field in profile_form.changed_data:
-                if profile_form.data[field] != '' and profile_form.data[field]:
-                    fields_for_update.append(field)
-                    profile.i = profile_form.data[field]
-                    profile.__setattr__(field, profile_form.data[field])
-            profile.save(update_fields=[*fields_for_update])
+        user_form.save()
+        profile_form.save()
+        # if user_form.has_changed():
+        #     fields_for_update_user = []
+        #     for field in user_form.changed_data:
+        #         print('@@@@@@@', field)
+        #         if user_form.data[field] != '' and user_form.data[field]:
+        #             fields_for_update_user.append(field)
+        #             user.i = user_form.data[field]
+        #             user.__setattr__(field, user_form.data[field])
+        #     print('++++++++ USER ', fields_for_update_user)
+        #     user.save(update_fields=fields_for_update_user)
+        # if profile_form.has_changed():
+        #     fields_for_update_profile = []
+        #     for field in profile_form.changed_data:
+        #         if profile_form.data[field] != '' and profile_form.data[field]:
+        #             fields_for_update_profile.append(field)
+        #             profile.i = profile_form.data[field]
+        #             profile.__setattr__(field, profile_form.data[field])
+        #     print('++++++++ PROFILE ', fields_for_update_profile)
+        #     profile.save(update_fields=fields_for_update_profile)
 
 
 class SendVerificationMail:

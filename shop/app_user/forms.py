@@ -134,7 +134,7 @@ class RegisterUserFormFromOrder(UserCreationForm):
         return telephone
 
 
-class UpdateUserForm(UserChangeForm):
+class UpdateUserForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, required=False)
     last_name = forms.CharField(max_length=150, required=False)
     email = forms.EmailField()

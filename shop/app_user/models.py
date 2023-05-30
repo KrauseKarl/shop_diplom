@@ -60,10 +60,10 @@ class Profile(models.Model):
         verbose_name = 'профиль'
         verbose_name_plural = 'профили'
 
-    def save(self, *args, **kwargs):
-        from app_user.services.register_services import ProfileHandler
-        self.telephone = ProfileHandler.telephone_formatter(self.telephone)
-        super(Profile, self).save(*args, **kwargs)
+        # def save(self, *args, **kwargs):
+        # from app_user.services.register_services import ProfileHandler
+        # self.telephone = ProfileHandler.telephone_formatter(self.telephone)
+        # super(Profile, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
