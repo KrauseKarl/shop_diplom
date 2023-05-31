@@ -1,6 +1,10 @@
 import datetime
-
+import os
+import random
+from io import BytesIO, StringIO
+from PIL import Image as PilImage
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 from django.db.models import Q, Count
 from django.urls import reverse
@@ -388,6 +392,10 @@ class Comment(models.Model):
 
 class Image(models.Model):
     """Модель изображения."""
+    FORMAT = 'PNG'
+    QUALITY = 75
+    WIDTH = 600
+
     title = models.CharField(
         max_length=200,
         null=True,
@@ -419,6 +427,18 @@ class Image(models.Model):
 
     def __str__(self):
         return f'img - {self.pk}'
+
+    def save(self, *args, **kwargs):
+        from app_item.services.item_services import ImageHandler
+        if self.pk is None:
+            self.image = ImageHandler.resize_uploaded_image(
+                image=self.image,
+                title=self.title,
+                width=self.WIDTH,
+                format_image=self.FORMAT,
+                quality_image=self.QUALITY
+            )
+        super(Image, self).save(*args, **kwargs)
 
 
 class Feature(models.Model):
@@ -525,43 +545,3 @@ class FeatureValue(models.Model):
 #
 #     def __str__(self):
 #         return self.pk
-import os
-from io import BytesIO
-from PIL import Image as PilImage
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
-
-def resize_uploaded_image(image, max_width, max_height):
-        size = (max_width, max_height)
-
-        # Uploaded file is in memory
-        if isinstance(image, InMemoryUploadedFile):
-            print('2# Uploaded file is in Memory')
-            memory_image = BytesIO(image.read())
-            pil_image = PilImage.open(memory_image)
-            print('+++++++++++++++++++++++++++++++++++')
-            img_format = os.path.splitext(image.name)[1][1:].upper()
-            img_format = 'JPEG' if img_format == 'JPG' else img_format
-            print(img_format)
-            print('+++++++++++++++++++++++++++++++++++')
-            if pil_image.width > max_width or pil_image.height > max_height:
-                pil_image.thumbnail(size)
-
-            new_image = BytesIO()
-            pil_image.save(new_image, format=img_format)
-
-            new_image = ContentFile(new_image.getvalue())
-            return InMemoryUploadedFile(new_image, None, image.name, image.content_type, None, None)
-
-        # Uploaded file is in disk
-        elif isinstance(image, TemporaryUploadedFile):
-            print('3# Uploaded file is in disk')
-            path = image.temporary_file_path()
-            pil_image = PilImage.open(path)
-
-            if pil_image.width > max_width or pil_image.height > max_height:
-                pil_image.thumbnail(size)
-                pil_image.save(path)
-                image.size = os.stat(path).st_size
-
-        return image

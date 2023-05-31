@@ -602,48 +602,47 @@ var NavigateProfile = function(){
     };
 };
 NavigateProfile().init();
-var Profile = function(){
-    var $avatar = $('.Profile-avatar');
-    return {
-        init: function(){
-            var $avatarfile = $avatar.find('.Profile-file');
-            function readURL(input) {
-                if (input.files && input.files[0]) {
-                    var file = input.files[0],
-                        ext = 'неизвестно';
-                    ext = file.name.split('.').pop();
-                    if (ext==='png' || ext==='jpg' || ext==='gif') {
-                        var reader = new FileReader();
-
-                        reader.onload = function(e) {
-                            $(input).closest($avatar).find('.Profile-img img').attr('src', e.target.result);
-                        }
-
-                        reader.readAsDataURL(file);
-                        return true;
-                    }
-                    return false;
-                }
-            }
-
-            $avatarfile.change(function() {
-                var $thisAvatar = $(this).closest($avatar);
-                if(readURL(this)){
-
-                    $thisAvatar.removeClass('Profile-avatar_noimg');
-                    $thisAvatar.next('.form-error').remove();
-                    $thisAvatar.find('input[type="file"]').data('errorinput', false);
-                } else {
-                    if (!$thisAvatar.next('.form-error').length){
-                        $thisAvatar.find('input[type="file"]').data('errorinput', true);
-                        $thisAvatar.after('<div class="form-error">Для загрузки допустимы лишь картинки с расширением png, jpg, gif</div>');
-                    }
-                };
-            });
-        }
-    };
-};
-Profile().init();
+//var Profile = function(){
+//    var $avatar = $('.Profile-avatar');
+//    return {
+//        init: function(){
+//            var $avatarfile = $avatar.find('.Profile-file');
+//            function readURL(input) {
+//                if (input.files && input.files[0]) {
+//                    var file = input.files[0],
+//                        ext = 'неизвестно';
+//                    ext = file.name.split('.').pop();
+//                    if (ext==='png' || ext==='jpg' || ext==='gif' || ext==='jpeg') {
+//                        var reader = new FileReader();
+//
+//                        reader.onload = function(e) {
+//                            $(input).closest($avatar).find('.Profile-img img').attr('src', e.target.result);
+//                        }
+//
+//                        reader.readAsDataURL(file);
+//                        return true;
+//                    }
+//                    return false;
+//                }
+//            }
+//
+//            $avatarfile.change(function() {
+//                var $thisAvatar = $(this).closest($avatar);
+//                if(readURL(this)){
+//                    $thisAvatar.removeClass('Profile-avatar_noimg');
+//                    $thisAvatar.next('.form-error').remove();
+//                    $thisAvatar.find('input[type="file"]').data('errorinput', false);
+//                } else {
+//                    if (!$thisAvatar.next('.form-error').length){
+//                        $thisAvatar.find('input[type="file"]').data('errorinput', true);
+//                        $thisAvatar.after('<div class="form-error">Для загрузки допустимы лишь картинки с расширением png, jpg, gif</div>');
+//                    }
+//                };
+//            });
+//        }
+//    };
+//};
+//Profile().init();
 var Cart = function(){
     return {
         init: function(){

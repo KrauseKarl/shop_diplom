@@ -39,11 +39,7 @@ class CreateProfile(SuccessMessageMixin, generic.CreateView):
         return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
 
     def form_valid(self, form):
-        response = register_services.ProfileHandler.create_user(
-            self.request,
-            form,
-            self.get_success_url
-        )
+        response = register_services.ProfileHandler.create_user(self.request, form, self.get_success_url)
         return response
 
     def form_invalid(self, form):

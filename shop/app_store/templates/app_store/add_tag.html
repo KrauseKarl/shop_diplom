@@ -9,14 +9,32 @@
 {% block content %}
 <div class="Middle Middle_top">
     <div class="Middle-top">
-        <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
-        # Теги
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Теги
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:store_detail' pk=item.store.pk %}">{{ item.store }}
+                        </a>
+                    </li>
+                     <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:edit_item' pk=item.pk %}">{{ item }}
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>Добавить теги
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
+{% include 'message.html' %}
 <div class="Section Section_column Section_columnRight Section_columnWide Order">
     <div class="wrap">
         <div class="Section-content">
-            <div class="Order-block Order-block_OPEN" id="step1">
+            <div class="Order-block Order-block_OPEN">
                 <header class="Section-header Section-header_sm">
                     <h2 class="Section-title">Теги
                     </h2>
@@ -26,20 +44,25 @@
                         {% csrf_token %}
                         {% for tag in tags %}
                           {% ifchanged %}<h3>{{ tag|make_list|first }}</h3>{% endifchanged %}
-                        <label>
-                            <input type="checkbox" name="tag" id="#_{{ tag }}" value="{{ tag.id }}"/>
-                            <span class="toggle-box"></span>
-                            <span class="toggle-text"># {{tag.title}}</span>
-                        </label>
+
+                            <label>
+                                <input type="checkbox" name="tag"
+                                       {% if tag in item.tag.all  %} disabled {% endif %}
+                                       value="{{ tag.id }}"/>
+                                <span class="toggle-box"></span>
+                                <span class="toggle-text"># {{ tag.title }} &emsp;</span>
+                            </label>
                         {% endfor %}
                     </div>
                 </form>
 
                     <div class="Order-footer">
-                        <button type="submit" form="add_tag_form" class="btn btn_success">Добавить тег</button>
-                        <a href="{% url 'app_store:tag_list' %}" class="btn btn_info"
-                           style="margin-top:10px;" type="button">
-                            создать тег
+                        <button type="submit" form="add_tag_form"
+                                class="btn btn_success btn_square btn_sm">Добавить тег
+                        </button>
+                        <a href="{% url 'app_store:tag_list' %}"
+                           class="btn btn_info btn_square btn_sm"
+                           style="margin-top:10px;" type="button">создать тег
                         </a>
                     </div>
 

@@ -33,7 +33,7 @@ urlpatterns = [
     path('category/create/', CategoryCreateView.as_view(), name='create_category'),
 
     path('feature/<slug:slug>/list/', FeatureListView.as_view(), name='feature_list'),
-    path('feature/create/<slug:cat_slug>/', CreateFeatureView.as_view(), name='feature_create'),
+    path('feature/create/<slug:slug>/', CreateFeatureView.as_view(), name='feature_create'),
     path('feature/value/<slug:feature_slug>/create/', CreateFeatureValueView.as_view(), name='feature_value_create'),
     path('feature/<slug:slug>/item/<int:pk>/remove/', RemoveFeatureValueView.as_view(), name='value_remove'),
 

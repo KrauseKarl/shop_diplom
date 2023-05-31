@@ -9,33 +9,23 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">
-                    Редактировать - <b>{{item.title}} </b></h1>
-<!--                <ul class="breadcrumbs Middle-breadcrumbs">-->
-<!--                    <li class="breadcrumbs-item">-->
-<!--                        <a href="{% url 'app_store:store_detail' pk=item.store.pk %}">{{ item.store }}</a>-->
-<!--                    </li>-->
-<!--                    <li class="breadcrumbs-item breadcrumbs-item_current">-->
-<!--                        <span>Редактировать товар</span>-->
-<!--                    </li>-->
-<!--                </ul>-->
-            <div class="breadcrumbs">
-                <a href="{% url 'app_store:store_list' %}">home
-                    {% block crumbs %}
-                    {% if item %} &rsaquo;
-                        {{ item }}
-                    {% endif %}
-                    {% endblock %}
-                </a>
-            </div>
-
-
+                <h1 class="Middle-title">Редактировать - {{ item.title }}
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:store_detail' pk=item.store.pk %}">{{ item.store }}
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>Редактировать товар
+                        </span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
+</div>
     {% include 'message.html' %}
-
-    <div class="Section Section_column Section_columnLeft">
+<div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
                 {% include 'app_user/seller/sidebar_seller.html' %}
@@ -57,7 +47,7 @@
                                     <!--  IMAGE END -->
                                     <div>
                                         <a href="{% url 'app_store:delete_image' pk=img.pk  %}"
-                                           style="color:red">удалить&#8195;x</a>
+                                           style="color:red">&#10060;</a>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -68,26 +58,28 @@
                                     {{ image_formset.management_form }}
                                     {% for form in image_formset %}
                                     <div class="image-form Profile-avatar Profile-avatar-noimg">
+                                        {% if form.errors.image %}
+                                        <div class="form-error">{{ form.errors.image }}
+                                        </div>
+                                        {% endif %}
                                         <input class="form-input Profile-file"
                                                id="output-0"
                                                onchange="loadFile(event)"
                                                name="image"
                                                type="file"
                                                data-validate="onlyImgAvatar"/>
-                                            <img id="im-0" src="/media/default_images/default_image.png" width="200" height="200">
+                                        <img id="im-0" src="/media/default_images/default_image.png" width="200" height="200">
                                     </div>
                                     {% endfor %}
                                     <button id="add-form-image" class="btn" type="button">
                                         + добавить изображение
                                     </button>
 
-
                                 </div>
                                 <!--    ADD IMAGE FORM END      -->
 
                             </div>
                             <div class="row-block">
-                                {% include 'error_message.html' %}
                                 <div class="form-group">
                                     <div class="form-label">
                                         <a class="btn  btn_narrow btn_square btn_dark btn_sm"
@@ -98,7 +90,6 @@
                                         <a class="btn  btn_narrow btn_square btn_danger btn_sm" href="#openModal">удалить</a>
                                     </div>
                                 </div>
-
                                 <div class="form-group">
 
                                     <label class="form-label" for="title">Название</label>
@@ -160,11 +151,12 @@
 
                                 <div class="form-group">
                                     {% for features in item.category.feature.all %}
+
                                     <label class="form-label">{{ features | lower }}
                                           {% for value in features.values.all %}
                                             {% if value in item.feature_value.all %}
                                                 <a href="{% url 'app_store:value_remove' slug=features.slug pk=item.id %}"
-                                                    class="danger-text">&#215;
+                                                    class="danger-text">&#10060;
                                                 </a>
                                             {% endif %}
                                         {% endfor %}
@@ -231,26 +223,25 @@
                                 <!-- COLOR ITEM -->
 
                                 <div class="form-group">
-
-                                    {% for tg in item.tag.all %}
-                                    <div class="btn btn_default btn_sm" style="margin-bottom: 10px;">#{{tg}}
-                                        <a href="{% url 'app_store:delete_tag' tag_id=tg.pk item_id=item.pk %}"
-                                           style="color:red">&#8195;x</a>
-                                    </div>
-                                    {% endfor %}
-                                    <a  href="{% url 'app_store:add_tag' item.pk %}"
-                                        class="btn btn_narrow btn_square btn_dark btn_sm">
+                                    <a href="{% url 'app_store:add_tag' pk=item.pk %}"
+                                       class="btn btn_narrow btn_square btn_primary btn_sm">
                                         + добавить тег
                                     </a>
                                 </div>
-
+                                <div class="form-group">
+                                    {% for tg in item.tag.all %}
+                                    <div class="btn btn_default btn_sm" style="margin-bottom: 10px;">#{{tg}}
+                                        <a href="{% url 'app_store:delete_tag' tag_id=tg.pk item_id=item.pk %}"
+                                           style="color:red">&#8195;&#10060;</a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
 </div>
 
     <!--    MODAL FOR CONFIRM DELETE ITEM    -->
@@ -268,7 +259,7 @@
                         </div>
                         <div class="form-group">
                             <a href="{% url 'app_store:delete_item' item.pk %}"
-                               class="btn btn_square btn_danger  btn_narrow btn_small">удалить&#8195;x</a>
+                               class="btn btn_square btn_danger  btn_narrow btn_small">удалить&#8195;&#215;</a>
                             <a href="." title="Close"
                                class="btn  btn_square btn_default  btn_narrow btn_small">отмена</a>
                         </div>

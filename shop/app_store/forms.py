@@ -1,7 +1,10 @@
 from django import forms
+from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.forms import modelformset_factory
-
-from app_item.models import Item, Tag, Image, Category, FeatureValue, Feature, resize_uploaded_image
+from PIL import Image as PilImage
+from app_item.models import Item, Tag, Image, Category, FeatureValue, Feature
+from app_item.services.item_services import ImageHandler
 from app_order.models import Order
 from app_store.models import Store
 
@@ -40,12 +43,21 @@ class AddItemForm(forms.ModelForm):
         )
 
 
+def file_size(value):
+    """Функция валидирует размер загружаемого файла."""
+    limit = 2 * 1024 * 1024
+    if value.size > limit:
+        raise ValidationError('Файл слишком большой. Размер не должен превышать 2 МБ.')
+
+
 class AddItemImageForm(forms.ModelForm):
     """Форма для создания изображения товара."""
     image = forms.ImageField(
         widget=forms.ClearableFileInput(attrs={'multiple': True}),
         label='Изображения',
-        required=False)
+        required=False,
+        validators=[file_size],
+        )
 
     class Meta(AddItemForm.Meta):
         fields = AddItemForm.Meta.fields + ('image',)
@@ -73,12 +85,21 @@ class UpdateItemImageForm(forms.ModelForm):
     image = forms.ImageField(
         widget=forms.ClearableFileInput(attrs={'multiple': True}),
         label='Изображения',
-        required=False)
+        required=False,
+        validators=[file_size],
+    )
 
     class Meta:
         model = Image
         fields = ('image', )
 
+    def clean_image_size(self):
+        """Функция валидирует размер загружаемого файла."""
+        limit = 2 * 1024 * 1024
+        img = self.cleaned_data.get('image')
+        if img.size > limit:
+            raise ValidationError('Размер файла не должен превышать 2 МБ')
+        return img
 
 TagFormSet = modelformset_factory(
     Tag,
@@ -99,14 +120,22 @@ FeatureFormSet = modelformset_factory(
 
 class CreateTagForm(forms.ModelForm):
     """Форма для создания тега."""
-
     class Meta:
         model = Tag
         fields = ('title',)
 
 
+class CustomMMCF(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, tag):
+        return f"{tag.title}"
+
+
 class AddTagForm(forms.ModelForm):
     """Форма для добавления тега в карточку товара."""
+    tag = CustomMMCF(
+        queryset=Tag.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
 
     class Meta:
         model = Item
@@ -132,6 +161,15 @@ class CreateFeatureForm(forms.ModelForm):
     class Meta:
         model = Feature
         fields = ('title', )
+
+    def clean_feature(self):
+        """Функция валидирует размер сущетвование характеристики в базе данных"""
+
+        feature = self.cleaned_data.get('title').lower()
+        if Feature.objects.get(title=feature).exist():
+            raise ValidationError('Такая характеристика уже существует')
+        return feature
+
 
 
 class CreateValueForm(forms.ModelForm):

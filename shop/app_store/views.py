@@ -164,12 +164,12 @@ class CreateItemView(SellerOnlyMixin, generic.CreateView):
             if len(self.request.FILES.getlist('image')) == 1:
                 img = self.request.FILES.getlist('image')[0]
                 image = item_models.Image.objects.create(image=img, title=item.title)
-                item.image.add(image.id)
+                item.images.add(image.id)
                 item.save()
             else:
                 for img in self.request.FILES.getlist('image'):
                     image = item_models.Image.objects.create(image=img, title=item.title)
-                    item.image.add(image.id)
+                    item.images.add(image.id)
                     item.save()
             store_id = self.kwargs['pk']
             store = store_services.StoreHandler.get_store(store_id)
@@ -247,6 +247,11 @@ class UpdateItemView(UserPassesTestMixin, generic.UpdateView):
 
         messages.add_message(self.request, messages.SUCCESS, f"Данные о товаре {instance} обновлены")
         return super().form_invalid(form)
+
+    def form_invalid(self, form):
+        form = store_forms.UpdateItemImageForm(self.request.POST, self.request.FILES)
+        # messages.add_message(self.request, messages.ERROR, f"Ошибка.")
+        return super(UpdateItemView, self).form_invalid(form)
 
     def get_success_url(self):
         item = self.get_object()
@@ -368,13 +373,20 @@ class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
     form_class = store_forms.AddTagForm
 
     def form_valid(self, form):
-        tag = form.save()
-        item_id = self.kwargs['pk']
-        item = item_models.Item.objects.get(id=item_id)
-        messages.add_message(self.request, messages.INFO, f"Новый тег успешно добавлен")
+        tag_list = form.cleaned_data.get('tag')
+        print('========================')
+        print('tag_list = ',  tag_list)
+        print('========================')
+        item = item_models.Item.objects.get(id=self.kwargs['pk'])
+        for t in tag_list:
+            tag = item_models.Tag.objects.get(id=t.id)
+            item.tag.add(tag)
+            item.save()
+        messages.add_message(self.request, messages.INFO, f"Новый тег(и) успешно добавлен(ы)")
         return redirect('app_store:edit_item', item.pk)
 
     def form_invalid(self, form):
+        messages.add_message(self.request, messages.ERROR, f"{form.errors}")
         return self.render_to_response(self.get_context_data(form=form))
 
 
@@ -390,7 +402,7 @@ class RemoveTagFromItem(generic.DeleteView):
         if tag in item.tag.all():
             item.tag.remove(tag)
         item.save()
-        messages.add_message(self.request, messages.INFO, f"Тег  {tag} успешно удален")
+        messages.add_message(self.request, messages.WARNING, f"Тег  {tag} успешно удален")
         return redirect('app_store:edit_item', item.pk)
 
 
@@ -412,7 +424,7 @@ class DeleteImage(UserPassesTestMixin, generic.DeleteView):
             item.images.remove(image)
             item_models.Image.objects.filter(id=image.id).delete()
         item.save()
-        messages.add_message(self.request, messages.INFO, f"Изображение успешно удалено")
+        messages.add_message(self.request, messages.WARNING, f"Изображение успешно удалено")
         return redirect('app_store:edit_item', item.pk)
 
 
@@ -440,7 +452,9 @@ class CreateFeatureView(SellerOnlyMixin, generic.CreateView):
     def form_valid(self, form):
         feature = form.save()
         category_slug = self.kwargs.get('slug')
+        print('&&&&&&&&&&&&&&&', category_slug)
         category = item_models.Category.objects.get(slug=category_slug)
+        print('%%%%%%%%%%%%%%%%%', category)
         feature.categories.add(category.id)
         messages.add_message(self.request, messages.SUCCESS, f'Характеристика - "{feature}" добавлено')
         return redirect('app_store:feature_list', category.slug)
@@ -505,6 +519,7 @@ class RemoveFeatureValueView(generic.DeleteView):
 
         messages.add_message(self.request, messages.INFO, f"Характеристика удалена")
         return redirect('app_store:edit_item', item.pk)
+
 
 # DELIVERY VIEWS #
 class DeliveryListView(SellerOnlyMixin, generic.ListView):

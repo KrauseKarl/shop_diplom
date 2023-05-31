@@ -1,4 +1,9 @@
 import random
+import os
+from io import BytesIO
+from PIL import Image as PilImage
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from typing import List, Dict, Union, Any
 from functools import reduce
 from operator import and_, or_
@@ -838,3 +843,43 @@ class AddItemToReview:
                 pass
         AddItemToReview.get_best_price_in_category(user)
         return reviews
+
+
+class ImageHandler:
+    @staticmethod
+    def resize_uploaded_image(image, title, width, format_image, quality_image):
+        """
+        Функция возвращает изображение
+        с изменеными размерами, сжатое,
+        переименнование и с необходимым расширением
+        :param image: фаил изображения
+        :param title: имя экземплара класса Image
+        :param width: необходимай ширина изображения
+        :param format_image: новый формат изображение
+        :param quality_image: качество нового изображение
+        :return: instance of InMemoryUploadedFile
+        """
+        img = PilImage.open(image)
+        exif = None
+        if 'exif' in img.info:
+            exif = img.info['exif']
+        random_str = ''.join([random.choice(list("12345ABCDF")) for x in range(6)])
+        name = '_'.join([str(title), str(random_str)])
+        width_percent = (width / float(img.size[0]))
+        height_size = int((float(img.size[1]) * float(width_percent)))
+        img = img.resize((width, height_size), PilImage.ANTIALIAS)
+        output = BytesIO()
+        if exif:
+            img.save(output, format=format_image, exif=exif, quality=quality_image)
+        else:
+            img.save(output, format=format_image, quality=quality_image)
+        output.seek(0)
+        image = InMemoryUploadedFile(
+            output,
+            'ImageField',
+            f"{name}.{format_image}",
+            f'image/{format_image}',
+            output.tell(),
+            None
+        )
+        return image
