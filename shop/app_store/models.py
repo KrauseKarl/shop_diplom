@@ -53,20 +53,23 @@ class Store(models.Model):
     description = models.TextField(
         default='',
         blank=True,
-        verbose_name='Описание магазина')
+        verbose_name='Описание магазина'
+    )
     logo = models.ImageField(
         upload_to='store/logo/',
         default='default_images/default_store.jpg',
         blank=True
     )
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(
+        default=False
+    )
 
     objects = models.Manager()
     active_stores = StoreIsActiveManager()
 
     class Meta:
         db_table = 'app_store'
-        ordering = ['created']
+        ordering = ['title', 'created']
         verbose_name = 'магазин'
         verbose_name_plural = 'магазины'
 

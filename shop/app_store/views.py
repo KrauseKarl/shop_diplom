@@ -8,7 +8,7 @@ from django.http import Http404, HttpRequest, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.timezone import datetime
+from datetime import datetime
 
 from django.views import generic
 from django.http import HttpResponse
@@ -116,6 +116,12 @@ class CreateStoreView(SellerOnlyMixin, generic.CreateView):
         store.save()
         return redirect('app_store:store_detail', store.pk)
 
+    def form_invalid(self, form):
+
+        form = store_forms.CreateStoreForm(self.request.POST, self.request.FILES)
+        messages.add_message(self.request, messages.ERROR, f"Ошибка. Магазин не создан. Повторите попытку.")
+        return super().form_invalid(form)
+
 
 class StoreUpdateViews(UserPassesTestMixin, generic.UpdateView):
     """Класс-представление для обновления магазина."""
@@ -138,13 +144,13 @@ class StoreUpdateViews(UserPassesTestMixin, generic.UpdateView):
 
 
 class CreateItemView(SellerOnlyMixin, generic.CreateView):
-    """Класс-представление для создания и добавления товара в магазин магазина."""
+    """Класс-представление для создания и добавления товара в магазин."""
     model = store_models.Store
     template_name = 'app_store/item/add_item.html'
     form_class = store_forms.AddItemImageForm
     second_form_class = store_forms.TagFormSet
 
-    def get(self, *args, **kwargs):
+    def get_context_data(self, **kwargs):
         formset_tag = store_forms.TagFormSet(queryset=item_models.Tag.objects.none())
         formset_image = store_forms.ImageFormSet(queryset=item_models.Image.objects.none())
         context = {
@@ -154,13 +160,18 @@ class CreateItemView(SellerOnlyMixin, generic.CreateView):
             'store': self.get_object(),
             'colors': item_services.get_colors(item_models.Item.available_items.all())
         }
-        return self.render_to_response(context=context)
+        return context
 
     def form_valid(self, form):
         with transaction.atomic():
             item = form.save(commit=False)
             item.is_active = True
             item.save()
+            tag_list = form.cleaned_data.get('tag')
+            for t in tag_list:
+                tag = item_models.Tag.objects.get(id=t.id)
+                item.tag.add(tag)
+                item.save()
             if len(self.request.FILES.getlist('image')) == 1:
                 img = self.request.FILES.getlist('image')[0]
                 image = item_models.Image.objects.create(image=img, title=item.title)
@@ -175,24 +186,21 @@ class CreateItemView(SellerOnlyMixin, generic.CreateView):
             store = store_services.StoreHandler.get_store(store_id)
             store.items.add(item)
             store.save()
-            messages.add_message(self.request, messages.INFO, f"Товаре {item} добавлен")
+            messages.add_message(self.request, messages.SUCCESS, f"Товаре {item} добавлен")
         return redirect('app_store:store_detail', store.pk)
 
     def form_invalid(self, form):
-        context = {
-            'message': 'error',
-            'tags': item_models.Tag.objects.all(),
-            'colors': item_services.get_colors(item_models.Item.objects.all())
-        }
-        return render(self.request, self.template_name, context=context)
+        form = store_forms.AddItemImageForm(self.request.POST, self.request.FILES)
+        messages.add_message(self.request, messages.ERROR, f"Ошибка. Товар не создан. Повторите попытку.")
+        return super(CreateItemView, self).form_invalid(form)
 
 
 class UpdateItemView(UserPassesTestMixin, generic.UpdateView):
     """Класс-представление для обновления товара."""
     model = item_models.Item
     template_name = 'app_store/item/edit_item.html'
-    form_class = store_forms.UpdateItemImageForm
-    second_form_class = store_forms.ImageFormSet
+    form_class = store_forms.UpdateItemForm
+    second_form_class = store_forms.UpdateItemImageForm
     extra_context = {'colors': item_services.get_colors(item_models.Item.available_items.all()),
                      'image_formset': store_forms.ImageFormSet(queryset=item_models.Image.objects.none())}
 
@@ -219,14 +227,15 @@ class UpdateItemView(UserPassesTestMixin, generic.UpdateView):
             data=self.request.POST,
             instance=self.get_object(),
         )
-        if form.has_changed():
-            fields_for_update = []
-            for field in form.changed_data:
-                if form.data[field] != '' and form.data[field]:
-                    fields_for_update.append(field)
-                    instance.i = form.data[field]
-                    instance.__setattr__(field, form.data[field])
-            instance.save(update_fields=[*fields_for_update])
+        form.save()
+        # if form.has_changed():
+        #     fields_for_update = []
+        #     for field in form.changed_data:
+        #         if form.data[field] != '' and form.data[field]:
+        #             fields_for_update.append(field)
+        #             instance.field = form.data[field]
+        #             instance.__setattr__(field, form.data[field])
+        # instance.save(update_fields=[*fields_for_update])
 
         for new_value in self.request.POST.getlist('value'):
             if new_value:
@@ -284,9 +293,9 @@ class DeleteItem(UserPassesTestMixin, generic.DeleteView):
 # CATEGORY VIEW #
 
 
-class CategoryListView(SellerOnlyMixin, generic.ListView, MixinPaginator):
+class CategoryListView(SellerOnlyMixin, generic.DetailView, MixinPaginator):
     """Класс-представление для отображения списка всех категорий товаров."""
-    model = item_models.Category
+    model = item_models.Store
     template_name = 'app_store/category/category_list.html'
     paginate_by = 5
 
@@ -302,12 +311,13 @@ class CategoryListView(SellerOnlyMixin, generic.ListView, MixinPaginator):
         """
         alphabet_list = sorted(set([category.title[0] for category in item_models.Category.objects.order_by('title')]))
         sort_by_letter = request.GET.get('sort_by_letter')
+        store = self.get_object()
         if sort_by_letter:
             categories = item_models.Category.objects.filter(title__istartswith=sort_by_letter)
         else:
             categories = item_models.Category.objects.all()
         categories = MixinPaginator(categories, self.request, self.paginate_by).my_paginator()
-        context = {'object_list': categories, 'alphabet': alphabet_list}
+        context = {'object_list': categories, 'alphabet': alphabet_list, 'store': store}
         return render(request, self.template_name, context)
 
 
@@ -317,11 +327,16 @@ class CategoryCreateView(SellerOnlyMixin, generic.CreateView):
     template_name = 'app_store/category/category_list.html'
     form_class = store_forms.CreateCategoryForm
 
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        context = {'store': self.kwargs['pk']}
+        return render(self.request, self.template_name, context)
+
     def form_valid(self, form):
         form.save()
         category_title = form.cleaned_data.get('title')
         messages.add_message(self.request, messages.SUCCESS, f'Категория - "{category_title}" создана')
-        return redirect('app_store:category_list')
+        return redirect('app_store:category_list', self.kwargs['pk'])
 
     def form_invalid(self, form):
         form = store_forms.CreateCategoryForm(self.request.POST)
@@ -374,9 +389,6 @@ class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
 
     def form_valid(self, form):
         tag_list = form.cleaned_data.get('tag')
-        print('========================')
-        print('tag_list = ',  tag_list)
-        print('========================')
         item = item_models.Item.objects.get(id=self.kwargs['pk'])
         for t in tag_list:
             tag = item_models.Tag.objects.get(id=t.id)
@@ -448,13 +460,17 @@ class CreateFeatureView(SellerOnlyMixin, generic.CreateView):
     model = item_models.Feature
     template_name = 'app_store/features/feature_create.html'
     form_class = store_forms.CreateFeatureForm
+    extra_context = {}
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        context = {'category': self.kwargs['pk']}
+        return render(self.request, self.template_name, context)
 
     def form_valid(self, form):
         feature = form.save()
-        category_slug = self.kwargs.get('slug')
-        print('&&&&&&&&&&&&&&&', category_slug)
-        category = item_models.Category.objects.get(slug=category_slug)
-        print('%%%%%%%%%%%%%%%%%', category)
+        category_id = self.kwargs.get('pk')
+        category = item_models.Category.objects.get(id=category_id)
         feature.categories.add(category.id)
         messages.add_message(self.request, messages.SUCCESS, f'Характеристика - "{feature}" добавлено')
         return redirect('app_store:feature_list', category.slug)
@@ -464,7 +480,6 @@ class CreateFeatureView(SellerOnlyMixin, generic.CreateView):
         messages.add_message(self.request, messages.ERROR, f'Произошла ошибка - {form.errors}')
         category_slug = self.kwargs.get('slug')
         category = item_models.Category.objects.get(slug=category_slug)
-        print(form.errors)
         return redirect('app_store:feature_create', category.slug)
 
 
@@ -474,10 +489,16 @@ class CreateFeatureValueView(SellerOnlyMixin, generic.CreateView):
     template_name = 'app_store/features/value_create.html'
     form_class = store_forms.CreateValueForm
 
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        category_id = item_models.Category.objects.get(feature=self.kwargs['pk']).id
+        context = {'category_id': category_id}
+        return render(self.request, self.template_name, context)
+
     def form_valid(self, form):
         value = form.save(commit=False)
-        feature_slug = self.kwargs.get('feature_slug')
-        feature = item_models.Feature.objects.get(slug=feature_slug)
+        feature_id = self.kwargs.get('feature_pk')
+        feature = item_models.Feature.objects.get(id=feature_id)
         value.feature = feature
         value.save()
         category = item_models.Category.objects.get(feature=feature)
@@ -487,8 +508,8 @@ class CreateFeatureValueView(SellerOnlyMixin, generic.CreateView):
     def form_invalid(self, form):
         super(CreateFeatureValueView, self).form_invalid(form)
         form = store_forms.CreateValueForm(self.request.POST)
-        feature_slug = self.kwargs.get('feature_slug')
-        feature = item_models.Feature.objects.get(slug=feature_slug)
+        feature_id = self.kwargs.get('feature_pk')
+        feature = item_models.Feature.objects.get(id=feature_id)
         category = item_models.Category.objects.get(feature=feature)
         messages.add_message(self.request, messages.ERROR, f'{form.errors}')
         return redirect('app_store:feature_list', category.slug)
@@ -527,46 +548,35 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
     model = order_models.Order
     template_name = 'app_store/delivery/delivery_list.html'
     context_object_name = 'orders'
+    extra_context = {'status_list': order_models.Order.STATUS}
 
     def get_queryset(self):
-        stores = store_models.Store.objects.filter(owner=self.request.user)
+
+        stores = self.request.user.store.all()
         queryset = order_models.Order.objects.filter(store__in=stores)
         return queryset
 
     def get(self, request, status=None, **kwargs):
         super().get(request, **kwargs)
-        orders = self.get_queryset()
-        # TODO remove to service
-        if request.GET.get('stores') != 'all':
-            stores = [request.GET.get('stores')]
-        else:
-            stores = list(store_models.Store.objects.filter(owner=self.request.user).values_list('id', flat=True))
-        if request.GET.get('status') != 'all':
-            status = [request.GET.get('status')]
-        else:
-            status = [name for name, title in order_models.Order.STATUS]
-        search = request.GET.get('search')
-        if request.GET.get('start') != '':
-            start = request.GET.get('start')
-        else:
-            start = '1970-01-01'
-        if request.GET.get('finish') != '':
-            finish = request.GET.get('finish')
-        else:
-            request.GET._mutable = True
-            finish = date.today()
-            request.GET['finish'] = finish
-        if request.GET:
-            orders = orders.filter(
-                store__id__in=stores,
-                status__in=status,
-                id__icontains=search,
-                created__range=[start, finish]
-            )
-        else:
-            orders = self.get_queryset()
+        object_list = self.get_queryset()
+        if self.request.GET:
+            # STORE
+            if self.request.GET.get('stores'):
+                stores = self.request.GET.getlist('stores')
+                object_list = self.get_queryset().filter(store__title__in=stores)
+            # STATUS
+            if self.request.GET.get('status'):
+                status = self.request.GET.getlist('status')
+                object_list = object_list.filter(status__in=status)
+            # SEARCH
+            if self.request.GET.get('search'):
+                search = self.request.GET.get('search')
+                print('search = ', search)
+                object_list = object_list.filter(id=search)
+                print('search = ', self.get_queryset().filter(id=search))
+
         context = {
-            'orders': orders,
+            'orders': object_list,
             'status_list': order_models.Order.STATUS,
         }
         return render(request, self.template_name, context=context)

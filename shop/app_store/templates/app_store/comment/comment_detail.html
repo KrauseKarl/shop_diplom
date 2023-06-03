@@ -11,21 +11,22 @@
       <div class="wrap">
         <div class="Middle-header">
           <h1 class="Middle-title">
-              <a href="{% url 'app_store:comment_list' %}" class="btn btn_default btn_square" >назад
-              </a>
             {{ comment }}
           </h1>
-          <ul class="breadcrumbs Middle-breadcrumbs">
-            <li class="breadcrumbs-item">
-              <a href="index.html">home</a>
-            </li>
-            <li class="breadcrumbs-item">
-             <a> История заказов</a>
-            </li>
-            <li class="breadcrumbs-item breadcrumbs-item_current">
-              <span>{{ comment }}</span>
-            </li>
-          </ul>
+            <ul class="breadcrumbs Middle-breadcrumbs">
+                <li class="breadcrumbs-item">
+                    <a href="{% url 'app_store:store_list' %}">Список магазинов
+                    </a>
+                </li>
+                <li class="breadcrumbs-item ">
+                     <a href="{% url 'app_store:comment_list' %}">список комментариев
+                    </a>
+                </li>
+                <li class="breadcrumbs-item breadcrumbs-item_current">
+                    <span>{{ comment }}
+                    </span>
+                </li>
+            </ul>
         </div>
       </div>
     </div>

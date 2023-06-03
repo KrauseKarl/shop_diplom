@@ -11,7 +11,15 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">Добавить новую характеристику </h1>
+                <h1 class="Middle-title">Добавить новое значение</h1>
+                 <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:feature_list' pk=category_id %}">список характеристик</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>новое значение</span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

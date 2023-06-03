@@ -52,7 +52,7 @@ class Item(models.Model):
     YELLOW = 'yellow'
     GREEN = 'green'
     BLUE = 'blue'
-    MAGENTA = ' magenta'
+    MAGENTA = 'magenta'
     WHITE = 'white'
     BLACK = 'black'
     BROWN = 'brown'
@@ -68,6 +68,7 @@ class Item(models.Model):
         (BLACK, 'black'),
         (BROWN, 'brown'),
     )
+    DEFAULT_IMAGE = '/media/default_images/default_item.png'
     title = models.CharField(
         max_length=100,
         validators=[MinLengthValidator, ],
@@ -204,7 +205,7 @@ class Item(models.Model):
         try:
             return self.images.first().image.url
         except (ObjectDoesNotExist, AttributeError):
-            return '/media/default_images/default_item.png'
+            return self.DEFAULT_IMAGE
 
     @property
     def other_images(self):

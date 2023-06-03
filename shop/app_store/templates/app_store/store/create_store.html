@@ -9,17 +9,16 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
-                    Создать магазин
+                <h1 class="Middle-title">Создать магазин
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
                         <a href="{% url 'app_store:store_list' %}">мои магазины
                         </a>
                     </li>
-                    <li class="breadcrumbs-item breadcrumbs-item_current"><span>Создать новый магазин
-                    </span>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Создать новый магазин
+                        </span>
                     </li>
                 </ul>
             </div>
@@ -40,30 +39,46 @@
                                 <div class="form-group">
                                     <label class="form-label" for="title">название магазина</label>
                                     <input class="form-input" id="title" name="title" type="text"/>
+                                    {% if form.errors.title %}
+                                    <div class="form-error">{{ form.errors.title }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <!--    TITLE FIELD  -->
 
-                                <!--    TITLE DESCRIPTION  -->
+                                <!--    OWNER FIELD  -->
                                 <div class="form-group">
-                                    <label class="form-label" for="description">описание</label>
-                                    <textarea class="form-input" id="description" name="description"
-                                              placeholder="Описание"></textarea>
+                                    <label class="form-label" for="owner">собственник </label>
+                                    <label class="form-input" for="owner">{{ request.user.get_full_name }}</label>
+                                    <input class="form-input" id="owner" name="owner" type="hidden"
+                                            value="{{ request.user.id }}"/>
+                                    {% if form.errors.owner %}
+                                    <div class="form-error">{{ form.errors.owner }}
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                <!--    TITLE DESCRIPTION  -->
-
+                                <!--    OWNER FIELD  -->
 
                                 <!--    DELIVERY FEES FIELD  -->
                                 <div class="form-group">
-                                    <label class="form-label" for="delivery_fees">стоимость доставки</label>
-                                    <input class="form-input" id="delivery_fees" name="delivery_fees" type="number"
-                                           value="0"/>
+                                    <label class="form-label" for="discount">скидка</label>
+                                    <input class="form-input" id="discount" name="discount" type="number" value="0"/>
+                                    {% if form.errors.discount %}
+                                    <div class="form-error">{{ form.errors.discount }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <!--    DELIVERY FEES FIELD   -->
                                 <!--    MINIMUM FREE DELIVERY  FIELD  -->
                                 <div class="form-group">
-                                    <label class="form-label" for="min_free_delivery">минимальная сумма бесплатной доставки</label>
-                                    <input class="form-input" id="min_free_delivery" name="min_free_delivery"
+                                    <label class="form-label" for="min_for_discount">минимальная сумма для скидки
+                                    </label>
+                                    <input class="form-input" id="min_for_discount" name="min_for_discount"
                                            type="number" value="0"/>
+                                    {% if form.errors.min_for_discount %}
+                                    <div class="form-error">{{ form.errors.min_for_discount }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <!--    MINIMUM FREE DELIVERY  FIELD  -->
 
@@ -72,32 +87,40 @@
                             <div class="row-block">
                                 <!--    LOGO FIELD  -->
                                 <div class="form-group">
-                                    <label class="form-label" for="logo">логотип</label>
-                                    <div class="Profile-avatar Profile-avatar_noimg">
+                                    <label class="form-label" for="logo">Аватар
+                                    </label>
+                                    <div class="Profile-avatar">
                                         <div class="Profile-img">
-                                            <img src="/assets/img/default/default_item.png" alt="#.png"/>
+                                            {% if user.profile.avatar %}
+                                            <img src="/media/default_images/store.png" alt="логотип магазина"/>
+                                            {% endif %}
                                         </div>
-                                        {{form.non_field_errors}}
-                                        <label class="Profile-fileLabel" for="logo">Выберите логотип</label>
+                                        {% if form.errors.avatar %}
+                                        <div class="form-error">{{ form.errors.avatar }}</div>
+                                        {% endif %}
+                                        <label class="Profile-fileLabel" for="logo">Выберите аватар
+                                        </label>
                                         <input class="Profile-file form-input" id="logo" name="logo"
                                                data-validate="onlyImgAvatar" type="file"/>
                                     </div>
-
                                 </div>
                                 <!--    LOGO FIELD  -->
 
-                                <!--    OWNER FIELD  -->
+                                 <!--    TITLE DESCRIPTION  -->
                                 <div class="form-group">
-                                    <label class="form-label" for="owner">собственник</label>
-                                    <input class="form-input" id="owner" name="owner" type="text"
-                                           value="{{request.user.get_full_name }}"/>
+                                    <label class="form-label" for="description">описание</label>
+                                    <textarea class="form-input" id="description" name="description"
+                                              placeholder="Описание"></textarea>
+                                    {% if form.errors.description %}
+                                    <div class="form-error">{{ form.errors.description }}
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                <!--    OWNER FIELD  -->
-
+                                <!--    TITLE DESCRIPTION  -->
 
                                 <div class="form-group">
                                     <div class="Profile-btn">
-                                        <button class="btn btn_success" type="submit">Сохранить</button>
+                                        <button class="btn btn_success btn_square" type="submit">Сохранить</button>
                                     </div>
                                 </div>
                             </div>

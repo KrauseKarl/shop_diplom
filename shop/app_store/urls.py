@@ -28,13 +28,13 @@ urlpatterns = [
     path('item/edit/<int:pk>/', UpdateItemView.as_view(), name='edit_item'),
     path('item/delete/<int:item_id>/', DeleteItem.as_view(), name='delete_item'),
 
-    path('category/list/', CategoryListView.as_view(), name='category_list'),
+    path('category/store/<int:pk>/list/', CategoryListView.as_view(), name='category_list'),
     path('category/detail/<slug:slug>/feature/list/', FeatureListView.as_view(), name='feature_list'),
-    path('category/create/', CategoryCreateView.as_view(), name='create_category'),
+    path('category/create/store/<int:pk>', CategoryCreateView.as_view(), name='create_category'),
 
-    path('feature/<slug:slug>/list/', FeatureListView.as_view(), name='feature_list'),
-    path('feature/create/<slug:slug>/', CreateFeatureView.as_view(), name='feature_create'),
-    path('feature/value/<slug:feature_slug>/create/', CreateFeatureValueView.as_view(), name='feature_value_create'),
+    path('feature/<int:pk>/list/', FeatureListView.as_view(), name='feature_list'),
+    path('feature/create/<int:pk>/', CreateFeatureView.as_view(), name='feature_create'),
+    path('feature/value/<int:pk>/create/', CreateFeatureValueView.as_view(), name='feature_value_create'),
     path('feature/<slug:slug>/item/<int:pk>/remove/', RemoveFeatureValueView.as_view(), name='value_remove'),
 
     path('tag/list/', TagListView.as_view(), name='tag_list'),

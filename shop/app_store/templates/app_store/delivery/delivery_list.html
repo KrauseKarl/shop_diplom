@@ -11,22 +11,19 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
-                    {% if request.GET.store %}
-                        Заказы магазина <strong>{{ request.GET.store }}</strong>
-                    {% elif request.GET.status %}
-                        {% for status in status_list %}
-                            {% if request.GET.status  == status.0 %}
-                                заказы со статусом <strong>{{ status.1 }}</strong>
-                            {% endif %}
-                        {% endfor %}
+                    {% if request.GET.stores %}
+                    {% for st in user.store.all %}
+                    {% if request.GET.stores == st.title %}
+                    заказы - {{ st }} - {{ orders.count }}
+                    {% endif %}
+                    {% endfor %}
                     {% else %}
-                        все заказы
+                    список всех заказов
                     {% endif %}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="index.html">home
+                        <a href="{% url 'app_store:store_list' %}">Список магазинов
                         </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
@@ -42,220 +39,146 @@
         <div class="wrap">
             <div class="Section-content">
                 <div class="Orders">
-
-                        <form class="Sort" method="get"    action="{% url 'app_store:delivery_list' %}">
-                            <div class="Sort-title"></div>
-                            <div class="Sort-variants" style="margin:10px 0">
+                    <div class="Order Order_anons">
+                    <form class="Order-personal" method="get"  action="{% url 'app_store:delivery_list' %}">
+                        <div class="row">
+                            <div class="form-input">
                                 <select name="stores" id="stores">
-                                    <option value="all" selected>ВСЕ МАГАЗИНЫ</option>
+                                    <option value="">- все магазины - </option>
                                     {% for store in user.store.all %}
-                                    <option value="{{ store.id }}">{{ store.title|upper }}</option>
+                                    {% if store.title == request.GET.stores %}
+                                    <option value="{{ store }}" selected>{{ store.title|upper }}</option>
+                                    {% else %}
+                                    <option value="{{ store }}">{{ store.title|upper }}</option>
+                                    {% endif %}
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="Sort-title"></div>
-                            <div class="Sort-variants" style="margin:10px 0">
+                            <div class="form-label">&#8195;</div>
+                            <div class="form-input">
                                 <select name="status" id="status">
-                                    <option value="all" >--статус заказа--</option>
-                                    <option value="all" selected>ВСЕ ЗАКАЗЫ</option>
+                                    <option value="">- статус заказа -</option>
                                     {% for status in status_list %}
+                                    {% if status.0 == request.GET.status %}
+                                    <option value="{{ status.0 }}" selected>{{ status.1 }}</option>
+                                    {% else %}
                                     <option value="{{ status.0 }}">{{ status.1 }}</option>
+                                    {% endif %}
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="Sort-title"></div>
-                            <div class="Sort-variants" style="margin:10px 0">
-                                <input name="search" placeholder="поиск по номеру заказа">
-                            </div>
-                            <div class="Sort-title"></div>
-                            <div class="Sort-variants" style="margin:10px 0">
-                                <input name="start" id="start" type="date" value="{{ request.GET.start }}"  min="2020-01-01" max="2030-12-31">
-                            </div>
-                            <div class="Sort-title"></div>
-                            <div class="Sort-variants" style="margin:10px 0">
-                                <input name="finish" id="finish" type="date"   value="{{ request.GET.finish }}"  min="2020-01-01" max="2030-12-31">
-                            </div>
-                            <div class="Sort-title"></div>
-                            <div class="Sort-variants" style="margin:10px 0">
-                                <input  id="button_id" class="btn btn_square btn_narrow btn_primary" type="submit" value="найти">
-                            </div>
-                            <div class="Sort-title"></div>
-                            <div class="Sort-variants" style="margin:10px 0">
-                                <a href="{% url 'app_store:delivery_list'%}" class="btn btn_square btn_narrow btn_info">x
-                                </a>
-                            </div>
-                        </form>
-                </div>
-                <div class="Order">
-                      <div class="Orders">
-                        {% if orders and cart_items %}
-                        <!--    TABLE HEAD      -->
-                        <div class="Order Order_anons">
-                            <div class="Order-personal">
-                                <div class="row">
-                                    <div class="row-block ">
-                                        <div class="Order-infoContent-left">номер товара
-                                        </div>
+                            <div class="form-label">&#8195;</div>
+                            <input class="form-input" name="search" value="{{ request.GET.search }}"
+                                   placeholder="поиск по номеру заказа">
+                            <div class="form-label">&#8195;</div>
+                            <input class="form-input btn btn_square  btn_full btn_success"
+                                   id="button_id" type="submit" value="найти">
+                            <div class="form-label">&#8195;</div>
+                            <a class="form-input btn btn_square btn_dark btn_full"
+                               href="{% url 'app_store:delivery_list'%}" >очистить
+                            </a>
+                        </div>
+                    </form>
+                    </div>
+                    <div class="Order Order_anons">
+                    <div class="Order">
+                        <div class="Order-personal">
+                            <div class="row">
+                                <div class="row-block ">
+                                    <div class=" Order-info">номер заказа
                                     </div>
-                                    <div class="row-block Order-list-infoContent-right">
-                                        <span class="Order-list-infoContent-right">статус
-                                        </span>
+                                </div>
+                                <div class="row-block ">
+                                    <div class=" Order-info">магазин
                                     </div>
-                                    <div class="row-block Order-list-infoContent-right">
-                                        <div class="Order-list-infoContent-right">дата
-                                            </div>
+                                </div>
+                                <div class="row-block">
+                                    <span class="Order-info">статус
+                                    </span>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info">оплата
                                     </div>
-                                    <div class="row-block Order-list-infoContent-right">
-                                        <div class="Order-list-infoContent-right">оплата
-                                        </div>
-                                    </div>
-                                    <div class="row-block Order-list-infoContent-right">
-                                        <div class="Order-list-infoContent-right"> сумма
-                                        </div>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info"> сумма
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!--    TABLE HEAD      -->
-                        {% endif %}
-
-                        {% if cart_items %}
-                        <!--    SEARCH INPUT -->
-                        <div class="Order Order_anons">
-                            <div class="Order-personal">
-                                <form class="row" method="get" action=".">
-                                    <div class="row-block">
-                                        <div class="Order-list-infoContent-right">
-                                            <input class="form-input " type="text"
-                                                   name="number" placeholder="введите номер заказа"
-                                                   value="{{ request.GET.number }}">
-                                        </div>
-                                    </div>
-                                    <div class="row-block">
-                                        <div class="Order-list-infoContent-right">
-                                            <button class="btn btn_success btn_square" type="submit">найти
-                                            </button>
-                                            <a class="btn btn_secondary  btn_square"
-                                               href="{% url 'app_store:delivery_list' %}" type="submit">сбросить
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="row-block"></div>
-                                    <div class="row-block"></div>
-                                </form>
-                            </div>
-                        </div>
-                        <!--    SEARCH INPUT -->
-                        {% endif %}
-
-                        <!--    TABLE BODY     -->
+                    </div>
+                </div>
+                    <div class="Order Order_anons">
                         {% for order in orders %}
-                            <div class="Order Order_anons">
-                            <div class="Order-personal">
-
-                                <div class="row">
-                                    <div class="row-block">
-                                        <a class="Order-info" href="{% url 'app_store:delivery_detail' order.id %}">
-                                            <span class="Order-numberOrder">{{ order }}
-                                            </span>
-                                        </a>
-                                          {{ order.created|date:"j M o" }}
+                        <div class="Order-personal">
+                            <div class="row">
+                                <div class="row-block ">
+                                    <a class="Order-info" href="{% url 'app_store:delivery_detail' order.id %}">
+                                        <span class="Order-numberOrder">{{ order }}
+                                        </span>
+                                    </a>
+                                    {{ order.created|date:"j M o" }}<br>
+                                </div>
+                                <div class="row-block ">
+                                    <div class="Order-info" >
+                                        {% for shop in order.store.all %}
+                                    {% if shop in user.store.all %}
+                                    {{ shop|upper }}
+                                    {% endif %}
+                                    {% endfor %}
                                     </div>
-                                    <div class="row-block Order-list-infoContent-right">
-                                        <div class="Order-info Order-list-infoContent-right">
-                                            <div class="Order-list-infoContent-right">
-                                                <span class="{% if  order.status == 'created' %}secondary_label
-                                                         {% elif order.status == 'paid' %}danger_label
-                                                         {% elif order.status == 'is_preparing' %}warning_label
-                                                         {% elif order.status == 'on_the_way' %}info_label
-                                                         {% elif order.status == 'is_ready' %}success_label
-                                                         {% elif order.status == 'completed' %}primary_label
-                                                         {% elif order.status == 'deactivated' %}danger-text
-                                                         {% endif %}">{{ order.get_status_display|upper }}</span>
-                                            </div>
-                                        </div>
+                                </div>
 
-                                    </div>
-
-                                    <div class="row-block Order-list-infoContent-right">
-                                        <div class=" Order-info_pay ">
-                                            <div class=" Order-list-infoContent-right"></div>
-                                        </div>
-                                        <div class="Order-info Order-info_pay">
-                                            <div class="Order-list-infoContent-right ">
-                                                {% if order.is_paid %}
-                                                <span class="Order-price success-text">оплачен</span>
-                                                {% else %}
-                                                <span class="Order-price danger-text">не оплачен</span>
-                                                {% endif %}
-                                            </div>
+                                <div class="row-block ">
+                                    <div class="Order-info">
+                                        <div class="Order-info Order-infoContent-left">
+                                            <span class="{% if  order.status == 'created' %}secondary_label
+                                                     {% elif order.status == 'paid' %}danger_label
+                                                     {% elif order.status == 'is_preparing' %}warning_label
+                                                     {% elif order.status == 'on_the_way' %}info_label
+                                                     {% elif order.status == 'is_ready' %}success_label
+                                                     {% elif order.status == 'completed' %}primary_label
+                                                     {% elif order.status == 'deactivated' %}danger-text
+                                                     {% endif %}">{{ order.get_status_display|upper }}</span>
                                         </div>
                                     </div>
-                                    <div class="row-block Order-list-infoContent-right">
-                                        <div class="Order-info">
-                                            <div class="Order-infoType Order-list-infoContent-right"></div>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Order-infoType"></div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType ">
+                                            {% if order.is_paid %}
+                                            <span class="Order-price success-text">оплачен</span>
+                                            {% else %}
+                                            <span class="Order-price danger-text">не оплачен</span>
+                                            {% endif %}
                                         </div>
-                                        <div class="Order-info">
-                                            <div class="Order-list-infoContent-right">
-                                                <span>$</span>
-                                                <span class="Order-price">{{ order.total_sum|floatformat:"2" }}</span>
-                                            </div>
+                                    </div>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Order-infoType "></div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">
+                                            <span>$</span>
+                                            <span class="Order-price">{{ order.total_sum|floatformat:"2" }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         {% empty %}
-                                 <div class="Order"><h2>Ничего не найдено</h2></div>
-                        {% endfor %}
-                        <!--    TABLE BODY     -->
-
-
-                    </div>
-                    <div class="Cart Cart_order">
-                        {% for item in items_is_paid %}
-                        {% ifchanged %}
-                        <h3>{{ item.item.store }}</h3>
-                        {% for invoice in item.item.store.all_store_invoices.all %}
-                        {% if order == invoice.order %}
-                        <a href="{% url 'app_order:invoices_detail'  invoice.id%}">{{ invoice }}</a>
-                        {% endif %}
-                        {% endfor %}
-                        {% endifchanged %}
-                        <div class="Cart-product">
-                            <div class="Cart-block Cart-block_row">
-                                <div class="Cart-block Cart-block_pict">
-                                    <a class="Cart-pict" href="{% url 'app_item:item_detail' pk=item.item.pk %}">
-                                        <img class="Cart-img" src="{{ item.item.image.first.image.url }}"
-                                             alt="{{ item.item.title }}"/>
-                                    </a>
-                                </div>
-                                <div class="Cart-block Cart-block_info">
-                                    <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.pk %}">{{
-                                        item.item.title }}</a>
-                                    <div class="Cart-desc">{{ item.item.description|truncatechars:50 }}</div>
-                                </div>
-                                <div class="Cart-block Cart-block_row"> {{ item.get_status_display }}</div>
-                                <div class="Cart-block Cart-block_row"></div>
-                                <div class="Cart-block Cart-block_price">
-                                    <div class="Cart-price">{{ item.price }}$
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="Cart-block Cart-block_row">
-                                <div class="Cart-block Cart-block_amount">{{ item.quantity }} шт.</div>
-                                <div class="Cart-price">{{ item.total }}</div>
-                            </div>
-                        </div>
+                       <div class="Order-personal">
+                         <img src="/media/default_images/not_orders.png" width="100%">
+                       </div>
                         {% endfor %}
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
 </div>
-</div>
-  </div>
-
 {% endblock %}

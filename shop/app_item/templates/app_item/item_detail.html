@@ -47,20 +47,17 @@
                     <div class="ProductCard-look">
                         <div class="ProductCard-photo">
                             <img src="{{ item.main_image }}" alt="{{ item.title }}"/>
-
-
-
                         </div>
                         <div class="ProductCard-picts">
-                                <a class="ProductCard-pict ProductCard-pict_ACTIVE"
-                                   href="{{ item.main_image }}">
-                                    <img src="{{ item.main_image }}" alt="{{ img }}"/>
-                                </a>
-                                {% for img in item.other_images %}
-                                <a class="ProductCard-pict" href="{{ img.image.url }}">
-                                    <img src="{{ img.image.url }}" alt="{{ img }}"/>
-                                </a>
-                                {% endfor %}
+                            <a class="ProductCard-pict ProductCard-pict_ACTIVE"
+                               href="{{ item.main_image }}">
+                                <img src="{{ item.main_image }}" alt="{{ img }}"/>
+                            </a>
+                            {% for img in item.other_images %}
+                            <a class="ProductCard-pict" href="{{ img.image.url }}">
+                                <img src="{{ img.image.url }}" alt="{{ img }}"/>
+                            </a>
+                            {% endfor %}
                         </div>
                     </div>
 

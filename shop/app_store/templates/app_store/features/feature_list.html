@@ -18,12 +18,10 @@
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-                        <!--  <a href="index.html">home</a>-->
+                        <a href="{% url 'app_store:category_list'  %}">Список категорий</a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
+                        <span>{{ category }}</span>
                     </li>
                 </ul>
                 {% endblock %}
@@ -50,52 +48,38 @@
                 </div>
                 <div class="Section-columnSection">
                     <header class="Section-header">
-                        <strong class="Section-title">Характеристики категории
+                        <strong class="Section-title">
+                           {% if category.sub_categories.all %}
+                            Подкатегории
+                            {% else %}
+                            Характеристики категории
+                            {% endif %}
                         </strong>
                     </header>
                     <div class="Section-columnContent">
-                         <div> {% for feature in features %}
+                        {% if category.sub_categories.all %}
+                        <div> {% for sub_category in category.sub_categories.all %}
+                            <div class="primary-text" style="margin-bottom: 15px">
+                                <a href="{% url 'app_store:feature_list' pk=sub_category.pk %}">
+                                    {{ sub_category.title| lower }}</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div> {% for feature in features %}
                             <div class="primary-text" style="margin-bottom: 15px">
                                 <a href="#{{ feature }}">{{ feature.title| lower }}</a>
-                            </div> {% endfor %}
+                            </div>
+                            {% endfor %}
                         </div>
+                        {% endif %}
                     </div>
                 </div>
-<!--                <div class="Section-columnSection">-->
-<!--                    <header class="Section-header">-->
-<!--                        <strong class="Section-title">Добавить характеристику-->
-<!--                        </strong>-->
-<!--                    </header>-->
-<!--                    <div class="Section-columnContent">-->
-<!--                        <form class="form" action="#" method="post">-->
-<!--                            {% csrf_token %}-->
-<!--                            {% if form.errors.title %}-->
-<!--                                <div class="form-error">-->
-<!--                                    {{ form.errors.title }}-->
-<!--                                </div>-->
-<!--                                {% endif %}-->
-<!--                            <div class="form-group">-->
-<!--                                <label class="form-label" for="value">новая характеристика-->
-<!--                                </label>-->
-<!--                                <input class="form-input"  name="category" type="hidden" value="{{ category.id }}"/>-->
-<!--                                <input class="form-input" id="value" name="title"-->
-<!--                                       placeholder="Введите название" value="{{ request.POST.value }}"/>-->
-<!--                            </div>-->
-
-<!--                            <div class="form-group">-->
-<!--                                <div class="buttons">-->
-<!--                                    <button class="btn btn_square btn_dark btn_narrow" type="submit">-->
-<!--                                        Создать характеристику-->
-<!--                                    </button>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </form>-->
-<!--                    </div>-->
-<!--                </div>-->
             </div>
 
             <!--    SORT BY     -->
             <div class="Section-content">
+                {% if not category.sub_categories.all %}
                 <div class="Sort">
                     <div class="Sort-title">Добавить значение характеристики</div>
                 </div>
@@ -106,7 +90,7 @@
                             <div class="row-block">
                                 <div class="Order-title">
                                     <div class="Order-numberOrder">
-                                        <a href="{% url 'app_store:feature_create' slug=category.slug %}"
+                                        <a href="{% url 'app_store:feature_create' pk=category.pk %}"
                                            class="btn btn_success btn_square">+ Добавить характеристику
                                         </a>
                                     </div>
@@ -130,7 +114,7 @@
                                         </li>
                                         {% endfor %}
                                         <li class="Order-numberOrder" style="margin:0 0 10px 20px;">
-                                            <a href="{% url 'app_store:feature_value_create' feature_slug=feature.slug %}"
+                                            <a href="{% url 'app_store:feature_value_create' pk=feature.pk %}"
                                                class="btn btn_primary btn_square btn_sm">
                                                 + добавить новое значение характеристики
                                             </a>
@@ -152,6 +136,7 @@
                 <!--       PAGINATION         -->
 
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>

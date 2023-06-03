@@ -10,7 +10,6 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
-
                     {% if not message %}
                     Каталог товаров магазина <b>{{ store.title }}</b>
                     {% else %}
@@ -31,7 +30,7 @@
             </div>
         </div>
     </div>
-    {% include 'message.html' %}
+{% include 'message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
@@ -39,57 +38,60 @@
                     <header class="Section-header">
                         <strong class="Section-title">{{ store.title }}</strong>
                     </header>
-                    <div class="Section-columnContent">
-
-                        <!--    TITLE INPUT -->
-                        <div class="form">
-                            <form method="get" action="{% url 'app_store:store_detail' pk=store.pk %}">
-                                <div class="form-group">
-                                    <input class="form-input form-input_full" name="q" type="search"
-                                           placeholder="название товара"
-                                           value="{% if request.GET.q %} {{ request.GET.q }}{% endif %}"/>
-                                </div>
-                                <div class="Section-columnSection">
-                                <div class="form-group">
-                                    <div class="buttons">
-                                        <button class="btn btn_square btn_dark btn_narrow" type="submit">Применить
-                                            фильтр
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            </form>
+                      <div class="Section-columnContent">
+                            <div class="buttons">
+                                <a href="{% url 'app_store:add_item' store.pk %}"
+                                   class="btn btn_square btn_primary btn_narrow btn_full">+ Добавить товар
+                                </a></div>
                         </div>
-                        <!--    TITLE INPUT -->
-
+                    <div class="Section-columnContent">
                         <!-- ITEM CATEGORY FILTER  -->
-
                         <div class="Section-columnSection">
                             <header class="Section-header">
-                            <strong class="Section-title">фильтр
-                            </strong>
-                        </header>
-
-                        <div class="Section-columnContent">
-                            <div class="buttons">
-                                <a href="{% url 'app_store:store_detail' pk=store.pk  %}"
-                                   class="btn btn_default btn_square btn_full">все товары
-                                </a>
-                                {% for category in categories %}
-                                <a href="{% url 'app_store:category_item' pk=store.pk slug=category.slug %}"
-                                   class="btn btn_default btn_square btn_full">{{ category }}
-                                </a>
-                                {% endfor %}
+                                <strong class="Section-title">фильтр
+                                </strong>
+                            </header>
+                            <!--    TITLE INPUT -->
+                            <div class="form">
+                                <form method="get" action="{% url 'app_store:store_detail' pk=store.pk %}">
+                                    <div class="form-group">
+                                        <input class="form-input form-input_full" name="q" type="search"
+                                               placeholder="название товара"
+                                               value="{% if request.GET.q %} {{ request.GET.q }}{% endif %}"/>
+                                    </div>
+                                    <div class="Section-columnSection">
+                                        <div class="form-group">
+                                            <div class="buttons">
+                                                <button class="btn btn_square btn_dark btn_narrow btn_full"
+                                                        type="submit">
+                                                    Поиск товара
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <!--    TITLE INPUT -->
+                            <div class="Section-columnContent">
+                                <div class="buttons">
+                                    <a href="{% url 'app_store:store_detail' pk=store.pk  %}"
+                                       class="btn btn_default btn_square btn_full">все товары
+                                    </a>
+                                    {% for category in categories %}
+                                    <a href="{% url 'app_store:category_item' pk=store.pk slug=category.slug %}"
+                                       class="btn btn_default btn_square btn_full">{{ category }}
+                                    </a>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
-                    </div>
                     <!-- ITEM CATEGORY FILTER  -->
                         <!--    FORM    -->
                         <div class="form">
                             <form>
                                 <div class="form-group">
-                                    <div class="ProductCard-title">{{ store.title }}</div>
+                                    <div class="ProductCard-title">{{ store.title }}
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="Profile-avatar">
@@ -105,110 +107,95 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label>минимальная сумма для скидки</label>
+                                    <label>минимальная сумма для скидки
+                                    </label>
                                     <div class="Card-content Card-title Card-price Cart-total-order">
                                         ${{ store.min_for_discount|floatformat:"2" }}
                                     </div>
                                 </div>
 
                                 <div class="form-group">
-                                    <a class="btn" href="{% url 'app_store:store_edit' store.pk %}">редактировать</a>
+                                    <a class="btn btn_dark btn_square btn_full"
+                                       href="{% url 'app_store:store_edit' store.pk %}">редактировать
+                                    </a>
                                 </div>
                             </form>
                         </div>
                         <!--    FORM    -->
                     </div>
-
                     <div class="Section-columnSection">
                         <header class="Section-header">
-                            <strong class="Section-title">Статистика</strong>
+                            <strong class="Section-title">Статистика
+                            </strong>
                         </header>
                         <div class="form-group">
                              <div class="buttons">
-                                <ul>
-                                    <li>
-                                        <a href="{% url 'app_store:delivery_list'  %}?store={{ store.title }}"
-                                           class="btn btn_square btn_dark btn_narrow btn_full">Заказы "{{ store.title }}"</a>
-                                    </li>
-                                </ul>
+                                <a href="{% url 'app_store:delivery_list' %}?stores={{ store.title }}"
+                                   class="btn btn_square btn_dark btn_narrow  btn_full ">
+                                    Заказы "{{ store.title }}"
+                                </a>
                             </div>
                         </div>
                         <div class="form-group">
-                            <span class="toggle-text">Всего позиций товаров</span>
+                            <span class="toggle-text">Всего позиций товаров
+                            </span>
                             <div class=" Card-content Card-title Card-price Cart-total-order">
                                 {{store.items.count}}
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <span class="toggle-text">Продано на сумму</span>
+                            <span class="toggle-text">Продано на сумму
+                            </span>
                             <div class="Card-content Card-title Card-price Cart-total-order">
+                                {% if total_profit > 0 %}
                                 ${{ total_profit|floatformat:"2" }}
+                                {% else %}
+                                $0,00
+                                {% endif %}
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="Section-columnSection">
-                        <header class="Section-header">
-                            <strong class="Section-title">Отчет</strong>
-                        </header>
-                        <div class="form-group">
-                            <input id="start" type="date" name="start">
-                            <input id="finish" type="date" name="finish">
-                        </div>
-                        <div class="form-group">
-                            <button class="btn btn_square btn_dark btn_narrow btn_full" type="submit">Отчет</button>
                         </div>
                     </div>
                     <!--     Загрузить        -->
                     <div class="Section-columnSection">
                         <header class="Section-header">
-                            <strong class="Section-title">Товары </strong>
+                            <strong class="Section-title">Товары
+                            </strong>
                         </header>
+
                         <div class="Section-columnContent">
                             <div class="buttons">
-                                <ul>
-                                    <li>
-                                        <a href="{% url 'app_store:add_item' store.pk %}"
-                                           class="btn btn_square btn_dark btn_narrow btn_full">+ Добавить товар</a>
-                                    </li>
-                                    <li>
-                                        <a href="{% url 'app_store:export_data' store.pk %}"
-                                           class="btn btn_square btn_dark btn_narrow btn_full"> Выгрузить CVS</a>
-                                    </li>
-                                </ul>
+
                             </div>
                             <div class="buttons">
-                                <ul>
-                                    <li>
-                                        <form id='import_cvs_form' method="post"
-                                              action="{% url 'app_store:import_data' store.pk %}"
-                                              enctype="multipart/form-data">
-                                            {% csrf_token %}
-                                            <input class="form-input" type="file" name="file" required>
-                                        </form>
-                                    </li>
-                                    <li>
-                                        <button class="btn btn_square btn_dark btn_narrow btn_full"
-                                                form="import_cvs_form" type="submit">
-                                            Загрузить CVS
-                                        </button>
-                                    </li>
-                                </ul>
+                                <a href="{% url 'app_store:export_data' store.pk %}"
+                                   class="btn btn_square btn_dark btn_narrow btn_full"> Выгрузить CVS
+                                </a>
                             </div>
-
+                        </div>
+                        <div class="Section-columnContent">
+                            <div class="buttons">
+                                <form id='import_cvs_form' method="post"
+                                      action="{% url 'app_store:import_data' store.pk %}"
+                                      enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input class="form-input" type="file" name="file" required>
+                                </form>
+                                <button class="btn btn_square btn_dark btn_narrow btn_full"
+                                        form="import_cvs_form" type="submit">
+                                    Загрузить CVS
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <!--     Загрузить   END     -->
-
-
                 </div>
             </div>
             <div class="Section-content">
-
                 <!--    SORT ITEMS -->
                 <div class="Sort">
-                    <div class="Sort-title">Сортировать по:</div>
+                    <div class="Sort-title">Сортировать по:
+                    </div>
                     <div class="Sort-variants">
                         <a class="Sort-sortBy" href="{% url 'app_store:store_detail'  pk=store.pk %}">
                             <span class="btn btn_default btn_square btn_sm">все
@@ -238,11 +225,6 @@
                     </div>
                 </div>
                 <!--    SORT ITEMS -->
-
-                <!--    PAGINATION -->
-                <div>{% include "pagination.html" %}<br><br></div>
-                <!--    PAGINATION -->
-
                 <!--    ITEMS LIST -->
                 <div class="Orders">
                     {% for item in object_list %}
@@ -253,7 +235,8 @@
                                 <div class="row-block">
                                     <div class="Order-info">
                                         <div class="Order-infoType">
-                                            <span class="Order-infoType">{{ item.id }}</span>
+                                            <span class="Order-infoType">{{ item.id }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -263,9 +246,7 @@
                                 <div class="row-block">
                                     <div class="Order-info">
                                         <div class="Order-infoType">
-                                            <img class=""
-                                                 src="{{ item.main_image }}"
-                                                width="50" >
+                                            <img src="{{ item.main_image }}" width="80" >
                                         </div>
                                     </div>
                                 </div>
@@ -295,17 +276,6 @@
                                         <div class="Card-icon-view-and-sell">{{ item.stock }} шт.
                                         </div>
                                     </div>
-                                    {% if item.stock < 6 %}
-                                    <div class="Order-info">
-                                        <div class="Card-icon-view-and-sell danger-text">остатки
-                                        </div>
-                                    </div>
-                                    {% elif item.stock < 17 %}
-                                    <div class="Order-info">
-                                        <div class="Card-icon-view-and-sell warning-text">лимит
-                                        </div>
-                                    </div>
-                                    {% endif %}
                                 </div>
                                 <!--    ITEM QUANTITY  -->
 
@@ -318,7 +288,7 @@
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoContent">
                                             <div class="Card-icon-view-and-sell">
-                                                <a class="btn btn_success btn_square btn_sm"
+                                                <a class=""
                                                    href="{% url 'app_store:edit_item' item.pk %}">
                                                     <img src="/assets/img/icons/edit.png" width="32">
                                                 </a>
@@ -333,7 +303,7 @@
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoContent">
                                             <div class="Card-icon-view-and-sell">
-                                                <a href="#itemDeleteModal" class="btn btn_danger btn_square btn_sm">
+                                                <a href="#itemDeleteModal" class="">
                                                     <img src="/assets/img/icons/card/delete.svg">
                                                 </a>
                                             </div>
@@ -371,7 +341,9 @@
                         </div>
                     </div>
                     {% empty %}
-                             <div class="Order"><h2>Ничего не найдено</h2></div>
+                             <div class="Order">
+                                 <img src="/media/default_images/not_items.png" width="100%">
+                             </div>
                     {% endfor %}
 
                 </div>

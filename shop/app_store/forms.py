@@ -25,8 +25,17 @@ class UpdateStoreForm(forms.ModelForm):
         fields = ('title', 'logo', 'discount', 'min_for_discount', 'is_active', 'description', 'is_active', 'owner')
 
 
+class CustomMMCF(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, tag):
+        return f"{tag.title}"
+
+
 class AddItemForm(forms.ModelForm):
     """Форма для создания товара."""
+    tag = CustomMMCF(
+        queryset=Tag.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
 
     class Meta:
         model = Item
@@ -101,6 +110,7 @@ class UpdateItemImageForm(forms.ModelForm):
             raise ValidationError('Размер файла не должен превышать 2 МБ')
         return img
 
+
 TagFormSet = modelformset_factory(
     Tag,
     fields=("title",),
@@ -124,10 +134,12 @@ class CreateTagForm(forms.ModelForm):
         model = Tag
         fields = ('title',)
 
-
-class CustomMMCF(forms.ModelMultipleChoiceField):
-    def label_from_instance(self, tag):
-        return f"{tag.title}"
+    def clean_tag(self):
+        """Функция валидирует сущетвование тег в базе данных"""
+        tag = self.cleaned_data.get('category').lower()
+        if Tag.objects.get(title=tag).exist():
+            raise ValidationError('Такая категория уже существует')
+        return tag
 
 
 class AddTagForm(forms.ModelForm):
@@ -154,6 +166,13 @@ class CreateCategoryForm(forms.ModelForm):
         model = Category
         fields = ('parent_category', 'title', 'description',)
 
+    def clean_category(self):
+        """Функция валидирует сущетвование категории в базе данных"""
+        category = self.cleaned_data.get('category').lower()
+        if Category.objects.get(title=category).exist():
+            raise ValidationError('Такая категория уже существует')
+        return category
+
 
 class CreateFeatureForm(forms.ModelForm):
     """Форма для создания характеристики."""
@@ -163,13 +182,11 @@ class CreateFeatureForm(forms.ModelForm):
         fields = ('title', )
 
     def clean_feature(self):
-        """Функция валидирует размер сущетвование характеристики в базе данных"""
-
+        """Функция валидирует сущетвование характеристики в базе данных"""
         feature = self.cleaned_data.get('title').lower()
         if Feature.objects.get(title=feature).exist():
             raise ValidationError('Такая характеристика уже существует')
         return feature
-
 
 
 class CreateValueForm(forms.ModelForm):
@@ -178,6 +195,14 @@ class CreateValueForm(forms.ModelForm):
     class Meta:
         model = FeatureValue
         fields = ('value',)
+
+    def clean_Value(self):
+        """Функция валидирует сущетвование значене характеристики в базе данных"""
+
+        value = self.cleaned_data.get('value').lower()
+        if FeatureValue.objects.get(title=value).exist():
+            raise ValidationError('Такое значение  уже существует')
+        return value
 
 
 class ImportDataFromCVS(forms.Form):

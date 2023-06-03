@@ -11,11 +11,14 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
                     Комментарии
                 </h1>
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:store_list' %}">Список магазинов
+                        </a>
+                    </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>список комментариев</span>
                     </li>

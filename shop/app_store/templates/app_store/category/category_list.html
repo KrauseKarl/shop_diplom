@@ -12,46 +12,40 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-
                 <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
                     {% if request.GET.sort_by_letter %}
                     Все категории на букву <strong>"{{ request.GET.sort_by_letter }}"</strong>
                     {% else %}
                         Категории
                     {% endif %}
                 </h1>
-
                 {% block breadcrumbs %}
 
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-
-                        <a href="{% url 'main_page' %}">home</a>
-                        {% if title %} &rsaquo; {{ title }}{% endif %}
-
-
-                        <!--  <a href="index.html">home</a>-->
+                        <a href="{{ prev }}">создать товар </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>Catalog</span>
+                        <span>Список категорий</span>
                     </li>
                 </ul>
                 {% endblock %}
             </div>
         </div>
     </div>
+{% include 'message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
                 <div class="Section-columnSection">
                     <header class="Section-header">
-                        <strong class="Section-title">Добавить категорию</strong>
+                        <strong class="Section-title">Добавить категорию
+                        </strong>
                     </header>
 
                     <div class="Section-columnContent">
                         <!--    FORM    -->
-                        <form class="form" action="{% url 'app_store:create_category' %}" method="post">
+                        <form class="form" action="{% url 'app_store:create_category' pk=store.pk %}" method="post">
                            {% csrf_token %}
                             <div class="form-group">
                                 <label class="form-label" for="parent_category">Родительская категория</label>
@@ -68,7 +62,8 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="title">Название категории</label>
+                                <label class="form-label" for="title">Название категории
+                                </label>
                                 {% if form.errors.title %}
                                 <div class="form-error" >
                                     {{ form.errors.title }}
@@ -78,15 +73,21 @@
                                        placeholder="Название" value="{{ request.POST.title}}"/>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="description">Описание категории</label>
-
+                                <label class="form-label" for="description">Описание категории
+                                </label>
                                 <textarea class="form-input form-input_full" id="description" name="description"
                                        placeholder="Описание категории" >{{ request.POST.description }}</textarea>
+                                 {% if form.errors.description %}
+                                <div class="form-error" >
+                                    {{ form.errors.description }}
+                                </div>
+                                {% endif %}
                             </div>
 
                             <div class="form-group">
                                 <div class="buttons">
-                                    <button class="btn btn_square btn_dark btn_narrow" type="submit">Создать категорию
+                                    <button class="btn btn_square btn_primary btn_narrow btn_full" type="submit">
+                                        Создать категорию
                                     </button>
                                 </div>
                             </div>
@@ -105,7 +106,7 @@
                     <div class="Sort-title">Найти по алфавиту:</div>
                     <div class="Sort-variants">
                          <a class="Pagination-element Tag-alphabet_letter"
-                           href="{% url 'app_store:category_list' %}">
+                           href="{% url 'app_store:category_list' pk=store.pk %}">
                             все
                         </a>
                         {% for letter in alphabet %}
@@ -118,9 +119,6 @@
                 </div>
                 <!--    SORT BY END    -->
 
-                <!--       PAGINATION         -->
-                <div>{% include "pagination.html" %}<br><br></div>
-                <!--       PAGINATION         -->
                 <div class="Orders">
                     {% for cat in object_list %}
                     <div class="Order Order_anons">
@@ -129,51 +127,43 @@
                                 <!--  ORDER'S TITLE & DATE -->
                                 <div class="row-block">
                                     <div class="Order-title">
-                                        <a href="{% url 'app_store:feature_list' slug=cat.slug %}" class="Order-numberOrder">{{ cat.title }}</a>
+                                        <a href="{% url 'app_store:feature_list' pk=cat.pk %}"
+                                           class="Order-numberOrder">{{ cat.title }}
+                                        </a>
                                     </div>
-                                    {% if cat.parent_category %}
-                                    <div class="Order-info Order-info_status">
-                                        <ul>
-                                            родительская категория:
-                                            <li>
-                                                <div class="Order-infoContent"> {{ cat.parent_category }}</div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    {% endif %}
-                                    {% if cat.sub_categories.all %}
-                                    <div class="Order-info Order-info_status">
-                                        <ul>
-                                            подкатегория:
-                                            {% for sub_category in cat.sub_categories.all %}
-                                            <li>
-                                                <div class="Order-infoContent">{{ sub_category }}
-                                                </div>
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                    {% endif %}
+
                                 </div>
                                 <div class="row-block">
-                                     <div class="Order-info">
-                                        <div class="Order-infoType">описание:</div>
-                                         <div class="Order-infoContent">
-                                            <span class="Order-price">
-                                            {% if cat.description %}
-                                                {{ cat.description }}
-                                            {% else %}
-                                                  {% lorem 10 w random %}
-                                            {% endif %}
-                                            </span>
-                                         </div>
+                                    <div class="Order-info">
+                                        {% if cat.parent_category %}
+                                        <div class="Order-info Order-info_status">
+                                            <ul>
+                                                родительская категория:
+                                                <li class="Order-infoContent">{{ cat.parent_category }}
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                        {% if cat.sub_categories.all %}
+                                        <div class="Order-info Order-info_status">
+                                            <ul>
+                                                подкатегория:
+                                                {% for sub_category in cat.sub_categories.all %}
+                                                <li>
+                                                    <a href="{% url 'app_store:feature_list' pk=sub_category.pk %}"
+                                                       class="Order-infoContent">{{ sub_category }}
+                                                    </a>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     {% empty %}
-
                     {% if form.errors.title %}
                         <div class="Order Order_anons">
                             <div class="form-error">ОШИБКА!
@@ -181,7 +171,10 @@
                             </div>
                         </div>
                     {% else %}
-                                 <div class="Order"><h2>Ничего не найдено</h2></div>
+                    <div class="Order">
+                        <h2>Ничего не найдено
+                        </h2>
+                    </div>
                     {% endif %}
                     {% endfor %}
                 </div>

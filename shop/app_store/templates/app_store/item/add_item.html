@@ -10,8 +10,7 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
-                    Добавить товар {{ store }}
+                    Добавить товар
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
@@ -44,25 +43,32 @@
                                  <!-- ADD IMAGE FORM BEGIN -->
                                 <div  class="form-group">
                                       <div class="form-group">
-                                    <div class="image-form Profile-avatar Profile-avatar_noimg">
-                                        <div class="Profile-img" >
-                                            <img src="/assets/img/default/default_item.png" alt="#.png"/>
-                                        </div>
-                                        <label class="Profile-fileLabel" for="image">Выберите изображение товара</label>
-                                        <input class="Profile-file form-input" id="image" multiple  name="image" type="file"
-                                               data-validate="onlyImgAvatar"/>
-                                    </div>
-                                </div>
-
+                                          <div class="image-form Profile-avatar Profile-avatar_noimg">
+                                              <div class="Profile-img">
+                                                  <img src="/assets/img/default/default_item.png" alt="изображение"/>
+                                              </div>
+                                              <label class="Profile-fileLabel" for="image">Выберите изображение
+                                                  товара</label>
+                                              <input class="Profile-file form-input" id="image" multiple name="image"
+                                                     type="file"
+                                                     data-validate="onlyImgAvatar"/>
+                                              {% if form.errors.image %}
+                                              <div class="form-error">{{ form.errors.image }}
+                                              </div>
+                                              {% endif %}
+                                          </div>
+                                      </div>
                                 <!--    ADD IMAGE FORM END      -->
-
-
 
 
                                 <div class="form-group">
                                     <label class="form-label" for="description">описание</label>
                                     <textarea class="form-input" id="description" name="description"
                                               placeholder="Описание"></textarea>
+                                    {% if form.errors.description %}
+                                    <div class="form-error">{{ form.errors.description }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <div class="form-group">
                                     <div class="Profile-btn">
@@ -73,16 +79,20 @@
                         </div>
                             <div class="row-block">
                                 <div class="form-group">
-                                     <label class="form-label" for="title">категория</label>
+                                    <label class="form-label" for="title">категория</label>
                                     <select id="category" name="category" class="form-input">
                                         <option disabled>Выберите категорию</option>
                                         {% for category in categories %}
-                                        <option value="{{category.id}}">{{category.title}}</option>
+                                        <option value="{{ category.id }}">{{category.title}}</option>
                                         {% endfor %}
                                     </select>
+                                    {% if form.errors.category %}
+                                    <div class="form-error">{{ form.errors.category }}
+                                    </div>
+                                    {% endif %}
                                     <div style="margin-top:10px">
-                                        <a href="{% url 'app_store:category_list' %}"
-                                           class="btn btn_square btn_dark btn_narrow btn_sm">
+                                        <a href="{% url 'app_store:category_list' pk=store.pk %}"
+                                           class="btn btn_square btn_primary btn_narrow btn_sm">
                                             + создать категорию
                                         </a>
                                     </div>
@@ -91,15 +101,27 @@
                                 <div class="form-group">
                                     <label class="form-label" for="title">название</label>
                                     <input class="form-input" id="title" name="title" type="text"/>
+                                    {% if form.errors.title %}
+                                    <div class="form-error">{{ form.errors.title }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="stock">количество</label>
                                     <input class="form-input" id="stock" name="stock" type="number" value="0"/>
+                                    {% if form.errors.stock %}
+                                    <div class="form-error">{{ form.errors.stock }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="price">цена</label>
                                     <input class="form-input" id="price" name="price" type="number"
                                            value="1" aria-valuemin="1"/>
+                                    {% if form.errors.price %}
+                                    <div class="form-error">{{ form.errors.price }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <div class="form-group">
                                     <select id="color" name="color" class="form-input">
@@ -111,36 +133,52 @@
                                         </option>
                                         {% endfor %}
                                     </select>
+                                    {% if form.errors.color %}
+                                    <div class="form-error">{{ form.errors.color }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 <div class="form-group">
                                     <input type="checkbox" name="is_available" id="is_available" checked="checked"/>
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text">доступно для продажи</span>
+                                    {% if form.errors.is_available %}
+                                    <div class="form-error">{{ form.errors.is_available }}
+                                    </div>
+                                    {% endif %}
                                 </div>
 
                                 <div class="form-group">
                                     <input type="checkbox" name="limited_edition" id='limited_edition'/>
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text">ограниченное количество</span>
+                                    {% if form.errors.limited_edition %}
+                                    <div class="form-error">{{ form.errors.limited_edition }}
+                                    </div>
+                                    {% endif %}
                                 </div>
 
                                 <div id="form-container" class="form-group">
                                     {{ tag_formset.management_form }}
-                                        {% for form in tag_formset %}
-                                        <select name="tag" id="tag" class="bird-form form-input">
-                                            <option value="" selected>Выберите тег</option>
-                                            {% for tag in tags %}
-                                            <option value="{{tag.id}}">{{tag}}</option>
-                                            {% endfor %}
-                                        </select>
+                                    {% for form in tag_formset %}
+                                    <select name="tag" id="tag" class="bird-form form-input">
+                                        <option value="" selected>Выберите тег</option>
+                                        {% for tag in tags %}
+                                        <option value="{{tag.id}}">{{tag}}</option>
                                         {% endfor %}
+                                    </select>
+                                    {% endfor %}
+                                    {% if form.errors.tag %}
+                                    <div class="form-error">{{ form.errors.tag }}
+                                    </div>
+                                    {% endif %}
                                     <button id="add-form" class="btn btn_square btn_primary btn_narrow btn_sm"
                                             style="margin-top:10px;"
                                             type="button">+ добавить тег
                                     </button>
-
-                                    <a href="{% url 'app_store:tag_list' %}"   class="btn btn_square btn_dark btn_narrow btn_sm"
-                                        style="margin-top:10px;"  type="button">
+                                    <a href="{% url 'app_store:tag_list' %}"
+                                       class="btn btn_square btn_dark btn_narrow btn_sm"
+                                       style="margin-top:10px;" type="button">
                                         создать тег
                                     </a>
                                 </div>

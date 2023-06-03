@@ -2,31 +2,29 @@
     <div class="NavigateProfile">
         <ul class="menu menu_vt">
             <li class="menu-item">
-                <a class="menu-link" href="{% url 'app_user:account' user.id %}">Личный кабинет</a>
-            </li>
-            <li class="menu-item menu-item">
-                <a class="menu-link" href="{% url 'app_user:profile_edit' user.id %}">Редактировать профиль</a>
-            </li>
-            <li class="menu-item">
-                <a class="menu-link" href="{% url 'app_store:create_store'  %}">
-                   + Создать магазин</a>
-            </li>
-             <li class="menu-item">
-                <div class="menu-link">Мои магазины:</div>
-            </li>
-            {% for store in user.store.all %}
-            <li class="menu-item"
-                 style="{% if request.GET.store == store.title %} Order-side-bar-chosen-store {% endif %}">
-                <a class=" Order-side-bar-store"
-                   href="{% url 'app_store:store_detail'  store.pk %}">
-                    <div>
-                        <img src="{{store.logo.url}}" width="25" height="25" style="border-radius: 4px; margin-right:10px">
-                        {{ store.title }}
-                    </div>
+                <a class="menu-link" href="{% url 'app_user:account' user.id %}">Личный кабинет
                 </a>
             </li>
-            {% endfor %}
-
+            <li class="menu-item menu-item">
+                <a class="menu-link" href="{% url 'app_user:profile_edit' user.id %}">Редактировать профиль
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:create_store'  %}">+ Создать магазин
+                </a>
+            </li>
+             <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:store_list'  %}">Мои магазины
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:delivery_list'  %}">Заказы
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:comment_list'  %}">Отзывы
+                </a>
+            </li>
         </ul>
     </div>
 </div>

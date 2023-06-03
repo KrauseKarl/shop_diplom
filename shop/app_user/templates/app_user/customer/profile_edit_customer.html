@@ -27,18 +27,17 @@
             </div>
         </div>
     </div>
+    {% include 'message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
                 {% include "app_user/customer/sidebar_customer.html" %}
             </div>
             <div class="Section-content">
-                <div>{% include 'message.html' %}</div>
                 <div class="Profile">
                     <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
-
                             <div class="row-block">
                                 <div class="form-group">
                                     <label class="form-label" for="avatar">Аватар</label>
@@ -49,13 +48,11 @@
                                             {% endif %}
                                         </div>
                                         {% if form.errors.avatar %}
-                                        <div class="form-error">{{ form.errors.avatar }}
-                                        </div>
+                                        <div class="form-error">{{ form.errors.avatar }}</div>
                                         {% endif %}
                                         <label class="Profile-fileLabel" for="avatar">Выберите аватар</label>
                                         <input class="Profile-file form-input" id="avatar" name="avatar"
                                                data-validate="onlyImgAvatar" type="file"/>
-
                                     </div>
 
                                 </div>
