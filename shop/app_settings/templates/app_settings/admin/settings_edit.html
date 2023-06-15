@@ -1,0 +1,193 @@
+{% extends 'app_settings\admin\admin_index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Редактировать настройки
+{% endblock %}
+
+{% block content %}
+
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">{{ site_settings.site_settings.items }}
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                   <li class="breadcrumbs-item">
+                        <a href="{% url 'main_page' %}">главная страница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>настройки сайиата
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include "app_settings/admin/sidebar_admin.html" %}
+            </div>
+            <div class="Section-content">
+                <div class="Profile">
+                    <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="row-block">
+                                <div class="form-group">
+                                    <label class="form-label" for="title"> {{ form.title.label }}</label>
+                                    <input class="form-input" id="title" name="title"
+                                           value="{{ site_settings.title }}"/>
+                                    {% if form.errors.title %}
+                                    <div class="form-error">{{ form.errors.title }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="url"> {{ form.url.label }}</label>
+                                    <input class="form-input" id="url" type="url" name="url" value="{{ site_settings.url }}"/>
+                                     {% if form.errors.url %}
+                                    <div class="form-error">{{ form.errors.url }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="support_email"> {{ form.support_email.label }}
+                                    </label>
+                                    <input class="form-input" id="support_email" name="support_email" type="email"
+                                           value="{{ site_settings.support_email }}"/>
+                                     {% if form.errors.support_email %}
+                                    <div class="form-error">{{ form.errors.support_email }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="phone"> {{ form.phone.label }}</label>
+                                    <input class="form-input" id="phone" name="phone" type="text"
+                                           value="{{ site_settings.phone }}"/>
+                                     {% if form.errors.phone %}
+                                    <div class="form-error">{{ form.errors.phone }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="address"> {{ form.address.label }}</label>
+                                    <input class="form-input" id="address" name="address" type="text"
+                                           value="{{ site_settings.address }}"/>
+                                     {% if form.errors.address %}
+                                    <div class="form-error">{{ form.errors.address }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                </div>
+                            <div class="row-block">
+                                <div class="form-group">
+                                    <label class="form-label" for="express_delivery_price">
+                                        {{ form.express_delivery_price.label }}
+                                    </label>
+                                    <input class="form-input" id="express_delivery_price" name="express_delivery_price"
+                                           value="{{ site_settings.express_delivery_price }}" type="number" min="0"/>
+                                       {% if form.errors.express_delivery_price %}
+                                    <div class="form-error">{{ form.errors.express_delivery_price }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="min_free_delivery"> {{ form.min_free_delivery.label }}
+                                    </label>
+                                    <input class="form-input" id="min_free_delivery" name="min_free_delivery"
+                                           value="{{ site_settings.min_free_delivery }}" type="number" min="0"/>
+                                       {% if form.errors.min_free_delivery %}
+                                    <div class="form-error">{{ form.errors.min_free_delivery }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="delivery_fees"> {{ form.delivery_fees.label }}
+                                    </label>
+                                    <input class="form-input" id="delivery_fees" name="delivery_fees"
+                                           value="{{ site_settings.delivery_fees }}" type="number" min="0"/>
+                                    {% if form.errors.delivery_fees %}
+                                    <div class="form-error">{{ form.errors.delivery_fees }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                 <div class="form-group">
+                                    <label class="form-label" > {{ form.type_of_delivery.label }}
+                                    </label>
+                                     {% for delivery in site_settings.DELIVERY %}
+                                     <label class="form-label" > {{ delivery.1 }}
+                                    </label>
+                                     {% endfor %}
+
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"> {{ form.type_of_payment.label }}
+                                    </label>
+                                    {% for payment in site_settings.PAY_TYPE %}
+                                    <label class="form-label" >{{ payment.1 }}</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="row-block">
+
+                                <div class="form-group">
+                                    <label class="form-label" for="skype"> {{ form.skype.label }}</label>
+                                    <input class="form-input" id="skype" name="skype"  value="{{ site_settings.skype }}"/>
+                                     {% if form.errors.skype %}
+                                    <div class="form-error">{{ form.errors.skype }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="facebook"> {{ form.facebook.label }}</label>
+                                    <input class="form-input" id="facebook" name="facebook"  value="{{ site_settings.facebook }}"/>
+                                     {% if form.errors.facebook %}
+                                    <div class="form-error">{{ form.errors.facebook }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="twitter"> {{ form.twitter.label }}</label>
+                                    <input class="form-input" id="twitter" name="twitter"  value="{{ site_settings.twitter }}"/>
+                                     {% if form.errors.twitter %}
+                                    <div class="form-error">{{ form.errors.twitter }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="linkedIn"> {{ form.linkedIn.label }}</label>
+                                    <input class="form-input" id="linkedIn" name="linkedIn"  value="{{ site_settings.linkedIn }}"/>
+                                     {% if form.errors.linkedIn %}
+                                    <div class="form-error">{{ form.errors.linkedIn }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="cache_detail_view"> {{ form.cache_detail_view.label }}
+                                    </label>
+                                    <input class="form-input" id="cache_detail_view" name="cache_detail_view"  value="{{ site_settings.cache_detail_view }}"/>
+                                     {% if form.errors.cache_detail_view %}
+                                    <div class="form-error">{{ form.errors.cache_detail_view }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <input class="btn btn_success"  type="submit" value="сохранить">
+                                </div>
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

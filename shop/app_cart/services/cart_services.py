@@ -1,6 +1,3 @@
-from pprint import pprint
-
-from celery import Celery
 from django.core.cache import cache
 from django.http.response import HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
@@ -10,7 +7,6 @@ from app_cart.models import *
 from app_item.models import Item
 from app_item.services.item_services import ItemHandler
 from app_user.services.user_services import is_customer
-from utils.my_utils import query_counter
 
 
 def cart_(request):
@@ -68,6 +64,7 @@ def get_current_cart(request) -> dict:
         return cart_dict
     except (KeyError, AttributeError):
         return {'cart': cart}
+
 
 def create_or_update_cart_book(cart) -> dict:
     """
@@ -293,19 +290,21 @@ def create_cart_item(item, quantity=1, user=None):
     return cart_item
 
 
-def identify_cart(request, user):
-    if is_customer(user):
+def identify_cart(request):
+    if request.user.is_authenticated and request.user.groups.first().name == 'customer':
         if request.session.session_key:
             session_key = request.session.session_key
             cart = Cart.objects.filter(session_key=session_key).first()
             if cart:
                 cart.session_key = ''
                 cart.is_anonymous = False
-                cart.user = user
+                cart.user = request.user
                 for cart_item in cart.items.all():
-                    cart_item.user = user
+                    cart_item.user = request.user
                     cart_item.save()
                 cart.save()
+            else:
+                Cart.objects.create(user=request.user)
 
 
 def merge_anon_cart_with_user_cart(request, cart):
@@ -325,10 +324,8 @@ def merge_anon_cart_with_user_cart(request, cart):
         if anonymous_cart:
             items_from_anon_cart = anonymous_cart.items.prefetch_related('item').all()
             for cart_item in items_from_anon_cart:
-                print('1_cart_item', cart_item.user)
                 cart_item.user = request.user
                 cart_item.save(update_fields=['user'])
-                print('2_cart_item', cart_item.user)
                 already_in_cart_item = cart.items.filter(item__id=cart_item.item.id).first()
                 if already_in_cart_item:
                     already_in_cart_item.quantity += cart_item.quantity
@@ -375,7 +372,10 @@ def create_session_key(request):
 
 def create_cart(request, path=None):
     """
-    Функция создает корзину для анонимного пользователя.
+    Функция создает корзину для пользователя.
+
+    Для ананимного пользователя через cookies,
+    для зарегистрированного пользователя через FK.
 
     :param request: request
     :param path: редирект URL источника запроса
@@ -383,7 +383,10 @@ def create_cart(request, path=None):
     """
     session_key = request.COOKIES.get('cart')
     cart_id = None
-    if not request.user.is_authenticated:
+    if request.user.is_authenticated:
+        cart = cart_(request)
+        return redirect('app_cart:cart', cart.pk)
+    else:
         if not session_key:
             session_key = create_session_key(request)
             cart, created = Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)

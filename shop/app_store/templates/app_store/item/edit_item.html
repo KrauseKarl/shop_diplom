@@ -41,13 +41,13 @@
                                     <!--  IMAGE  -->
                                     <div class="Profile-avatar">
                                         <div class="Profile-img">
-                                            <img src="{{ img.image.url }}" alt="#.png"/>
+                                            <img src="{{ img.image.url }}" alt="{{ img }}"/>
                                         </div>
                                     </div>
                                     <!--  IMAGE END -->
                                     <div>
-                                        <a href="{% url 'app_store:delete_image' pk=img.pk  %}"
-                                           style="color:red">&#10060;</a>
+                                            <a href="{% url 'app_store:delete_image' pk=img.pk  %}"
+                                               style="color:red">&#10060;</a>
                                     </div>
                                     {% endfor %}
                                 </div>

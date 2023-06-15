@@ -212,7 +212,6 @@ class SellerOrderHAndler:
         return order
 
 
-
 class Payment:
     ERROR_DICT = {
         '1': 'Оплата не выполнена, т.к. способствует вымиранию юго-восточных туканов',
@@ -287,3 +286,9 @@ class AddressHandler:
         user = request.user
         if address in user.address.all():
             address.delete()
+
+
+class AdminOrderHAndler:
+    @staticmethod
+    def orders():
+        return Order.objects.all()

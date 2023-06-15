@@ -1,0 +1,55 @@
+{% extends 'app_settings\admin\admin_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %} Добавить тег {% endblock %}
+
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">новый тег </h1>
+                 {% block breadcrumbs %}
+
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_settings:tag_list' %}">список тегов </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>новый тег</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Payment">
+                <div class="Payment-card form-shadow">
+                    <div class="form-group">
+                        <form class="form" action="." method="post">
+                            {% csrf_token %}
+                            {% if form.errors.title %}
+                                <div class="form-error">{{ form.errors.title }}
+                                </div>
+                            {% endif %}
+                            <div class="form-group">
+                                <input class="form-input" id="title" name="title" value="{{ object }}"/>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn_square btn_success btn_narrow" type="submit">
+                                    сохранить
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -34,9 +34,7 @@ class AddItemToCart(generic.CreateView):
         if form.is_valid():
             quantity = form.cleaned_data.get('quantity')
             update = form.cleaned_data.get('update')
-            print('++++++++++++++++++++++++++++++++',quantity)
             path = cart_services.add_item_in_cart(request, item_id, quantity)
-
             return path
 
     def form_invalid(self, form):
@@ -62,7 +60,6 @@ class UpdateCountItemFromCart(generic.UpdateView):
 
     def post(self, request, *args, **kwargs):
         form = AmountForm(request.POST)
-
         if form.is_valid():
             quantity = form.cleaned_data.get('quantity')
             update = form.cleaned_data.get('update')
@@ -91,7 +88,6 @@ class CartDetail(generic.DetailView):
         context['curr_cart'] = get_cart(self.request)
         total_lis = get_cart(self.request).get('cart_dict').get('book').values()
         context['total_amount_sum'] = sum(Counter([d['total'] for d in total_lis]).keys())
-        print('\nЗАПРОСЫ = ', len(connection.queries))
         return context
 
 

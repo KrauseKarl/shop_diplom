@@ -1,0 +1,102 @@
+{% extends 'app_settings\admin\admin_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Список магазинов{% endblock %}
+{% block content %}
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Список магазинов
+                </h1>
+                {% block breadcrumbs %}
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_settings:dashboard' %}">главная старница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>магазины
+                        </span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!--    MESSAGE STRING  -->
+    {% include 'message.html' %}
+    <!--    MESSAGE STRING  -->
+
+    <div class="Section">
+        <div class="wrap">
+            <div class="Cart">
+                <div class="Cart-product">
+
+                    <div class="Cart-block Cart-block_row">
+                        <form class="Cart-block Cart-block_delete" method="get" action="{% url 'app_settings:store_list' %}">
+                            <div class="row ">
+                                <div class="form-label">&#8195;</div>
+                                <input class="form-input" name="search" value="{{ request.GET.search }}"
+                                       placeholder="поиск">
+                                <div class="form-label">&#8195;</div>
+                                <input class="form-input btn btn_square btn_success"
+                                       type="submit" value="найти">
+                                <div class="form-label">&#8195;</div>
+                                <a class="form-input btn btn_square btn_dark"
+                                   href="{% url 'app_settings:store_list' %}">очистить
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="Cart">
+                {% for object in object_list %}
+                <div class="Cart-product">
+                    <div class="Cart-block Cart-block_row" style="margin:0 20px">
+                        <div class="Cart-block Cart-block_pict">
+                            <div class="Cart-pict" >
+                                <img class="Cart-img" src="{{ object.get_logo }}" alt="logo"/>
+                            </div>
+                        </div>
+                        <div class="Cart-block Cart-block_info">
+                            <span class="Cart-title ">{{ object.title }}
+                            </span>
+                             <div class="Cart-desc">собственник - {{ object.owner.get_full_name }}
+                            </div>
+                             <div class="Cart-desc">товары - {{ object.store_items.count }}
+                            </div>
+                             <div class="Cart-desc">создан - {{ object.created }}
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="Cart-block Cart-block_row" style="margin:0 20px">
+                        <!--   REMOVE ITEM FROM CART   -->
+                        <div class="Cart-block Cart-block_delete">
+                            <a class="Cart-delete" href="#">
+                                <img src="/assets/img/icons/card/delete.svg" alt="delete.svg"/>
+                            </a>
+                        </div>
+                        <!--   REMOVE ITEM FROM CART   -->
+                    </div>
+                </div>
+                {% empty %}
+                <div class="form-group">
+                    <img src="/media/default_images/not_found.png" width="100%">
+                </div>
+                {% endfor %}
+
+            </div>
+            <!--       PAGINATION         -->
+            <div>{% include "pagination.html" %}</div>
+            <!--       PAGINATION         -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

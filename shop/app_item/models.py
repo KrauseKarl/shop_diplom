@@ -272,6 +272,10 @@ class Category(models.Model):
         related_name='categories',
         verbose_name='характеристика'
     )
+    is_archived = models.BooleanField(
+        default=False,
+        verbose_name='в архиве'
+    )
 
     objects = app_item_managers.CategoryWithItemsManager()
 
@@ -473,7 +477,8 @@ class Feature(models.Model):
         default=True,
         verbose_name='активная характеристика'
     )
-    objects = models.Manager()
+    objects = app_item_managers.AvailableFeatureManager()
+    all_objects = models.Manager()
 
     def save(self, *args, **kwargs):
         """Функция по созданию slug"""
@@ -508,8 +513,13 @@ class FeatureValue(models.Model):
         related_name='values',
         verbose_name='название характеристики'
     )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='активное значение'
+    )
 
-    objects = models.Manager()
+    objects = app_item_managers.AvailableValueManager()
+    all_objects = models.Manager()
 
     def __str__(self):
         return self.value

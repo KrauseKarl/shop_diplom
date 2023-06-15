@@ -5,10 +5,9 @@ from app_user.models import Profile
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ['get_full_name', 'role', 'get_user_group',  'get_phone', 'full_image']
+    list_display = ['get_full_name', 'get_user_group', 'get_user_group',  'get_phone', 'full_image']
     readonly_fields = ['get_full_name', 'full_image', 'get_phone', 'user']
-    fields = (('full_image', 'get_full_name', 'get_phone'), ('telephone','user', 'role'))
-    list_filter = ('role', )
+    fields = (('full_image', 'get_full_name', 'get_phone'), ('telephone','user', 'get_user_group'))
 
     def get_full_name(self, obj):
         if obj.user:

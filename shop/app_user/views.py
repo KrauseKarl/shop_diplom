@@ -72,10 +72,11 @@ class UpdateProfile(generic.UpdateView):
     def get_template_names(self):
         super(UpdateProfile, self).get_template_names()
         templates_dict = {
-            'CSR': 'app_user/customer/profile_edit_customer.html',
-            'SLR': 'app_user/seller/profile_edit_seller.html'
+            'customer': 'app_user/customer/profile_edit_customer.html',
+            'seller': 'app_user/seller/profile_edit_seller.html',
+            'admin': 'app_user/admin/dashboard.html',
         }
-        user_role = self.request.user.profile.role
+        user_role = self.request.user.groups.first().name
         name = templates_dict[user_role]
         return name
 
@@ -103,11 +104,15 @@ class DetailAccount(mixins.LoginRequiredMixin, mixins.UserPassesTestMixin, gener
     def get_template_names(self):
         super(DetailAccount, self).get_template_names()
         templates_dict = {
-            'CSR': 'app_user/customer/account_customer.html',
-            'SLR': 'app_user/seller/account_seller.html'
+            'customer': 'app_user/customer/account_customer.html',
+            'seller': 'app_user/seller/account_seller.html',
+            'admin': 'app_settings/admin/dashboard.html',
         }
-        user_role = self.request.user.profile.role
-        name = templates_dict[user_role]
+        if self.request.user.is_superuser:
+            name = templates_dict['customer']
+        else:
+            user_group = self.request.user.groups.first().name
+            name = templates_dict[user_group]
         return name
 
 
@@ -165,6 +170,10 @@ class UserLoginView(auth_views.LoginView):
                 path=reverse('app_user:account', kwargs={'pk': self.request.user.pk})
             )
             return response
+        elif user_services.user_in_group(self.request.user, 'admin'):
+            return HttpResponseRedirect(reverse('main_page'))
+        elif user_services.user_in_group(self.request.user, 'seller'):
+            return HttpResponseRedirect(reverse('app_store:store_list'))
         if self.request.GET.get('next'):
             return HttpResponseRedirect(reverse(self.request.GET.get('next')))
         return HttpResponseRedirect(reverse('app_user:account', kwargs={'pk': self.request.user.pk}))

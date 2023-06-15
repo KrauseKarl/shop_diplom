@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load cache %}
+<head>
+    <title>Megano</title>
+    <meta name="description" content="Описание страницы">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <link href="/assets/favicon.ico" rel="shortcut icon">
+    <link href="/assets/img/icons/favicon.ico" rel="shortcut icon">
+
+    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Regular.woff" as="font">
+    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Italic.woff" as="font">
+    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Bold.woff" as="font">
+    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Bold_Italic.woff" as="font">
+    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Light.woff" as="font">
+    <link rel="preload" href="/assets/fonts/Roboto/Roboto-Light_Italic.woff" as="font">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/fonts.css?v=65245665">
+    <link rel="stylesheet" type="text/css" href="/assets/css/basic.css?v=65245665">
+    <link rel="stylesheet" type="text/css" href="/assets/css/extra.css?v=65245665">
+    <link rel="stylesheet" type="text/css" href="/assets/css/my_css.css?v=65245665">
+    <script src="/assets/plg/CountDown/countdown.js"></script>
+
+</head>
+<body class="Site" style="background-color: transparent">
+<!--   ONLY FOR DEBUG    -->
+<div class="row-block seller_label" style="background-color: #F4CA16;  color:black; padding: 0 10px">
+   <b>только для тестирования</b>
+   {% if request.user.is_authenticated %}
+    <span class="seller_label">ROLE  - <b style="color:black; font-size:19px;">{{ request.user.profile.get_role_display  }}</b></span>
+    {% endif %}
+    <span style="background-color: {% if request.session.session_key %}blue{% else %}red{% endif %};" class="seller_label">
+        SESSION_KEY -   {% if request.COOKIES.cart %}
+            <b style="color:black; font-size:19px;">{{ request.session.session_key|truncatechars:5 }}</b>
+        {% else %}
+            <b style="color:black; font-size:19px;">NONE</b>
+        {% endif %}
+    </span>
+    <span style="background-color: {% if request.COOKIES.cart %} orange {% else %}red{% endif %};" class="seller_label">
+        COOKIES  -  {% if request.COOKIES.cart %}
+            <b style="color:black; font-size:19px;">{{ request.COOKIES.cart|truncatechars:5 }}</b>
+        {% else %}
+            <b style="color:black; font-size:19px;">NONE</b>
+        {% endif %}
+    </span>
+    <span style="background-color: {% if cart_dict.cart %} green {% else %}red{% endif %};" class="seller_label">КОРЗИНА
+        {% if cart_dict.cart %}
+        <b style="color:black; font-size:19px;"> {{ cart_dict.cart }}</b>
+        {% else %}
+        <b style="color:black; font-size:19px;">CART NONE</b>
+        {% endif %}
+    </span>
+    <span style="background-color: {% if request.user.is_authenticated %} coral {% else %}red{% endif %};" class="seller_label">
+        USER   <b style="color:black; font-size:19px;">{{ request.user }}</b>
+    </span>
+</div>
+<!--   ONLY FOR DEBUG    -->
+<header class="Header">
+    <div class="ControlPanel">
+        <div class="wrap">
+            <div class="row ControlPanel-row">
+                {% cache 3600 delivery %}
+                <div class="row-block">
+                    <div class="row ControlPanel-rowSplit">
+                        <div class="row-block">
+                            <a class="ControlPanel-title" href="#">Free Delivery</a>
+                        </div>
+                        <div class="row-block hide_700">
+                            <span class="ControlPanel-title">Follow Us</span>
+                            <ul class="menu menu_img menu_smallImg ControlPanel-menu">
+                                <li class="menu-item">
+                                    <a class="menu-link" href="#">
+                                        <img src="/assets/img/icons/socialHeader/fb.svg" alt="fb.svg"/>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="#">
+                                        <img src="/assets/img/icons/socialHeader/tw.svg" alt="tw.svg"/>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="#">
+                                        <img src="/assets/img/icons/socialHeader/in.svg" alt="in.svg"/>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="#">
+                                        <img src="/assets/img/icons/socialHeader/pt.svg" alt="pt.svg"/>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="#">
+                                        <img src="/assets/img/icons/socialHeader/mail.svg" alt="mail.svg"/>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endcache %}
+                <nav class="row-block">
+                    <div class="row ControlPanel-rowSplit">
+
+                        <div class="row-block">
+                            {% if request.user.profile.avatar %}
+                                <img src="{{request.user.profile.avatar.url}}"
+                                     height="20" width="20" style="border-radius:50px; margin-right: 5px">
+                                {% endif %}
+                            {% if request.user.is_authenticated %}
+                            <a class="ControlPanel-title" href="{% url 'app_user:account' request.user.pk %}">
+                                {% if request.user.get_full_name %}
+                                {{ request.user.get_full_name| truncatechars:10 }}
+                                {% else %} {{ request.user.username }}
+                                {% endif %}
+                            </a>&#160;/&#160;
+                            <a class="ControlPanel-title" href="{% url 'app_user:logout' %}">Logout</a>
+                            {% else %}
+                            <a class="ControlPanel-title" href="{% url 'app_user:login' %}">Login</a>&#160;/&#160;
+                            <a class="ControlPanel-title" href="{% url 'app_user:register' %}">Register</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+    <div class="wrap">
+        <div class="row Header-rowMain">
+            <div class="row-block Header-logo">
+                <a class="logo" href="{% url 'main_page' %}">
+                    <img class="logo-image" src="/assets/img/logo.png" alt="logo.png"/>
+                </a>
+            </div>
+
+            <!--    NAVBAR  -->
+            <nav class="row-block row-block_right Header-menu">
+                <div class="menuModal" id="navigate">
+                    <ul class="menu menu_main">
+                        <li class="menu-item">
+                            <a class="menu-link" href="{% url 'app_settings:category_list' %}">Категории</a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{% url 'app_settings:tag_list' %}">Теги</a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{% url 'app_settings:admin_order_list' %}">Заказы
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{% url 'app_settings:comments_list' %}">Комментарии
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{% url 'app_settings:settings' %}">Настройки
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <!--    NAVBAR END -->
+
+            <!--    DELIVERY   -->
+            <div class="row-block" >
+                <div class="CartBlock">
+                    <!--    NAVBAR  -->
+                    <div class="CartBlock-block">
+                        <span class="CartBlock-price"></span>
+                    </div>
+                     <!--    NAVBAR END -->
+                </div>
+            </div>
+            <!--    DELIVERY END -->
+
+            <div class="row-block Header-trigger">
+                <a class="menuTrigger" href="#navigate">
+                <div class="menuTrigger-content">Показать навигацию
+                </div>
+                <span></span><span></span><span></span></a>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+<div>
+    {% block content %}
+
+    {% endblock %}
+</div>
+
+{% cache 36000 footer%}
+<footer class="Footer">
+    <div class="wrap">
+        <div class="row Footer-main">
+            <div class="row-block">
+                <a class="logo Footer-logo" href="index.html">
+                    <img class="logo-image" src="/assets/img/logo_footer.png" alt="logo_footer.png"/>
+                </a>
+                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincid unt ut
+                    laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad
+                </p>
+                <ul class="menu menu_img menu_smallImg Footer-menuSoc">
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">
+                            <img src="/assets/img/icons/socialFooter/fb.svg" alt="fb.svg"/>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">
+                            <img src="/assets/img/icons/socialFooter/tw.svg" alt="tw.svg"/>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">
+                            <img src="/assets/img/icons/socialFooter/in.svg" alt="in.svg"/>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">
+                            <img src="/assets/img/icons/socialFooter/pt.svg" alt="pt.svg"/>
+                        </a>
+                    </li>
+                    <li class="menu-item"><a class="menu-link" href="#">
+                        <img src="/assets/img/icons/socialFooter/mail.svg" alt="mail.svg"/>
+                    </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="row-block">
+                <strong class="Footer-title">Useful Links
+                </strong>
+                <ul class="menu menu_vt Footer-menu">
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Checkout
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">My Cart
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Delivery
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Order Info
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Terms
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Conditions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="row-block">
+                <strong class="Footer-title">My Account
+                </strong>
+                <ul class="menu menu_vt Footer-menu">
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Accessories
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Bags
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Cameras
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Clothings
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Electronics
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="#">Fashion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="row-block">
+                <strong class="Footer-title">Contacts
+                </strong>
+                <p>Phone: 8.800.200.600<br>
+                    Email: Support@ninzio.com<br>
+                    Skype: techno<br>
+                    Address: New York, north<br>
+                    Avenue 26/7<br>0057
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="Footer-copy">
+        <div class="wrap">
+            <div class="row row_space">
+                <div class="row-block">© Copyright&#32;
+                    <a href="#">Megano Store.</a>&#32;All rights reserved.
+                </div>
+                <div class="row-block"><span>Accepted Payments</span>
+                    <div class="Footer-payments">
+                        <div><img src="/assets/img/payments/visa.png" alt="visa.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/mastercard.png" alt="mastercard.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/paypal.png" alt="paypal.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/american.png" alt="american.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/electron.png" alt="electron.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/maestro.png" alt="maestro.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/delta.png" alt="delta.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/e.png" alt="e.png"/>
+                        </div>
+                        <div><img src="/assets/img/payments/dk.png" alt="dk.png"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endcache %}
+<script src="https://code.jquery.com/jquery-3.6.1.js"
+        integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI="
+        crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.5.0.js"
+        integrity="sha256-r/AaFHrszJtwpe+tHyNi/XCfMxYpbsRg2Uqn0x3s2zc="
+        crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+
+<!--<script type="text/javascript" src="/assets/plg/jQuery/jquery-3.5.0.slim.min.js"></script>-->
+<script type="text/javascript" src="/assets/plg/form/jquery.form.js"></script>
+<script type="text/javascript" src="/assets/plg/form/jquery.maskedinput.min.js"></script>
+
+<script type="text/javascript" src="/assets/plg/range/ion.rangeSlider.min.js"></script>
+<script type="text/javascript" src="/assets/plg/Slider/slick.min.js"></script>
+<script type="text/javascript" src="/assets/js/scripts.js"></script>
+<script type="text/javascript" src="/assets/js/my_scripts.js"></script>
+
+</body>
+</html>
+
+

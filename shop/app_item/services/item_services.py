@@ -302,11 +302,13 @@ class ItemHandler:
             if key not in filter_dict.keys() and value:
                 # поиск по дополнительным характеристикам
                 if len(value) > 1:
+
                     feature = item_models.FeatureValue.objects.prefetch_related('item_features').filter(slug__in=value)
                     for feature_key in feature:
                         get_param_dict[f'{feature_key.feature.title} - {feature_key.value}'] = feature_key.slug
                 else:
-                    feature = item_models.FeatureValue.objects.prefetch_related('item_features').get(slug=value[0])
+                    print(value)
+                    feature = item_models.FeatureValue.objects.prefetch_related('item_features').filter(slug__in=value).first()
                     get_param_dict[f'{feature.feature.title} - {feature.value}'] = feature.slug
                 feature_list.append(feature)
 
@@ -394,6 +396,7 @@ class ItemHandler:
                         Q(title__icontains=lower) |
                         Q(tag__title__icontains=lower) |
                         Q(store__title__icontains=lower)
+
                     ).distinct()
                     if queryset.count() > 1:
                         all_queryset_list.append(queryset)

@@ -1,0 +1,232 @@
+{% extends 'app_settings/admin/admin_index.html' %}
+{% load static  %}
+{% load cache %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">
+                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
+                    {{ order }}
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="index.html">home</a>
+                    </li>
+                    <li class="breadcrumbs-item">
+                        История заказов
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>{{ order }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="Section">
+        <div class="wrap">
+            <div class="Section-content">
+                <div class="Orders">
+                </div>
+                <div class="Order">
+                    <div class="Order-infoBlock">
+                        <div class="Order-personal">
+                            <div class="row">
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_date">
+                                        <div class="Order-infoType">Дата заказа:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.created|date:'j F o H:m' }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">ФИО:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.user.get_full_name }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">Телефон:
+                                        </div>
+                                        <div class="Order-infoContent" id="phone_formatter">{{ order.telephone }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">E-mail:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.email }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">Комментарий к заказу
+                                        </div>
+                                        <div class="Order-infoContent">
+                                            {% if order.comment%}
+                                            {{ order.comment }}
+                                            {% else %} отсутствует
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_delivery">
+                                        <div class="Order-infoType">Тип доставки:
+                                        </div>
+                                        <div class="Order-infoContent {% if order.delivery == 'express' %} warning-text {% endif %}">
+                                            {{ order.get_delivery_display }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">Город:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.city }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">Адрес:</div>
+                                        <div class="Order-infoContent">{{ order.address }}</div>
+                                    </div>
+                                    <div class="Order-info Order-info_pay">
+                                        <div class="Order-infoType">Оплата:</div>
+                                        <div class="Order-infoContent">{{ order.get_pay_display }}</div>
+                                    </div>
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoType">Статус:</div>
+                                        <div class="Order-infoContent">{{ order.get_status_display }}
+
+                                        </div>
+                                    </div>
+                                    {% if order.invoices.first %}
+                                    <div class="Order-info Order-info_pay">
+                                        <div class="Order-infoType">Квитанция:</div>
+                                        <div class="Order-infoContent">{{ order.invoices.first }}
+
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+
+                                    {% if order.error %}
+                                    <div class="Order-info Order-info_error">
+                                        <div class="Order-infoType">Оплата не прошла:
+                                        </div>
+                                        <div class="Order-infoContent">{{ order.error }}
+                                        </div>
+                                    {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="Cart Cart_order">
+                            {% for order_item in items %}
+
+                            <div class="Cart-product">
+                                <div class="Cart-block Cart-block_row">
+                                    <div class="Cart-block Cart-block_pict">
+                                        <a class="Cart-pict" href="{% url 'app_item:item_detail' pk=order_item.item.item.pk %}">
+                                            <img class="Cart-img" src="{{ order_item.item.item.main_image }}"
+                                                 alt="{{ order_item.item.item.title }}"/>
+                                        </a>
+                                    </div>
+                                    <div class="Cart-block Cart-block_info">
+                                        <a class="Cart-title" href="{% url 'app_item:item_detail' pk=order_item.item.item.pk %}">
+                                            {{ order_item.item.item.title }}
+                                        </a>
+                                    </div>
+                                    <div class="Cart-block Cart-block_price">
+                                        <span
+                                            class="Cart-price">${{ order_item.item.item.price }}
+                                        </span>
+                                    </div>
+
+                                    <div class="Cart-block Cart-block_price">
+                                        <span class="Cart-price ">{{ order_item.quantity }}шт.
+                                        </span>
+                                    </div>
+                                    <div class="Cart-block Cart-block_price">
+                                        <span class="Cart-price">${{ order_item.total }}
+                                        </span>
+
+                                    </div>
+                                    <div class="Cart-block Cart-block_price">
+                                        {% if order.status == 'created' %}
+                                     <a class="btn btn_square btn_dark btn_narrow btn_sm" style="margin-left:10px"
+                                        href="{% url 'app_store:order_item_edit' order_item.id %}">
+                                         редактировать
+                                     </a>
+                                     {% endif %}
+                                        {% if order.status == 'paid' %}
+                                        <form method="post"
+                                              action="{% url 'app_store:sent_purchase' order_id=order.pk %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="status" value="is_preparing">
+                                            <button class="btn btn_square btn_success btn_narrow  btn_sm"> отправить
+                                                товар
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    <div class="Cart-block Cart-block_price">
+                                        {% if order.status == 'created' %}
+                                     <a class="btn btn_square btn_danger btn_narrow btn_sm" style="margin-left:10px"
+                                        href="#deliveryDeleteModal_{{ order_item.id }}">
+                                         x
+                                     </a>
+                                     {% endif %}
+                                          <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+                                                <div id="deliveryDeleteModal_{{ order_item.id }}" class="modal-my">
+                                                    <div class="modal-dialog-my">
+                                                        <div class="modal-content-my">
+                                                            <div class="modal-header-my">
+                                                                <a href="#close" title="Close" class="close-my">×</a>
+                                                            </div>
+                                                            <div class="modal-body-my">
+                                                                <div class="form Payment">
+                                                                    <div class="form-group">
+                                                                        <h3>Удалить </h3>{{ order_item }}
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <a href="{% url 'app_store:delivery_edit' order_item.id %}"
+                                                                           class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                                        <a href="." title="Close"
+                                                                           class="btn btn_square btn_dark btn_narrow">отмена</a>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer-my"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% endfor %}
+                        </div>
+                         <div class="Cart-total">
+                             <div class="Cart-block Cart-block_total">
+                                 <strong class="Cart-title">Итого:
+                                     <span class="Cart-price">${{ total|floatformat:'2' }}</span>
+                                 </strong>
+                             </div>
+                         </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

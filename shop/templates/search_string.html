@@ -1,7 +1,7 @@
 {% load cache %}
 <div class="Header-searchWrap">
         <div class="wrap">
-            {% cache 36000 department_navbar %}
+
             <div class="Header-categories">
                 <div class="CategoriesButton">
                     <div class="CategoriesButton-title">
@@ -52,12 +52,11 @@
                             </a>
                         </div>
                         {% endif %}
-
                         {% endfor %}
                     </div>
                 </div>
             </div>
-            {% endcache %}
+
             <div class="Header-searchLink">
                 <img src="/assets/img/icons/search.svg" alt="search.svg"/>
             </div>

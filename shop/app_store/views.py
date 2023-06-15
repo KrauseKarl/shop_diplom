@@ -571,9 +571,7 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
             # SEARCH
             if self.request.GET.get('search'):
                 search = self.request.GET.get('search')
-                print('search = ', search)
                 object_list = object_list.filter(id=search)
-                print('search = ', self.get_queryset().filter(id=search))
 
         context = {
             'orders': object_list,
@@ -677,29 +675,6 @@ class CommentListView(generic.ListView, MixinPaginator):
         return render(request, self.template_name, {'object_list': object_list})
 
 
-class CommentList(generic.ListView):
-    model = item_models.Comment
-    template_name = 'app_store/comment/comment_list.html'
-
-    def get(self, request, *args, **kwargs):
-        comment_id = kwargs['pk']
-        action = kwargs['slug']
-        if action == 'approve':
-            comment_services.CommentHandler.set_comment_approved(comment_id)
-            messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
-        elif action == 'delete':
-            comment_services.CommentHandler.delete_comment_by_seller(comment_id)
-            messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
-        else:
-            comment_services.CommentHandler.set_comment_reject(comment_id)
-            messages.add_message(self.request, messages.WARNING, f"Комментарий снят с публикации")
-
-        query_string = request.META.get('HTTP_REFERER').split('?')[1]
-        url = redirect('app_store:comment_list').url
-        path = '?'.join([url, query_string])
-        return redirect(path)
-
-
 class CommentDetail(generic.DetailView):
     """Класс-представление для отображения одного комментария."""
     model = item_models.Comment
@@ -723,6 +698,29 @@ class CommentModerate(generic.UpdateView):
     model = item_models.Comment
     template_name = 'app_store/comment/comment_update.html'
     fields = ['is_published']
+
+
+class CommentList(generic.ListView):
+    model = item_models.Comment
+    template_name = 'app_store/comment/comment_list.html'
+
+    def get(self, request, *args, **kwargs):
+        comment_id = kwargs['pk']
+        action = kwargs['slug']
+        if action == 'approve':
+            comment_services.CommentHandler.set_comment_approved(comment_id)
+            messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
+        elif action == 'delete':
+            comment_services.CommentHandler.delete_comment_by_seller(comment_id)
+            messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
+        else:
+            comment_services.CommentHandler.set_comment_reject(comment_id)
+            messages.add_message(self.request, messages.WARNING, f"Комментарий снят с публикации")
+
+        query_string = request.META.get('HTTP_REFERER').split('?')[1]
+        url = redirect('app_store:comment_list').url
+        path = '?'.join([url, query_string])
+        return redirect(path)
 
 
 # EXPORT & IMPORT DATA-STORE FUNCTION #

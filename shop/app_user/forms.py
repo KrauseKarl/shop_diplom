@@ -20,6 +20,11 @@ class AuthForm(AuthenticationForm):
 
 
 class RegisterUserForm(UserCreationForm):
+    default_errors = {
+        'required': 'Поле обязательно для заполнения',
+        'invalid': 'Введите допустимое значение',
+        'inactive': 'Такой пользователь не зарегистрирован',
+    }
     username = forms.CharField(max_length=30,
                                label='имя пользователя',
                                widget=forms.Textarea(attrs={'rows': 1, 'cols': 20})
@@ -42,13 +47,13 @@ class RegisterUserForm(UserCreationForm):
                                 strip=False,
                                 help_text='',
                                 widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
-    telephone = forms.CharField(label='телефон')
-    email = forms.EmailField(label='E-mail')
-    role = forms.CharField(required=False)
+    telephone = forms.CharField(label='телефон', help_text='укажите ваш контактный номер телефона',)
+    email = forms.EmailField(label='E-mail', help_text='укажите адрес вашей электронной почты',)
+    group = forms.CharField(label='группа', error_messages=default_errors)
 
     class Meta:
         model = User
-        fields = ('username', 'password1', 'password2', 'telephone', 'email')
+        fields = ('username', 'password1', 'password2', 'telephone', 'email', 'group')
 
     def clean_username(self):
         username = self.cleaned_data.get('username')

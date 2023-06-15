@@ -1,0 +1,165 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block title %}Главная страница{% endblock %}
+{% block content %}
+<!-- {% url 'app_settings:category_list' %} -->
+<!--{% url 'app_settings:tag_list' %}-->
+
+
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Главная страница администратора</h1>
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">Навигация</strong>
+                    </header>
+                    {% include "app_settings/admin/sidebar_admin.html" %}
+                </div>
+            </div>
+
+            <div class="Section-content">
+                <div class="Account">
+
+                    <div class="Account-group">
+                        <div class="Account-column Account-column_full">Основные контакты
+                            <div class="Order Order_anons">
+                                <div class="Order-personal">
+                                    <div class="row">
+                                        <div class="row-block">
+                                              <div class="Order-info Order-info_delivery">
+                                                <div class="Order-infoType">название сайта:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.title  }}
+                                                </div>
+                                            </div>
+                                            <div class="Order-info Order-info_pay">
+                                                <div class="Order-infoType">Website url:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.url }}
+                                                </div>
+                                            </div>
+                                             <div class="Order-info">
+                                                <div class="Order-infoType">электронный ящик:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.support_email }}
+                                                </div>
+                                            </div>
+                                            <div class="Order-info ">
+                                                <div class="Order-infoType">телефон:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.phone }}
+                                                </div>
+                                            </div>
+                                              <div class="Order-info ">
+                                                <div class="Order-infoType">адрес:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.address }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="Account-group">
+                        <div class="Account-column Account-column_full">Информация о доставке
+                            <div class="Order Order_anons">
+                                <div class="Order-personal">
+                                    <div class="row">
+                                        <div class="row-block">
+                                              <div class="Order-info">
+                                                <div class="Order-infoType">стоимость экспресс доставки:
+                                                </div>
+                                                <div class="Order-infoContent">${{ site_settings.express_delivery_price }}
+                                                </div>
+                                            </div>
+                                            <div class="Order-info ">
+                                                <div class="Order-infoType">минимальная сумма для бесплатной доставки:
+                                                </div>
+                                                <div class="Order-infoContent">${{ site_settings.min_free_delivery }}
+                                                </div>
+                                            </div>
+
+                                            <div class="Order-info ">
+                                                <div class="Order-infoType">тип оплаты:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.get_type_of_payment_display }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="Account-group">
+                        <div class="Account-column Account-column_full">Социальные сети
+                            <div class="Order Order_anons">
+                                <div class="Order-personal">
+                                    <div class="row">
+                                        <div class="row-block">
+                                            <div class="Order-info ">
+                                                <div class="Order-infoType">skype:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.skype }}
+                                                </div>
+                                            </div>
+
+                                            <div class="Order-info ">
+                                                <div class="Order-infoType">facebook:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.facebook }}
+                                                </div>
+                                            </div>
+                                            <div class="Order-info ">
+                                                <div class="Order-infoType">twitter:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.twitter }}
+                                                </div>
+                                            </div>
+                                            <div class="Order-info ">
+                                                <div class="Order-infoType">linkedIn:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.linkedIn }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="Account-group">
+                        <div class="Account-column Account-column_full">Информация о кэшировани
+                            <div class="Order Order_anons">
+                                <div class="Order-personal">
+                                    <div class="row">
+                                        <div class="row-block">
+                                              <div class="Order-info">
+                                                <div class="Order-infoType">время кэширования страницы товара:
+                                                </div>
+                                                <div class="Order-infoContent">{{ site_settings.cache_detail_view }} сек
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

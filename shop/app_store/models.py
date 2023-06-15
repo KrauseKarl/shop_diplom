@@ -82,6 +82,12 @@ class Store(models.Model):
             self.slug = slugify_for_cyrillic_text(self.title)
         super(Store, self).save(*args, **kwargs)
 
+    def get_logo(self):
+        if self.logo:
+            return f'/media/{self.logo}'
+        else:
+            return '/media/default_images/store.png'
+
     def get_active(self):
         self.is_active = True
         return self.is_active

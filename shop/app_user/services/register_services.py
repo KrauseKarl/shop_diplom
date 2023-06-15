@@ -14,11 +14,11 @@ from app_user.models import Profile
 
 class GroupHandler:
 
-    def get_group(self):
-        return Group.objects.get(name='customer')
+    def get_group(self, group):
+        return Group.objects.get(name=group)
 
-    def set_group(self, user):
-        group = self.get_group()
+    def set_group(self, user, group):
+        group = self.get_group(group)
         user.groups.add(group)
         user.save()
         return user
@@ -42,33 +42,32 @@ class ProfileHandler:
         return telephone
 
     @staticmethod
-    def create_profile(user, telephone, role=None):
+    def create_profile(user, telephone):
         profile = Profile.objects.create(
             user=user,
             telephone=ProfileHandler.telephone_formatter(telephone),
         )
-        if role:
-            profile = RoleHandler.get_seller_permission(profile.id)
         return profile
 
     @staticmethod
     def create_user(request, form, get_success_url):
 
         # создание пользователя
-        user = form.save(commit=False)
+        user = form.save()
         user.first_name = form.cleaned_data.get('first_name')
         user.last_name = form.cleaned_data.get('last_name')
-        user.save()
+        group = form.cleaned_data.get('group')
         # присвоение группы для пользователя
-        GroupHandler().set_group(user=user)
+        user.save(update_fields=['first_name', 'last_name'])
+        user = GroupHandler().set_group(user=user, group=group)
+
         # создание расширенного профиля пользователя
         ProfileHandler().create_profile(
             user=user,
             telephone=form.cleaned_data.get('telephone'),
-            role=form.cleaned_data.get('role'),
         )
         # SendVerificationMail.send_mail(self.request, user.email)
-        identify_cart(request, user)
+        identify_cart(request)
         user = authenticate(
             request,
             username=form.cleaned_data.get('username'),

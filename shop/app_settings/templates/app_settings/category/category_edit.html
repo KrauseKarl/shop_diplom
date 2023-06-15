@@ -1,0 +1,88 @@
+{% extends 'seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+
+{% block title %}Редактировать категорию{% endblock %}
+
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Редактировать категорию</h1>
+                 <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_settings:category_list'  %}">список категорий</a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>Редактировать категорию</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Payment">
+                <div class="Payment-card form-shadow">
+                    <div class="form-group">
+                        <form class="form" action="" method="post">
+                           {% csrf_token %}
+                            <div class="form-group">
+                                <label class="form-label" for="parent_category">Родительская категория</label>
+                                <select id="parent_category" name="parent_category" class="form-input">
+                                    <option  selected="selected" value="{{category.parent_category.id }}">{{ category.parent_category }}</option>
+                                    {% for category in categories %}
+                                        {% if not category.parent_category %}
+                                            <option value="{{ category.id }}">
+                                                {{ category.title }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if form.errors.parent_category %}
+                                <div class="form-error">{{ form.errors.parent_category }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="title">Название категории
+                                </label>
+                                {% if form.errors.title %}
+                                <div class="form-error" >
+                                    {{ form.errors.title }}
+                                </div>
+                                {% endif %}
+                                <input class="form-input form-input_full" id="title" name="title" type="text"
+                                       placeholder="Название" value="{{ category.title }}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="description">Описание категории
+                                </label>
+                                <textarea class="form-input form-input_full"
+                                          id="description" name="description">{{ category.description }}</textarea>
+                                 {% if form.errors.description %}
+                                <div class="form-error" >
+                                    {{ form.errors.description }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <div class="buttons">
+                                    <button class="btn btn_square btn_primary btn_narrow btn_full" type="submit">
+                                        сохранить
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -71,14 +71,14 @@
                                 </div>
                                  <div class="form-group">
                                     <div class="Card-content Card-title">
-                                        <h4 class="Card-content">
-                                            <b class="success_label">{{ store.discount }}%
-                                        </b>скидка
-                                        </h4>
-                                        <h5 class="Card-content">при заказе от:
-                                            <b class="primary_label">${{ store.min_for_discount }}
-                                        </b>
-                                        </h5>
+                                        <div class="Card-content">скидка
+                                            <b class="success-text">{{ store.discount }}%
+                                            </b>
+                                        </div>
+                                        <div class="Card-content">при заказе от:
+                                            <b class="primary-text">${{ store.min_for_discount }}
+                                            </b>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -149,7 +149,7 @@
                 </div>
                 {% endif %}
                 <!--  OFFER CATEGORY SET IN QUERY -->
-
+                {% if object_list %}
                 <!-- FILTER  -->
                 {% if category %}
                 <div class="Section-columnSection">
@@ -158,10 +158,8 @@
                             Фильтр
                         </strong>
                     </header>
-
                     <!-- FILTER TAGS -->
                     <div>
-
                         <!--   CANCEL ALL REQUEST PARAMS   -->
                         {% if get_params.keys %}
                         <a class="btn    btn_sm" style="margin-bottom: 5px" href="{{ request.META.PATH_INFO }}">
@@ -184,8 +182,6 @@
                           {% endfor %}
                          <!--   LIST OF CHOSEN REQUEST PARAMS AND CANCELLATION ONE BY ONE    -->
                     </div>
-
-
                     <!-- FILTER FORM  -->
                     <div class="Section-columnContent">
                         <!--    FORM    -->
@@ -295,7 +291,6 @@
                         </form>
                     </div>
                     <!--    FILTER FORM    -->
-
                 </div>
                 {% endif %}
                 <!-- FILTER  -->
@@ -312,11 +307,9 @@
                             {% endif %}
                         </strong>
                     </header>
-
                     <!--     TAGS        -->
                     <div class="Section-columnContent">
                         <div class="buttons">
-
                             {% for tag in set_tags|slice:10 %}
                             <a class="btn btn_default btn_sm"
                                href="{{ tag.get_absolute_url }}">
@@ -329,9 +322,8 @@
                 </div>
                 {% endif %}
                 <!--     MOST POPULAR 10 TAGS -->
-
+                 {% endif %}
             </div>
-
 
             <!--    SORT BY     -->
             <div class="Section-content">
@@ -475,7 +467,7 @@
                     </div>
                     {% empty %}
                     <div class="form-group">
-                        <h1>Ничего не найдено</h1>
+                     <img src="/media/default_images/not_found.png" width="100%">
                     </div>
                     {% endfor %}
                 </div>

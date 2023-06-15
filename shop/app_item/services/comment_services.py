@@ -7,6 +7,14 @@ from app_item.services import item_services
 
 class CommentHandler:
     @staticmethod
+    def total_comments_amount() -> int:
+        return item_models.Comment.objects.count()
+
+    @staticmethod
+    def total_comments() -> QuerySet:
+        return item_models.Comment.objects.order_by('-created')[:10]
+
+    @staticmethod
     def comment_counter(item_id) -> int:
         """
         Функция-счетчик для комментариев одного товрара.

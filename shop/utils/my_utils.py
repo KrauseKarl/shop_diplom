@@ -86,6 +86,24 @@ class SellerOnlyMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
+class AdminOnlyMixin(LoginRequiredMixin):
+    login_url = '/accounts/login/'
+    permission_denied_message = ''
+    raise_exception = True
+    redirect_field_name = REDIRECT_FIELD_NAME
+    allow_group = Group.objects.filter(name='admin')
+
+    def dispatch(self, request, *args, **kwargs):
+        group = None
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if request.user.groups.exists():
+            group = request.user.groups.all()[0]
+        if group not in self.allow_group:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
 def query_counter(func):
     """Декоратор для подсчета запросов к БД."""
     def wrapper(*args, **kwargs):

@@ -1,11 +1,12 @@
 # from PIL import Image
 import os
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.urls import reverse
 from app_item.models import Item
-
 
 
 def profile_directory_path(path):
@@ -27,20 +28,11 @@ def user_dir_path(instance, filename):
 
 class Profile(models.Model):
     """Модель пользователя."""
-    ROLE = (
-        ('ADM', 'администратор'),
-        ('SLR', 'продавец'),
-        ('CSR', 'покупатель'),
-    )
-
+    DEFAULT_IMAGE = '/media/default_images/default_avatar.png'
     user = models.OneToOneField(User,
                                 on_delete=models.CASCADE,
                                 related_name='profile',
                                 verbose_name='пользователь')
-    role = models.CharField(max_length=3,
-                            choices=ROLE,
-                            default='CSR',
-                            verbose_name='роль')
     avatar = models.ImageField(upload_to=user_dir_path,
                                # upload_to=profile_directory_path('avatar/'),
                                # avatar = models.ImageField(upload_to='avatar/',
@@ -71,6 +63,12 @@ class Profile(models.Model):
     def get_absolute_url(self):
         return reverse('app_users:profile', kwargs={'pk': self.pk})
 
+    def get_avatar(self):
+        if self.avatar:
+            return f'/media/{self.avatar}'
+        else:
+            return '/media/default_images/default_avatar.png'
+
     @property
     def is_customer(self):
         """
@@ -78,7 +76,7 @@ class Profile(models.Model):
         Если роль - "покупатель", то возвращает True,
         в остальных случаях - False.
         """
-        if self.role == 'CSR':
+        if self.user.groups.filter(name='customer').exists():
             return True
         return False
 
@@ -89,9 +87,23 @@ class Profile(models.Model):
         Если роль - "продавец", то возвращает True,
         в остальных случаях - False.
         """
-        if self.role == 'SLR':
+        if self.user.groups.filter(name='seller').exists():
             return True
         return False
+
+    @property
+    def is_admin(self):
+        """
+        Функция проверяет роль пользователя.
+        Если роль - "админ", то возвращает True,
+        в остальных случаях - False.
+        """
+        try:
+            if self.user.groups.filter(name='admin').exists():
+                return True
+        except AttributeError:
+            return False
+
 
 # @receiver(models.signals.pre_save, sender=Profile)
 # def delete_file_on_change_extension(sender, instance, **kwargs):
