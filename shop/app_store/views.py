@@ -201,8 +201,8 @@ class UpdateItemView(UserPassesTestMixin, generic.UpdateView):
     template_name = 'app_store/item/edit_item.html'
     form_class = store_forms.UpdateItemForm
     second_form_class = store_forms.UpdateItemImageForm
-    extra_context = {'colors': item_services.get_colors(item_models.Item.available_items.all()),
-                     'image_formset': store_forms.ImageFormSet(queryset=item_models.Image.objects.none())}
+    # extra_context = {'colors': item_services.get_colors(item_models.Item.available_items.all()),
+    #                  'image_formset': store_forms.ImageFormSet(queryset=item_models.Image.objects.none())}
 
     def test_func(self):
         user = self.request.user
@@ -460,7 +460,6 @@ class CreateFeatureView(SellerOnlyMixin, generic.CreateView):
     model = item_models.Feature
     template_name = 'app_store/features/feature_create.html'
     form_class = store_forms.CreateFeatureForm
-    extra_context = {}
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
@@ -548,10 +547,8 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
     model = order_models.Order
     template_name = 'app_store/delivery/delivery_list.html'
     context_object_name = 'orders'
-    extra_context = {'status_list': order_models.Order.STATUS}
 
     def get_queryset(self):
-
         stores = self.request.user.store.all()
         queryset = order_models.Order.objects.filter(store__in=stores)
         return queryset

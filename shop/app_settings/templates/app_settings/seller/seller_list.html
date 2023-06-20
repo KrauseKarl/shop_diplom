@@ -57,7 +57,7 @@
                 <div class="Cart-product">
                     <div class="Cart-block Cart-block_row" style="margin:0 20px">
                         <div class="Cart-block Cart-block_pict">
-                            <div class="Cart-pict" >
+                            <div class="Cart-pict {% if not object.profile.is_active %}Cart-img-not_available{% endif %}" >
                                 <img class="Cart-img" src="{{ object.profile.get_avatar }}" alt="avatar"/>
                             </div>
                         </div>
@@ -68,15 +68,25 @@
                             </div>
                              <div class="Cart-desc">магазины - {{ object.store.count }}
                             </div>
+                            {% if  not object.profile.is_active %}
+                            <div class="Cart-desc danger-text">заблокирован
+                            </div>
+                            {% endif %}
                         </div>
 
                     </div>
                     <div class="Cart-block Cart-block_row" style="margin:0 20px">
                         <!--   REMOVE ITEM FROM CART   -->
                         <div class="Cart-block Cart-block_delete">
-                            <a class="Cart-delete" href="#">
+                             {% if object.profile.is_active %}
+                            <a class="Cart-delete" href="{% url 'app_settings:seller_update_status' pk=object.pk %}">
                                 <img src="/assets/img/icons/card/delete.svg" alt="delete.svg"/>
                             </a>
+                            {% else %}
+                            <a class="Cart-delete" href="{% url 'app_settings:seller_update_status' pk=object.pk %}">
+                                <img src="/assets/img/icons/update.svg" alt="delete.svg"/>
+                            </a>
+                            {% endif%}
                         </div>
                         <!--   REMOVE ITEM FROM CART   -->
                     </div>

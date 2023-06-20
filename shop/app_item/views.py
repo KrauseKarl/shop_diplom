@@ -96,7 +96,7 @@ class ItemDetail(generic.DetailView, generic.CreateView):
             context['already_in_cart'] = item_in_cart
             context['cart_item_in_cart'] = cart_item_in_cart
             context['already_in_cart_count'] = cart_item_in_cart_quantity
-            print(context)
+        
         return self.render_to_response(context)
 
     def form_valid(self, form):
@@ -110,14 +110,21 @@ class ItemDetail(generic.DetailView, generic.CreateView):
         data = self.request.POST
         comment_services.CommentHandler.add_comment(user=user, item_id=item_id, data=data)
         cache.delete(item_id)
-        messages.add_message(self.request, messages.SUCCESS,
-                             f"{user.get_full_name()}, спасибо за комментарий. После модерации он будет опубликован.")
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            f"{user.get_full_name()}, спасибо за комментарий. После модерации он будет опубликован."
+        )
         return redirect(self.request.get_full_path())
 
-    def get_success_url(self):
-        messages.add_message(self.request, messages.ERROR,
-                             "Ошибка.Комментарий не был добавлен.Повторите отправку комментария.")
-        return reverse('app_item:item_detail', args=[self.request.pk])
+    def form_invalid(self, form):
+        super().form_invalid(form)
+        messages.add_message(
+            self.request,
+            messages.ERROR,
+            "Ошибка.Комментарий не был добавлен.Повторите отправку комментария."
+        )
+        return redirect('app_item:item_detail', args=[self.request.pk])
 
 
 class ItemBestSellerList(generic.ListView):

@@ -1,0 +1,64 @@
+#services:
+#    web-app:
+#        build:
+#            context: .
+#        ports:
+#            - "8000:8000"
+#        volumes:
+#            - ./shop:/shop
+#        environment:
+#            - DB_HOST=127.0.0.1
+#            - DB_NAME=dbPostgreSQL
+#            - DB_USER=postgres
+#            - DB_PASS=admin@123
+#        command: >
+#           sh -c "python manage.py runserver 0.0.0.0:8000"
+#
+#        depends_on:
+#             - database
+#
+#    database:
+#        image: postgres:14.6-alpine
+#        environment:
+#           - POSTGRES_DB=dbPostgreSQL
+#           - POSTGRES_USER=postgres
+#           - POSTGRES_PASSWORD=admin@123
+#
+#    redis:
+#        image: redis:7.0.5-alpine
+#        hostname: redis
+#
+#    worker:
+#        build:
+#            context: .
+#        hostname: worker
+#        entrypoint: celery
+#        command: -A celery_app.app worker --loglevel=info
+#        volumes:
+#            - ./shop:/shop
+#        links:
+#            - redis
+#        depends_on:
+#            - redis
+#            - database
+#        environment:
+#            - DB_HOST=127.0.0.1
+#            - DB_NAME=dbPostgreSQL
+#            - DB_USER=postgres
+#            - DB_PASS=admin@123
+#
+#    flower:
+#       build:
+#           context: .
+#       hostname: flower
+#       entrypoint: celery
+#       command: -A celery_app.app flower
+#       volumes:
+#            - ./shop:/shop
+#       links:
+#            - redis
+#       depends_on:
+#            - redis
+#       ports:
+#        - "5555:5555"
+#

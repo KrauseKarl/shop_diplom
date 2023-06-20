@@ -1,0 +1,39 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+В  доступе отказано
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Ваш аккаунт заблокирован </h1>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Payment" >
+                <div class="Payment-card form-shadow">
+                    <div class="form-group">
+                        <h3 class="secondary_label" style="display:block; padding: 10px">
+                            <span style="display: flex; align-items: center; justify-content: center">
+                                <i class="uil uil-annoyed " style="margin-right:10px; font-size:40px"></i>
+                                <span style="margin-right:20px">ERROR 403</span>
+                            </span>
+                        </h3>
+                        <h4>Аккаунт заблокирован</h4>
+                    </div>
+                    <div class="form-group">
+                        <h5> <a href="{% url 'app_user:logout' %}">Выйти</a></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

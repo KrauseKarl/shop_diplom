@@ -34,12 +34,14 @@ class MainPage(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
+
         if request.user.groups.filter(name__in=('customer', 'seller')).exists() or not self.request.user.is_authenticated:
             context['favorites'] = AddItemToReview().get_best_price_in_category(request.user)
             context['popular'] = ItemHandler.get_popular_items()[:8]
             context['limited_edition_items'] = ItemHandler.get_limited_edition_items()
         elif request.user.groups.filter(name='admin').exists():
             return redirect('app_settings:dashboard')
+
         return self.render_to_response(context)
 
 

@@ -29,21 +29,37 @@ def user_dir_path(instance, filename):
 class Profile(models.Model):
     """Модель пользователя."""
     DEFAULT_IMAGE = '/media/default_images/default_avatar.png'
-    user = models.OneToOneField(User,
-                                on_delete=models.CASCADE,
-                                related_name='profile',
-                                verbose_name='пользователь')
-    avatar = models.ImageField(upload_to=user_dir_path,
-                               # upload_to=profile_directory_path('avatar/'),
-                               # avatar = models.ImageField(upload_to='avatar/',
-                               default='',
-                               verbose_name='аватар')
-    telephone = models.CharField(max_length=18,
-                                 verbose_name='телефон', unique=True)
-    date_joined = models.DateTimeField(auto_now_add=True,
-                                       null=True)
-    review_items = models.ManyToManyField(Item,
-                                          related_name='item_views')
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile',
+        verbose_name='пользователь'
+    )
+    is_active = models.BooleanField(
+        default=False,
+        verbose_name='активный профиль'
+    )
+    avatar = models.ImageField(
+        upload_to=user_dir_path,
+        # upload_to=profile_directory_path('avatar/'),
+        # avatar = models.ImageField(upload_to='avatar/',
+        default='',
+        verbose_name='аватар'
+    )
+    telephone = models.CharField(
+        max_length=18,
+        verbose_name='телефон',
+        unique=True
+    )
+    date_joined = models.DateTimeField(
+        auto_now_add=True,
+        null=True
+    )
+    review_items = models.ManyToManyField(
+        Item,
+        related_name='item_views'
+    )
 
     objects = models.Manager()
 
@@ -51,11 +67,6 @@ class Profile(models.Model):
         ordering = ['user']
         verbose_name = 'профиль'
         verbose_name_plural = 'профили'
-
-        # def save(self, *args, **kwargs):
-        # from app_user.services.register_services import ProfileHandler
-        # self.telephone = ProfileHandler.telephone_formatter(self.telephone)
-        # super(Profile, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'

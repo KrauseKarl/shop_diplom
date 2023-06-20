@@ -2,7 +2,7 @@
 {% load static  %}
 {% load cache %}
 {% block title %}
-
+Заказ №{{order.id}}
 {% endblock %}
 
 {% block content %}
@@ -131,7 +131,7 @@
                   <div class="Cart-block Cart-block_row">
                     <div class="Cart-block Cart-block_pict">
                       <a class="Cart-pict" href="{% url 'app_item:item_detail' pk=item.item.pk %}">
-                        <img class="Cart-img" src="{{ item.item.item.image.first.image.url }}"
+                        <img class="Cart-img" src="{{ item.item.item.main_image }}"
                              alt="{{ item.item.item.title }}"/>
                       </a>
                     </div>

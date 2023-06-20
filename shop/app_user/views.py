@@ -156,24 +156,20 @@ class CommentList(generic.ListView, MixinPaginator):
 
 
 # LOG IN & OUT #
-
-
 class UserLoginView(auth_views.LoginView):
     template_name = 'registrations/login.html'
 
     def form_valid(self, form):
         """Логинит пользователя и вызывает функцию удаления cookies['cart] & cookies['has_cart]. """
         login(self.request, form.get_user())
-        if user_services.user_in_group(self.request.user, 'customer'):
+        if user_services.user_in_group(self.request.user, ['customer']):
             response = cart_services.delete_cart_cookies(
                 self.request,
                 path=reverse('app_user:account', kwargs={'pk': self.request.user.pk})
             )
             return response
-        elif user_services.user_in_group(self.request.user, 'admin'):
+        elif user_services.user_in_group(self.request.user, ['admin', 'seller']):
             return HttpResponseRedirect(reverse('main_page'))
-        elif user_services.user_in_group(self.request.user, 'seller'):
-            return HttpResponseRedirect(reverse('app_store:store_list'))
         if self.request.GET.get('next'):
             return HttpResponseRedirect(reverse(self.request.GET.get('next')))
         return HttpResponseRedirect(reverse('app_user:account', kwargs={'pk': self.request.user.pk}))
@@ -182,6 +178,10 @@ class UserLoginView(auth_views.LoginView):
 class UserLogoutView(auth_views.LogoutView):
     template_name = 'registrations/logout.html'
     next_page = reverse_lazy('app_user:login')
+
+
+class BlockView(generic.TemplateView):
+    template_name = 'registrations/block_page.html'
 
 
 # ACTIVATE ACCOUNT #

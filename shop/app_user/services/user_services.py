@@ -9,9 +9,9 @@ def get_user(user):
         return None
 
 
-def user_in_group(user, group_name: str) -> bool:
-    group = Group.objects.get(name=group_name)
-    if group in user.groups.all():
+def user_in_group(user, group_name: list) -> bool:
+    group = Group.objects.filter(name__in=group_name)
+    if user.groups.first() in group:
         return True
     return False
 

@@ -2,64 +2,83 @@ version: '3.7'
 
 services:
 
-
   # DB POSTGRES
   database:
-    container_name: db
+    container_name: shop_db
     image: postgres:14.1-alpine
     volumes:
       - pg_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgresUSER
-      - POSTGRES_PASSWORD=postgresPASS
+    env_file:
+      - .env
+#    environment:
+#      - POSTGRES_DB=postgres
+#      - POSTGRES_USER=postgresUSER
+#      - POSTGRES_PASSWORD=postgresPASS
     ports:
       - 5432:5432
 
 
-  # PG_ADMIN FOR POSTGRES
-  pgadmin:
-    container_name: pg_admin
-    image: dpage/pgadmin4:5.7
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "habrpguser@habr.com"
-      PGADMIN_DEFAULT_PASSWORD: "pgadmin"
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    volumes:
-      - ./pgadmin:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    #    restart: unless-stopped
-    #    deploy:
-    #      resources:
-    #        limits:
-    #          cpus: '0.5'
-    #          memory: 500M
-    #    networks:
-    #      - postgres
+#  # PG_ADMIN FOR POSTGRES
+#  pgadmin:
+#    container_name: pg_admin
+#    image: dpage/pgadmin4:5.7
+#    env_file:
+#      - .env
+##    environment:
+##      PGADMIN_DEFAULT_EMAIL: "habrpguser@habr.com"
+##      PGADMIN_DEFAULT_PASSWORD: "pgadmin"
+##      PGADMIN_CONFIG_SERVER_MODE: "False"
+#    volumes:
+#      - ./pgadmin:/var/lib/pgadmin
+#    ports:
+#      - "5050:80"
+#    #    restart: unless-stopped
+#    #    deploy:
+#    #      resources:
+#    #        limits:
+#    #          cpus: '0.5'
+#    #          memory: 500M
+#    #    networks:
+#    #      - postgres
 
 
   # DJANGO APP
   shop_app:
     container_name: app
-    build:
-      context: .
-#      dockerfile: Dockerfile
-    image: app:latest
-    command: bash entrypoint.sh
-#    gunicorn shop.wsgi:application --bind 0.0.0.0:8000
-#      bash -c "python manage.py migrate --noinput  &&
-#               python manage.py loaddata fixtures/data.json &&
-#               python manage.py runserver 0.0.0.0:8000"
+    build: ./shop
+#   dockerfile: Dockerfile
+#   image: app:latest
+    command:  bash  '/usr/src/app/entrypoint.sh' && gunicorn shop.wsgi:application --bind 0.0.0.0:8000
+#      bash "gunicorn  shop.wsgi:application --bind 0.0.0.0:8000"
+#      bash  /usr/src/app/entrypoint.sh
+#     - gunicorn
+#     - shop.wsgi:application
+#     - --bind
+#     - 0.0.0.0:8000
+
+#       "python manage.py migrate --noinput  &&
+#        python manage.py loaddata fixtures/data.json &&
+#        python manage.py runserver 0.0.0.0:8000"
+
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "200k"
     volumes:
       - static_volume:/usr/src/app/assets
       - media_volume:/usr/src/app/media
     ports:
       - 8000:8000
-#    env_file:
-#      - ./shop .env
+    env_file:
+      - .env
     depends_on:
-             - database
+      - database
+      - redis
+    links:
+      - database
+      - redis
+
 
 
   # NGINX
@@ -74,53 +93,89 @@ services:
     depends_on:
       - shop_app
 
-#   REDIS
-
   # REDIS
   redis:
     image: redis:7.0.5-alpine
     container_name: redis
 
-  # CELERY
+  # CELERY celery -A shop.celery:app flower --loglevel=DEBUG --port=9090
   celery:
-    restart: always
-    build:
-      context: .
-    hostname: worker
-    command:  celery --app=shop worker --loglevel=info
+    build: ./shop
+    container_name: celery
+    command: celery -A shop.celery:app worker --loglevel=INFO
     volumes:
-      - celery_volume:/usr/scr/app
-    environment:
-     - POSTGRES_DB=postgres
-     - POSTGRES_USER=postgresUSER
-     - POSTGRES_PASSWORD=postgresPASS
-     - POSTGRES_HOST=db
+      - celery_volume:/usr/src/app
+    env_file:
+      - .env
     links:
       - redis
-    container_name: celery
+      - database
     depends_on:
       - database
       - redis
 
   # FLOWER
   flower:
-    build:
-      context: .
-    hostname: flower
-    container_name: flower
-    entrypoint: celery
-    command: -A celery_app.app flower
-    volumes:
-      - celery_volume:/usr/scr/app
-    links:
-      - redis
-    depends_on:
-      - redis
-    ports:
-      - "5555:5555"
+   build: ./shop
+   container_name: flower
+   command: celery -A shop.celery:app flower --loglevel=DEBUG  --port=5555
+   env_file:
+      - .env
+   ports:
+      - "127.0.0.1:5555:5555"
+   volumes:
+      - flower_data:/usr/src/app/flower
+   links:
+     - redis
+     - database
+   depends_on:
+     - database
+     - redis
+
+
+#  ### CELERY
+#  celery_1:
+##    restart: always
+#    build:
+#      context: ./shop
+#    hostname: worker
+#    command: celery -A shop worker --loglevel=info
+#    volumes:
+#      - celery_volume:/usr/src/app
+##    environment:
+##     - POSTGRES_DB=postgres
+##     - POSTGRES_USER=postgresUSER
+##     - POSTGRES_PASSWORD=postgresPASS
+##     - POSTGRES_HOST=db
+#    env_file:
+#       - .env
+#    links:
+#      - redis
+#    container_name: celery
+#    depends_on:
+#      - database
+#      - redis
+
+#  # FLOWER
+#  flower_2:
+#    build:
+#      context: ./shop
+##    hostname: flower
+#    container_name: flower
+##    entrypoint: celery
+#    command:  celery -A shop flower
+##    volumes:
+##      - celery_volume:/usr/src/app
+#    links:
+#      - redis
+#    depends_on:
+#      - redis
+#    ports:
+#      - "5555:5555"
 
 volumes:
   pg_data:
   static_volume:
   media_volume:
   celery_volume:
+  flower_data:

@@ -77,6 +77,27 @@ class CustomerListView(AdminOnlyMixin, generic.ListView):
         return render(self.request, self.template_name, {'object_list': object_list})
 
 
+class CustomerDeleteView(AdminOnlyMixin, generic.UpdateView):
+    """Класс-представление для блокировки/разблокировки покупатель."""
+    model = auth_modals.User
+
+    def get(self, request, *args, **kwargs):
+        customer_id = kwargs['pk']
+        try:
+            customer = auth_modals.User.objects.get(id=customer_id)
+            if customer.profile.is_active:
+                customer.profile.is_active = False
+                message = f"Покупатель {customer.get_full_name()} разблокирован"
+            else:
+                customer.profile.is_active = True
+                message = f"Покупатель {customer.get_full_name()} заблокирован"
+            customer.profile.save()
+            messages.add_message(self.request, messages.WARNING, message)
+            return redirect('app_settings:customer_list')
+        except ObjectDoesNotExist:
+            raise Http404("Такого покупателя не существует не существует")
+
+
 class SellerListView(AdminOnlyMixin, generic.ListView):
     model = auth_modals.User
     template_name = 'app_settings/seller/seller_list.html'
@@ -98,6 +119,26 @@ class SellerListView(AdminOnlyMixin, generic.ListView):
         object_list = MixinPaginator(object_list, self.request, self.paginate_by).my_paginator()
         return render(self.request, self.template_name, {'object_list': object_list})
 
+
+class SellerDeleteView(AdminOnlyMixin, generic.UpdateView):
+    """Класс-представление для блокировки/разблокировки продавец."""
+    model = auth_modals.User
+
+    def get(self, request, *args, **kwargs):
+        seller_id = kwargs['pk']
+        try:
+            seller = auth_modals.User.objects.get(id=seller_id)
+            if seller.profile.is_active:
+                seller.profile.is_active = False
+                message = f"Продавец {seller.get_full_name()} заблокирован"
+            else:
+                seller.profile.is_active = True
+                message = f"Продавец {seller.get_full_name()} разблокирован "
+            seller.profile.save()
+            messages.add_message(self.request, messages.WARNING, message)
+            return redirect('app_settings:seller_list')
+        except ObjectDoesNotExist:
+            raise Http404("Такого продавец не существует не существует")
 
 class StoreListView(AdminOnlyMixin, generic.ListView):
     model = store_modals.Store
@@ -479,3 +520,5 @@ class OrderDetailView(AdminOnlyMixin, generic.DetailView):
         context['items'] = order.order_items.filter(item__item__store__in=stores)
         context['total'] = context['items'].aggregate(total_cost=Sum('total')).get('total_cost')
         return self.render_to_response(context)
+
+

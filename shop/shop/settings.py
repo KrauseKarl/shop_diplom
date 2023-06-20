@@ -1,17 +1,24 @@
 import os
+import logging.config
 from pathlib import Path
 from os import environ
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+# DATABASE_DIR = BASE_DIR / "pg_data"
+# DATABASE_DIR.mkdir(exist_ok=True)
 
-SECRET_KEY = 'django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d' #environ.get('SECRET_KEY')
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d"
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #int(environ.get('DEBUG', default=0))
+DEBUG = os.getenv("DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = ['127.0.0.1'] #environ.get('ALLOWED_HOSTS').split(' ')
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "0.0.0.0"
+] + os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
 
 # Application definition
 
@@ -23,7 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'easy_thumbnails',
+    # 'easy_thumbnails',
 
     # my app
     'app_item.apps.AppItemConfig',
@@ -33,6 +40,7 @@ INSTALLED_APPS = [
     'app_cart.apps.AppCartConfig',
     'app_invoice.apps.AppInvoiceConfig',
     'app_settings.apps.AppSettingsConfig',
+    'app_favorite.apps.AppFavoriteConfig',
 ]
 
 MIDDLEWARE = [
@@ -43,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'shop.middleware.userMiddleware.simple_middleware',
 ]
 
 ROOT_URLCONF = 'shop.urls'
@@ -80,11 +89,11 @@ TEMPLATES = [
         },
     },
 ]
-THUMBNAIL_ALIASES = {
-    'app_user.Profile.avatar': {
-        'avatar': {'size': (50, 50), 'crop': True},
-    },
-}
+# THUMBNAIL_ALIASES = {
+#     'app_user.Profile.avatar': {
+#         'avatar': {'size': (50, 50), 'crop': True},
+#     },
+# }
 
 CACHES = {
     'default': {
@@ -95,15 +104,12 @@ CACHES = {
 WSGI_APPLICATION = 'shop.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 #
 # DATABASES = {
 #     'default': {
@@ -118,12 +124,12 @@ DATABASES = {
 
 # DATABASES = {
 #     'default': {
-#         'ENGINE': environ.get('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
-#         'NAME': environ.get('POSTGRES_DB', os.path.join(BASE_DIR, 'db.sqlite3')),
-#         'USER': environ.get('POSTGRES_USER', 'user'),
-#         'PASSWORD': environ.get('POSTGRES_PASSWORD', 'password'),
-#         'HOST': environ.get('POSTGRES_HOST', 'localhost'),
-#         'PORT': environ.get('POSTGRES_PORT', '5432'),
+#         'ENGINE':os.getenv('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
+#         'NAME': os.getenv('POSTGRES_DB', os.path.join(BASE_DIR, 'db.sqlite3')),
+#         'USER': os.getenv('POSTGRES_USER', 'user'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
+#         'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
+#         'PORT':os.getenv('POSTGRES_PORT', '5432'),
 #
 #     }
 # }
@@ -173,6 +179,31 @@ FIXTURE_ROOT = os.path.join(BASE_DIR, 'fixtures')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGLEVEL = os.getenv("DJANGO_LOGLEVEL", "info").upper()
+logging.config.dictConfig({
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "console": {
+            "format": "%(asctime)s %(levelname)s [%(name)s:%(lineno)s] %(module)s %(message)s",
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "console",
+        },
+    },
+    "loggers": {
+        "": {
+            "level": LOGLEVEL,
+            "handlers": [
+                "console",
+            ],
+        },
+    },
+})
+
 if DEBUG:
     MIDDLEWARE += (
         'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -198,7 +229,7 @@ USE_CACHE = True
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
 # CELERY_BROKER_URL = 'redis://redis:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://redis:6379/1'
 CELERY_TIMEZONE = 'Europe/Moscow'
 # CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 # CELERY_ACCEPT_CONTENT = ['application/json']
