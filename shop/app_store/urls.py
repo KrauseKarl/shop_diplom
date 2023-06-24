@@ -45,6 +45,8 @@ urlpatterns = [
 
 
     path('image/delete/<int:pk>/image/', DeleteImage.as_view(), name='delete_image'),
+    path('image/update/<int:pk>/image/', MakeImageMainImage.as_view(), name='make_image_main'),
+
 
     path('export_data_csv/<int:pk>/', export_data_to_csv, name='export_data'),
     path('import_data_from_cvs/<int:pk>', import_data_from_cvs, name='import_data'),

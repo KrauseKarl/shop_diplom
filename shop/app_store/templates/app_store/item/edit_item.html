@@ -39,17 +39,23 @@
                                 <div class="form-group">
                                     {% for img in item.images.all %}
                                     <!--  IMAGE  -->
-                                    <div class="Profile-avatar">
+                                    <div class="Profile-avatar  {% if img.main %}label_success  {% endif %}">
                                         <div class="Profile-img">
                                             <img src="{{ img.image.url }}" alt="{{ img }}"/>
                                         </div>
                                     </div>
                                     <!--  IMAGE END -->
                                     <div>
-                                            <a href="{% url 'app_store:delete_image' pk=img.pk  %}"
-                                               style="color:red">&#10060;</a>
+                                        {% if img.main %}
+                                        <span class="success-text">&#9733; главное</span>
+                                        {% else %}
+                                        <a href="{% url 'app_store:make_image_main' pk=img.pk %}" class="primary-text">сделат главным</a>
+                                        {% endif %}
+                                        <a href="{% url 'app_store:delete_image' pk=img.pk  %}"
+                                           class="danger-text">&#10060; удалить</a>
                                     </div>
                                     {% endfor %}
+
                                 </div>
                                 <!-- ADD IMAGE FORM BEGIN -->
                                 <div id="form-container-image" class="form-group input-collect">

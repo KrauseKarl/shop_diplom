@@ -25,9 +25,8 @@ from celery_app import app
 
 
 @shared_task
-def pay_order(order_id, number, pay):
+def paying(order_id, number, pay):
     sleep(2)
-
     if number % 2 != 0 or number % 10 == 0:
         error = Payment.error_generator()
         order = Order.objects.get(id=order_id)
@@ -54,13 +53,12 @@ def pay_order(order_id, number, pay):
                     total_sum=order.total_sum
                 )
         # with transaction.atomic():
-        #     for product in order.items_is_paid.all():
+        #     for product in order.order_items.all():
         #         item = Item.objects.get(cart_item=product.id)
         #         item.stock -= product.quantity
         #         item.save()
 
         return True
-
 
 
 @app.task

@@ -1,6 +1,5 @@
 from django.db import models
 
-from app_cart.models import CartItem
 from app_order.models import Order, OrderItem
 
 
@@ -11,7 +10,7 @@ class Invoice(models.Model):
         Order,
         on_delete=models.CASCADE,
         related_name='invoices',
-        verbose_name='чек'
+        verbose_name='заказ'
     )
     total_purchase_sum = models.DecimalField(
         max_digits=10,
@@ -37,8 +36,8 @@ class Invoice(models.Model):
     )
     paid_item = models.ManyToManyField(
         OrderItem,
-        related_name='invoices',
-        verbose_name='плаченный товар'
+        related_name='invoice_item',
+        verbose_name='оплаченный товар'
     )
     created = models.DateTimeField(
         auto_now_add=True,

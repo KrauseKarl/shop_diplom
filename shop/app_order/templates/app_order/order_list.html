@@ -67,17 +67,10 @@
                                         <span class="Order-numberOrder">№{{ order.id }}</span>&#32;от&#32;
                                         <span class="Order-dateOrder">{{ order.created|date:"j M o" }}</span>
                                     </a>
-                                    <div class="Account-editLink">
-                                       <span class="{% if order.status == 'created' %}secondary_label
-                                                    {% elif order.status == 'paid' %}warning_label
-                                                    {% elif order.status == 'is_preparing' %}info_label
-                                                    {% elif order.status == 'on_the_way' %}info_label
-                                                    {% elif order.status == 'is_ready' %}success_label
-                                                    {% elif order.status == 'completed' %}primary_label
-                                                    {% endif %}">
-                                           {{ order.get_status_display}}
+                                     <div class="Account-editLink">
+                                    <span class="primary-text">{{ order.get_status_display }}
                                     </span>
-                                    </div>
+                                </div>
                                 </div>
                                 <div class="row-block">
                                     <div class="Order-info Order-info_delivery">
@@ -109,6 +102,7 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                     {% empty %}

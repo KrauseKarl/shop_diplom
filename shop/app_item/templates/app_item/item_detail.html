@@ -2,7 +2,7 @@
 
 {% load static  %}
 {% load cache %}
-{% load thumbnail %}
+
 
 {% block title %}{{ item.title }}{% endblock %}
 
@@ -260,7 +260,7 @@
                                         {% if comment.user.is_authenticated and comment.user.profile.avatar %}
                                         <div>
                                             <img class="Comment-avatar-exist"
-                                                 src=" {% thumbnail comment.user.profile.avatar 99x0 %}">
+                                                 src=" {{ comment.user.profile.get_avatar }}" width="50%">
                                         </div>
                                         {% else %}
                                         <div class="Comment-avatar"></div>

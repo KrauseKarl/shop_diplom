@@ -72,6 +72,7 @@
                         <!-- ERROR MESSAGE   -->
                         <div class="Order-infoContent-left">
                             <input type="checkbox" name="order" id='order' value="{{ order.id }}">
+                            <input class="form-input Payment-bill" id="pay" name="pay" type="hidden" value="{{ order.pay }}">
                             <span class="Order-infoContent-left">{{ order }}</span>
                             <span class="Order-infoContent-right form-label">сумма заказа</span>
                             <span class="Order-infoContent-right Cart-price form-label">

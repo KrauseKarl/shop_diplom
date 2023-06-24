@@ -3,22 +3,25 @@ import logging.config
 from pathlib import Path
 from os import environ
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-# DATABASE_DIR = BASE_DIR / "pg_data"
-# DATABASE_DIR.mkdir(exist_ok=True)
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
     "django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d"
 )
 
-DEBUG = os.getenv("DEBUG", "0") == "1"
+DEBUG = True #os.getenv("DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "0.0.0.0"
-] + os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = ["*"]
+if os.environ.get("ALLOWED_HOSTS") is not None:
+    try:
+        ALLOWED_HOSTS += os.getenv("ALLOWED_HOSTS").split(",")
+    except Exception as e:
+        print("Cant set ALLOWED_HOSTS, using default instead")
+
+# DATABASE_DIR = BASE_DIR / "pg_data"
+# DATABASE_DIR.mkdir(exist_ok=True)
+
 
 # Application definition
 
@@ -89,6 +92,7 @@ TEMPLATES = [
         },
     },
 ]
+
 # THUMBNAIL_ALIASES = {
 #     'app_user.Profile.avatar': {
 #         'avatar': {'size': (50, 50), 'crop': True},
@@ -104,38 +108,29 @@ CACHES = {
 WSGI_APPLICATION = 'shop.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
+DB_SQLITE = "sqlite"
+DB_POSTGRESQL = "postgresql"
+
+DATABASES_ALL = {
+    DB_SQLITE: {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    },
+    DB_POSTGRESQL: {
+        'ENGINE': 'django.db.backends.postgresql',
+        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+        "NAME": os.getenv("POSTGRES_NAME", "postgres"),
+        "USER": os.getenv("POSTGRES_USER", "postgres"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
+        "PORT": int(os.getenv("POSTGRES_PORT", "5432")),
+    },
 }
-#
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'HOST': 'database',
-#         'NAME': 'postgres',
-#         'USER': 'postgresUSER',
-#         'PASSWORD': 'postgresPASS',
-#         'PORT': 5432,
-#     }
-# }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE':os.getenv('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
-#         'NAME': os.getenv('POSTGRES_DB', os.path.join(BASE_DIR, 'db.sqlite3')),
-#         'USER': os.getenv('POSTGRES_USER', 'user'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
-#         'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-#         'PORT':os.getenv('POSTGRES_PORT', '5432'),
-#
-#     }
-# }
+DATABASES = {"default": DATABASES_ALL[os.getenv("DJANGO_DB", DB_SQLITE)]}
+# DATABASES = {"default": DATABASES_ALL[os.environ.get("DJANGO_DB", DB_SQLITE)]}
+
 
 # Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -151,9 +146,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+SITE_ID = 1
 # Internationalization
-# https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'ru-ru'
 
@@ -164,18 +158,15 @@ USE_I18N = True
 USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = '/assets/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'), ]
-# STATIC_ROOT = BASE_DIR / "assets"
+#STATIC_ROOT = BASE_DIR / "assets"
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = BASE_DIR / "media/"
 
 FIXTURE_ROOT = os.path.join(BASE_DIR, 'fixtures')
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -212,13 +203,13 @@ INSTALLED_APPS += (
     'debug_toolbar',
 )
 INTERNAL_IPS = ('127.0.0.1',)
+
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
 }
-
 USE_CACHE = True
 
-#
+# Session settings
 # SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 # SESSION_COOKIE_HTTPONLY = True
@@ -226,10 +217,10 @@ USE_CACHE = True
 
 
 # Celery settings
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
-# CELERY_BROKER_URL = 'redis://redis:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://redis:6379/1'
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
+
+
 CELERY_TIMEZONE = 'Europe/Moscow'
 # CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 # CELERY_ACCEPT_CONTENT = ['application/json']

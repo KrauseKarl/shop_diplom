@@ -2,22 +2,23 @@ import random
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import F, QuerySet
-from django.db.models.query_utils import DeferredAttribute
 from django.http import Http404
 from django.shortcuts import redirect
 
+# models
+from app_cart import models as cart_models
+from app_invoice import models as invoice_models
+from app_item import models as item_models
+from app_order import models as order_models
+from app_settings import models as settings_models
+from app_store import models as store_models
+
+# services
+from app_cart.services import cart_services
+from app_user.services import register_services
+
+# other
 from app_cart.context_processors import get_cart
-from app_cart.models import Cart, CartItem
-from app_cart.services.cart_services import get_current_cart
-from app_invoice.models import Invoice
-from app_item.models import Item, Comment
-from app_item.services.item_services import ItemHandler
-from app_order import models
-from app_order.models import Order, Address, OrderItem
-from app_settings.models import SiteSettings
-from app_store.models import Store
-from app_user.services.register_services import ProfileHandler
 
 
 class CustomerOrderHandler:
@@ -25,7 +26,7 @@ class CustomerOrderHandler:
     @staticmethod
     def create_order(request, form):
         """Функция содает заказ."""
-        cart = get_current_cart(request).get('cart')
+        cart = cart_services.get_current_cart(request).get('cart')
         user = request.user
         post_address = form.cleaned_data.get('post_address')
         city = form.cleaned_data.get('city'),
@@ -36,11 +37,11 @@ class CustomerOrderHandler:
         delivery_cost = cart.is_free_delivery
         with transaction.atomic():
             stores = get_cart(request).get('cart_dict').get('book')
-            order = Order.objects.create(
+            order = order_models.Order.objects.create(
                 user=user,
                 name=form.cleaned_data.get('name'),
                 email=form.cleaned_data.get('email'),
-                telephone=ProfileHandler.telephone_formatter(form.cleaned_data.get('telephone')),
+                telephone=register_services.ProfileHandler.telephone_formatter(form.cleaned_data.get('telephone')),
                 delivery=form.cleaned_data.get('delivery'),
                 pay=form.cleaned_data.get('pay'),
                 city=city,
@@ -50,7 +51,7 @@ class CustomerOrderHandler:
                 comment=form.cleaned_data.get('comment'),
             )
             for store_title, values in stores.items():
-                store = Store.objects.get(title=store_title)
+                store = store_models.Store.objects.get(title=store_title)
                 order.store.add(store)
                 order.save()
 
@@ -59,7 +60,7 @@ class CustomerOrderHandler:
                 for cart_item in cart_items:
                     cart_item.is_paid = True
                     cart_item.save()
-                    OrderItem.objects.create(
+                    order_models.OrderItem.objects.create(
                         item=cart_item,
                         quantity=cart_item.quantity,
                         price=cart_item.price,
@@ -67,19 +68,21 @@ class CustomerOrderHandler:
                     )
                     cart_item.order = order
                     cart_item.status = 'not_paid'
-
                 # product = Item.objects.get(id=cart_item.item.id)
                 # product.stock -= cart_item.quantity
                 # product.save()
-            cart.is_archived = True
-            cart.save()
+                cart_services.delete_cart_cache(request)
+                cart.is_archived = True
+                cart.save()
         return order
 
     @staticmethod
     def get_customer_one_order(request):
         """Функция для получения списка всех заказов начиная с последнего."""
         try:
-            return Order.objects.select_related('user').filter(user_id=request.user.id).order_by('-created')
+            return order_models.Order.objects.select_related('user').\
+                filter(user_id=request.user.id).\
+                order_by('-created')
         except ObjectDoesNotExist:
             raise Http404("Заказ не найден")
 
@@ -87,9 +90,11 @@ class CustomerOrderHandler:
     def get_customer_order_list(request, delivery_status=None):
         try:
             if delivery_status:
-                orders = Order.objects.filter(user=request.user).filter(status=delivery_status).order_by('-updated')
+                orders = order_models.Order.objects.filter(user=request.user).\
+                    filter(status=delivery_status).\
+                    order_by('-updated')
             else:
-                orders = Order.objects.filter(user=request.user).order_by('-updated')
+                orders = order_models.Order.objects.filter(user=request.user).order_by('-updated')
             return orders
         except ObjectDoesNotExist:
             return None
@@ -98,7 +103,7 @@ class CustomerOrderHandler:
     def get_last_customer_order(user):
         """Функция возвращает самый последний заказ пользователя."""
         try:
-            last_order = Order.objects.filter(user=user).last()
+            last_order = order_models.Order.objects.filter(user=user).last()
         except ObjectDoesNotExist:
             last_order = None
         return last_order
@@ -106,21 +111,21 @@ class CustomerOrderHandler:
     @staticmethod
     def calculate_express_delivery_fees(delivery):
         if delivery == 'express':
-            res = SiteSettings().express_delivery_price
+            res = settings_models.SiteSettings().express_delivery_price
             return res
         return 0
 
     @staticmethod
     def get_order_items(order):
         try:
-            return models.OrderItem.objects.filter(order=order).order_by('item__store')
+            return order_models.OrderItem.objects.filter(order=order).order_by('item__store')
         except ObjectDoesNotExist:
             return None
 
     @staticmethod
     def get_order(order_id):
         try:
-            return Order.objects.filter(id=order_id).first()
+            return order_models.Order.objects.filter(id=order_id).first()
         except ObjectDoesNotExist:
             return Http404('Такого заказ нет')
 
@@ -132,13 +137,13 @@ class SellerOrderHAndler:
         # собственник
         owner = request.user
         # все магазины собственника
-        stores = Store.objects.select_related('owner').filter(owner=owner)
+        stores = store_models.Store.objects.select_related('owner').filter(owner=owner)
         # все товары в магазинах собственника
-        items = Item.objects.select_related('store').filter(store__in=stores)
+        items = item_models.Item.objects.select_related('store').filter(store__in=stores)
 
         # все заказанные товары из магазинов
-        items_in_cart = CartItem.objects.select_related('item').filter(item_id__in=items)
-        order_items = OrderItem.objects.filter(item__in=items_in_cart)
+        items_in_cart = cart_models.CartItem.objects.select_related('item').filter(item_id__in=items)
+        order_items = order_models.OrderItem.objects.filter(item__in=items_in_cart)
         # # all sold product
         # items_my_store = items.filter(cart_item__in=items_in_cart)
         # все заказы в магазинах собственника
@@ -152,11 +157,11 @@ class SellerOrderHAndler:
         # собственник
         owner = request.user
         # все магазины собственника
-        stores = Store.objects.select_related('owner').filter(owner=owner)
+        stores = store_models.Store.objects.select_related('owner').filter(owner=owner)
         # все товары в магазинах собственника
-        items = Item.objects.select_related('store').filter(store__in=stores)
+        items = item_models.Item.objects.select_related('store').filter(store__in=stores)
         # все комментарии о товарах в магазинах собственника
-        comment_list = Comment.objects.select_related('item').filter(item__in=items)
+        comment_list = item_models.Comment.objects.select_related('item').filter(item__in=items)
         if request.GET.get('is_published'):
             is_published = request.GET.get('is_published')
             comment_list = comment_list.filter(is_published=is_published, archived=False)
@@ -189,7 +194,7 @@ class SellerOrderHAndler:
         order_item.total = order_item.item.price * form.cleaned_data.get('quantity')
         order_item.save()
         order_id = order_item.order.id
-        order = Order.objects.get(id=order_id)
+        order = order_models.Order.objects.get(id=order_id)
         store = order.store.first()
         new_total_order = 0
         for order_item in order.order_items.all():
@@ -197,9 +202,9 @@ class SellerOrderHAndler:
                 new_total_order += round(float(order_item.total) * ((100 - store.discount) / 100), 0)
             else:
                 new_total_order += float(order_item.total)
-        min_free_delivery = SiteSettings().min_free_delivery
-        delivery_fees = SiteSettings().delivery_fees
-        express_delivery_fees = SiteSettings().express_delivery_price
+        min_free_delivery = settings_models.SiteSettings().min_free_delivery
+        delivery_fees = settings_models.SiteSettings().delivery_fees
+        express_delivery_fees = settings_models.SiteSettings().express_delivery_price
         if new_total_order < min_free_delivery:
             new_delivery_fees = delivery_fees
         else:
@@ -225,7 +230,7 @@ class Payment:
     def get_invoice(cls, invoice_id):
         """Возвращает экземпляр квитанции по ID."""
         try:
-            invoice = Invoice.objects.get(id=invoice_id)
+            invoice = invoice_models.Invoice.objects.get(id=invoice_id)
             return invoice
         except ObjectDoesNotExist:
             raise Http404('Квитанция не найдена')
@@ -265,8 +270,8 @@ class Payment:
 class AddressHandler:
     @staticmethod
     def get_post_address(request, city, address):
-        post_address, created = Address.objects.get_or_create(
-            city=city,
+        post_address, created = order_models.Address.objects.get_or_create(
+            city=city[0],
             address=address,
             user=request.user
         )
@@ -276,13 +281,13 @@ class AddressHandler:
     def get_address_list(request):
         try:
             user = request.user
-            return Address.objects.filter(user=user)
+            return order_models.Address.objects.filter(user=user)
         except ObjectDoesNotExist:
             return []
 
     @staticmethod
     def delete_address(request, address_id):
-        address = Address.objects.get(id=address_id)
+        address = order_models.Address.objects.get(id=address_id)
         user = request.user
         if address in user.address.all():
             address.delete()
@@ -291,4 +296,4 @@ class AddressHandler:
 class AdminOrderHAndler:
     @staticmethod
     def orders():
-        return Order.objects.all()
+        return order_models.Order.objects.all()

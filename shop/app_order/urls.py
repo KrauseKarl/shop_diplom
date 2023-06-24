@@ -24,7 +24,7 @@ urlpatterns = [
     path('address/remove/<int:pk>/', views.AddressDelete.as_view(), name='address_remove'),
 
     path('progress_payment/<int:pk>/', views.PaymentView.as_view(), name='progress_payment'),
-    path("validate_username/", views.validate_username, name="validate_username"),
+    path("pay_order/", views.pay_order, name="pay_order"),
     path("get_status_payment/<int:order_id>/<task_id>/", views.get_status_payment, name="get_status_payment"),
     path('success_pay/<int:order_id>/', views.SuccessPaid.as_view(), name='success_pay'),
     path('failed_pay/<int:order_id>/', views.FailedPaid.as_view(), name='failed_pay'),

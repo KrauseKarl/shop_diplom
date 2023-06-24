@@ -28,7 +28,10 @@ class MainPage(TemplateView):
         if not self.request.user.is_authenticated:
             user_group = 'customer'
         else:
-            user_group = self.request.user.groups.first().name
+            try:
+                user_group = self.request.user.groups.first().name
+            except AttributeError:
+                user_group = 'customer'
         name = templates_dict[user_group]
         return name
 

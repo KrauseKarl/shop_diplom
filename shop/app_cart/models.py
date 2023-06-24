@@ -4,6 +4,7 @@ from django.db.models import F, Q, Sum
 from django.utils.timezone import now
 
 from app_item.models import Item
+from app_settings.context_processors import load_settings
 from app_settings.models import SiteSettings
 from app_store.models import Store
 
@@ -82,12 +83,17 @@ class CartItem(models.Model):
 
     @property
     def discount_price(self):
-        store = Store.objects.get(id=self.item.store.id)
-        discount = store.discount
-        default_price = float(str(self.price))
-        discount_amount = (default_price * discount) / 100
+        """Стоимость выбранного товара с учетом скидки продавца."""
+        shop = Store.objects.values('min_for_discount', 'discount').get(id=self.item.store.id)
+        cart = self.user.user_cart.filter(is_archived=False).first()
+        items = cart.items.filter(item__store=self.item.store.id)
+        default_price = float(items.aggregate(Sum('total')).get('total__sum'))
+        if default_price > float(shop.get('min_for_discount')):
+            discount_price = round(float(self.price) * ((100 - shop.get('discount')) / 100))
+        else:
+            discount_price = self.price
 
-        return int(self.quantity * round(default_price - discount_amount))
+        return int(self.quantity * discount_price)
 
     def get_store_title(self):
         """Возвращает название магазина."""
@@ -100,13 +106,14 @@ class CartItem(models.Model):
 
 class Cart(models.Model):
     """Модель корзины."""
-    user = models.ForeignKey(User,
-                             on_delete=models.CASCADE,
-                             null=True,
-                             blank=True,
-                             related_name='user_cart',
-                             verbose_name='покупатель'
-                             )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='user_cart',
+        verbose_name='покупатель'
+        )
     items = models.ManyToManyField(
         CartItem,
         related_name='all_items',
@@ -193,10 +200,12 @@ class Cart(models.Model):
 
     @property
     def total_cost_with_delivery(self):
-        min_free_delivery = SiteSettings().min_free_delivery
-        delivery_fees = SiteSettings().delivery_fees
+        settings = SiteSettings.objects.get(id=1)
+        min_free_delivery = settings .min_free_delivery
+        delivery_fees = settings .delivery_fees
         if self.get_total_price_with_discount < min_free_delivery:
-            return self.get_total_price_with_discount + delivery_fees
+            print('8888888', self.get_total_price_with_discount,  delivery_fees)
+            return self.get_total_price_with_discount + float(delivery_fees)
         return self.get_total_price_with_discount
 
     @property
@@ -212,12 +221,12 @@ class Cart(models.Model):
     def calculate_discount(self):
         price_list_with_discount = []
         store_list = list(set(self.items.values_list('item__store', flat=True).distinct()))
-        for store in store_list:
-            shop_ = Store.objects.values('min_for_discount', 'discount').get(id=store)
-            items = self.items.filter(item__store=store)
+        for store_id in store_list:
+            shop = Store.objects.values('min_for_discount', 'discount').get(id=store_id)
+            items = self.items.filter(item__store=store_id)
             default_price = float(items.aggregate(Sum('total')).get('total__sum'))
-            if default_price > float(shop_.get('min_for_discount')):
-                discount_price = round(default_price * ((100 - shop_.get('discount')) / 100))
+            if default_price > float(shop.get('min_for_discount')):
+                discount_price = round(default_price * ((100 - shop.get('discount')) / 100))
                 price_list_with_discount.append(discount_price)
             else:
                 price_list_with_discount.append(default_price)

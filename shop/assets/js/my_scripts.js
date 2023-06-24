@@ -156,11 +156,11 @@ $( document ).ready(function() {
 
 /* ОПЛАТА ТОВАРА */
 $('#form').submit(function () {
-    $('#spinner').show('slow');
-    $('#form_container').hide('slow');
+    $('#spinner').show();
+    $('#form_container').hide();
     $.ajax({
         data: $(this).serialize(),
-        url: `/order/validate_username/`,
+        url: `/order/pay_order/`,
         method: "POST",
         success: function (response) {
             setTimeout(function() {
@@ -202,10 +202,4 @@ function getStatus(orderID, taskID) {
     console.log(err)
   });
 }
-/* ПРОВЕРКА СТАТУСА ОПЛАТЫ ТОВАРА */
-
-/* ПРОВЕРКА СТАТУСА ОПЛАТЫ ТОВАРА */
-$( document ).ready(function() {
-
-});
 /* ПРОВЕРКА СТАТУСА ОПЛАТЫ ТОВАРА */

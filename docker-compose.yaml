@@ -6,19 +6,15 @@ services:
   database:
     container_name: shop_db
     image: postgres:14.1-alpine
+    restart: unless-stopped
     volumes:
       - pg_data:/var/lib/postgresql/data/
     env_file:
       - .env
-#    environment:
-#      - POSTGRES_DB=postgres
-#      - POSTGRES_USER=postgresUSER
-#      - POSTGRES_PASSWORD=postgresPASS
-    ports:
-      - 5432:5432
+    expose:
+      - 5432
 
-
-#  # PG_ADMIN FOR POSTGRES
+  # PG_ADMIN FOR POSTGRES
 #  pgadmin:
 #    container_name: pg_admin
 #    image: dpage/pgadmin4:5.7
@@ -41,141 +37,126 @@ services:
 #    #    networks:
 #    #      - postgres
 
-
   # DJANGO APP
   shop_app:
     container_name: app
-    build: ./shop
-#   dockerfile: Dockerfile
-#   image: app:latest
-    command:  bash  '/usr/src/app/entrypoint.sh' && gunicorn shop.wsgi:application --bind 0.0.0.0:8000
-#      bash "gunicorn  shop.wsgi:application --bind 0.0.0.0:8000"
-#      bash  /usr/src/app/entrypoint.sh
-#     - gunicorn
-#     - shop.wsgi:application
-#     - --bind
-#     - 0.0.0.0:8000
-
-#       "python manage.py migrate --noinput  &&
-#        python manage.py loaddata fixtures/data.json &&
-#        python manage.py runserver 0.0.0.0:8000"
-
+    build:
+      context: ./shop
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '256M'
+        reservations:
+          cpus: '1'
+          memory: '128M'
+    entrypoint: /usr/src/app/entrypoint.sh
+    volumes:
+      - ./shop:/usr/src/app
+      - static_volume:/usr/src/app/assets
+      - media_volume:/usr/src/app/media
+    ports:
+      - "127.0.0.1:8000:8000"
+    expose:
+      - 8000
+    env_file:
+      - .env
+    depends_on:
+      - database
+      - redis
+    links:
+      - database
+      - redis
     logging:
       driver: "json-file"
       options:
         max-file: "10"
         max-size: "200k"
-    volumes:
-      - static_volume:/usr/src/app/assets
-      - media_volume:/usr/src/app/media
-    ports:
-      - 8000:8000
-    env_file:
-      - .env
-    depends_on:
-      - database
-      - redis
-    links:
-      - database
-      - redis
-
 
 
   # NGINX
   nginx:
     build: ./nginx
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '256M'
+        reservations:
+          cpus: '1'
+          memory: '128M'
     container_name: nginx
-    volumes:
-      - static_volume:/usr/src/app/assets
-      - media_volume:/usr/src/app/media
     ports:
-      - 1337:80
-    depends_on:
-      - shop_app
-
+      - "1337:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d/
+      - static_volume:/usr/src/app/assets
   # REDIS
   redis:
     image: redis:7.0.5-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '256M'
+        reservations:
+          cpus: '1'
+          memory: '128M'
+    restart: unless-stopped
     container_name: redis
+    expose:
+      - 6379
 
-  # CELERY celery -A shop.celery:app flower --loglevel=DEBUG --port=9090
+
+  # CELERY
+  # celery -A shop.celery:app flower --loglevel=DEBUG --port=9090 --pool=solo
+  # --pool=prefork --concurrency=4 --concurrency 1 -E
   celery:
-    build: ./shop
+    build:
+      context: ./shop
+      dockerfile: Dockerfile
     container_name: celery
-    command: celery -A shop.celery:app worker --loglevel=INFO
+    entrypoint: /usr/src/app/celery_entrypoint.sh
+    # command: celery -A shop.celery:app worker --pool=solo  --loglevel=INFO
     volumes:
       - celery_volume:/usr/src/app
     env_file:
       - .env
-    links:
-      - redis
-      - database
     depends_on:
-      - database
+      - shop_app
       - redis
 
   # FLOWER
   flower:
-   build: ./shop
-   container_name: flower
-   command: celery -A shop.celery:app flower --loglevel=DEBUG  --port=5555
-   env_file:
-      - .env
-   ports:
-      - "127.0.0.1:5555:5555"
-   volumes:
-      - flower_data:/usr/src/app/flower
-   links:
-     - redis
-     - database
-   depends_on:
-     - database
-     - redis
+     build:
+        context: ./shop
+     container_name: flower
+     hostname: flower
+     entrypoint: celery
+     command: -A shop.celery:app flower  --port=5555
+     env_file:
+        - .env
+     ports:
+       - "127.0.0.1:5555:5555"
+     volumes:
+       - flower_data:/usr/src/app/flower
+    #   volumes:
+    #      - flower_data:/usr/src/app/flower
+    #     # - /var/lib/docker/volumes/shop_diplom_celery_volume/_data: /usr/src/app/flower
+    #   links:
+    #     - redis
+    #     - database
+     depends_on:
+      - shop_app
+      - redis
+      - celery
 
-
-#  ### CELERY
-#  celery_1:
-##    restart: always
-#    build:
-#      context: ./shop
-#    hostname: worker
-#    command: celery -A shop worker --loglevel=info
-#    volumes:
-#      - celery_volume:/usr/src/app
-##    environment:
-##     - POSTGRES_DB=postgres
-##     - POSTGRES_USER=postgresUSER
-##     - POSTGRES_PASSWORD=postgresPASS
-##     - POSTGRES_HOST=db
-#    env_file:
-#       - .env
-#    links:
-#      - redis
-#    container_name: celery
-#    depends_on:
-#      - database
-#      - redis
-
-#  # FLOWER
-#  flower_2:
-#    build:
-#      context: ./shop
-##    hostname: flower
-#    container_name: flower
-##    entrypoint: celery
-#    command:  celery -A shop flower
-##    volumes:
-##      - celery_volume:/usr/src/app
-#    links:
-#      - redis
-#    depends_on:
-#      - redis
-#    ports:
-#      - "5555:5555"
 
 volumes:
   pg_data:
-  static_volume:
-  media_volume:
   celery_volume:
-  flower_data:
+  static_volume: {}
+  media_volume: {}
+  nginx_conf:
+  flower_data: {}

@@ -1,27 +1,26 @@
 from collections import Counter
-
 from celery import Celery
-from django.contrib import messages
-from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin, LoginRequiredMixin
-from django.db import connection
 from django.shortcuts import redirect
 from django.views import generic
 
-from app_cart.context_processors import get_cart
-from app_cart.forms import AmountForm
-from app_cart.models import Cart, CartItem
+# models
+from app_cart import models as cart_models
+# forms
+from app_cart import forms as cart_forms
+# services
 from app_cart.services import cart_services
-from shop.settings import CELERY_RESULT_BACKEND, CELERY_BROKER_URL
-from utils.my_utils import CustomerOnlyMixin
+# other
+from app_cart.context_processors import get_cart
+from shop import settings
 
-app = Celery('tasks', backend=CELERY_RESULT_BACKEND, broker=CELERY_BROKER_URL)
+app = Celery('tasks', backend=settings.CELERY_RESULT_BACKEND, broker=settings.CELERY_BROKER_URL)
 
 
 class AddItemToCart(generic.CreateView):
     """Класс-представление для добавления товара в корзину."""
-    model = Cart
+    model = cart_models.Cart
     template_name = 'app_item/item_detail.html'
-    form_class = AmountForm
+    form_class = cart_forms.AmountForm
 
     def get(self, request, *args, **kwargs):
         item_id = kwargs['pk']
@@ -29,7 +28,7 @@ class AddItemToCart(generic.CreateView):
         return path
 
     def post(self, request, *args, **kwargs):
-        form = AmountForm(request.POST)
+        form = cart_forms.AmountForm(request.POST)
         item_id = kwargs['pk']
         if form.is_valid():
             quantity = form.cleaned_data.get('quantity')
@@ -53,13 +52,13 @@ class RemoveItemFromCart(generic.TemplateView):
 
 class UpdateCountItemFromCart(generic.UpdateView):
     """Класс-представление для обновление кол-ва товара в корзине. """
-    model = Cart
+    model = cart_models.Cart
     template_name = 'app_cart/cart.html'
     context_object_name = 'cart'
-    form_class = AmountForm
+    form_class = cart_forms.AmountForm
 
     def post(self, request, *args, **kwargs):
-        form = AmountForm(request.POST)
+        form = cart_forms.AmountForm(request.POST)
         if form.is_valid():
             quantity = form.cleaned_data.get('quantity')
             update = form.cleaned_data.get('update')
@@ -73,7 +72,7 @@ class UpdateCountItemFromCart(generic.UpdateView):
 
 class CartDetail(generic.DetailView):
     """Класс-представление для отображение корзины."""
-    model = Cart
+    model = cart_models.Cart
     template_name = 'app_cart/cart.html'
     context_object_name = 'cart'
 
@@ -92,7 +91,7 @@ class CartDetail(generic.DetailView):
 
 
 class CreateCart(generic.TemplateView):
-    model = Cart
+    model = cart_models.Cart
     template_name = 'app_cart/cart_detail.html'
 
     def get(self, request, *args, **kwargs):

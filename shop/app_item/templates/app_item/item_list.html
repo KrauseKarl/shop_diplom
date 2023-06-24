@@ -380,10 +380,11 @@
                          data-comments="{{ item.item_comments.count }}"
                          data-new="{{ item.created }}">
 
-                        <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}"
-                           title="{{ item.title }}">
+                        <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}" title="{{ item.title }}">
                             <img class="card-picture-image
-                            {% if not item.is_available %} not_available {% endif %}"
+                                        {% if not item.is_available %}
+                                        not_available
+                                        {% endif %}"
                                  src="{% if item.main_image %}
                                     {{ item.main_image }}
                                     {% else %}/media/default_images/default_item.png

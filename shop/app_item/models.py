@@ -203,7 +203,10 @@ class Item(models.Model):
     def main_image(self):
         """Функция возвращает URL главного изображения товара."""
         try:
-            return self.images.first().image.url
+            try:
+                return self.images.filter(main=True).first().image.url
+            except (ObjectDoesNotExist, AttributeError):
+                return self.images.first().image.url
         except (ObjectDoesNotExist, AttributeError):
             return self.DEFAULT_IMAGE
 
@@ -405,6 +408,10 @@ class Image(models.Model):
         max_length=200,
         null=True,
         verbose_name='название'
+    )
+    main = models.BooleanField(
+        default=False,
+        verbose_name='главное изображение'
     )
     created = models.DateTimeField(
         auto_now_add=True,

@@ -386,6 +386,7 @@ class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
     context_object_name = 'item'
     template_name = 'app_store/add_tag.html'
     form_class = store_forms.AddTagForm
+    MESSAGE = "Новый тег(и) успешно добавлен(ы)"
 
     def form_valid(self, form):
         tag_list = form.cleaned_data.get('tag')
@@ -394,7 +395,7 @@ class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
             tag = item_models.Tag.objects.get(id=t.id)
             item.tag.add(tag)
             item.save()
-        messages.add_message(self.request, messages.INFO, f"Новый тег(и) успешно добавлен(ы)")
+        messages.add_message(self.request, messages.INFO, self.MESSAGE)
         return redirect('app_store:edit_item', item.pk)
 
     def form_invalid(self, form):
@@ -414,7 +415,7 @@ class RemoveTagFromItem(generic.DeleteView):
         if tag in item.tag.all():
             item.tag.remove(tag)
         item.save()
-        messages.add_message(self.request, messages.WARNING, f"Тег  {tag} успешно удален")
+        messages.add_message(self.request, messages.WARNING, f"Тег {tag} успешно удален")
         return redirect('app_store:edit_item', item.pk)
 
 
@@ -422,6 +423,7 @@ class RemoveTagFromItem(generic.DeleteView):
 class DeleteImage(UserPassesTestMixin, generic.DeleteView):
     """Класс-представление для удаления изображения из карточки товара"""
     model = item_models.Image
+    MESSAGE = "Изображение успешно удалено"
 
     def test_func(self):
         user = self.request.user
@@ -436,12 +438,39 @@ class DeleteImage(UserPassesTestMixin, generic.DeleteView):
             item.images.remove(image)
             item_models.Image.objects.filter(id=image.id).delete()
         item.save()
-        messages.add_message(self.request, messages.WARNING, f"Изображение успешно удалено")
+        messages.add_message(self.request, messages.WARNING, self.MESSAGE)
+        return redirect('app_store:edit_item', item.pk)
+
+
+class MakeImageMainImage(UserPassesTestMixin, generic.UpdateView):
+    """Класс-представление для  выбора изображения как главного в карточке товара"""
+    model = item_models.Image
+    MESSAGE = "Изображение выбранно как гланое"
+
+    def test_func(self):
+        user = self.request.user
+        image = self.get_object()
+        owner = image.item_images.first().store.owner
+        return True if user == owner else False
+
+    def get(self, request, *args, **kwargs):
+        image = self.get_object()
+        item = image.item_images.first()
+        if image in item.images.all():
+            for img in item.images.all():
+                if img == image:
+                    image.main = True
+                    image.save()
+                else:
+                    if img.main:
+                        img.main = False
+                        img.save()
+        item.save()
+        messages.add_message(self.request, messages.WARNING, self.MESSAGE)
         return redirect('app_store:edit_item', item.pk)
 
 
 # FEATURE VIEWS #
-
 class FeatureListView(SellerOnlyMixin, generic.DetailView):
     model = item_models.Category
     template_name = 'app_store/features/feature_list.html'

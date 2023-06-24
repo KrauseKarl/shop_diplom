@@ -1,12 +1,15 @@
 from django.core.cache import cache
+from django.db.models import Q
 from django.http.response import HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from app_cart.models import *
-from app_item.models import Item
-from app_item.services.item_services import ItemHandler
-from app_user.services.user_services import is_customer
+
+# models
+from app_cart import models as cart_models
+from app_item import models as item_models
+# services
+from app_item.services import item_services
 
 
 def cart_(request):
@@ -15,7 +18,7 @@ def cart_(request):
     if request.user.is_authenticated and request.user.profile.is_customer:
         cart = get_auth_user_cart(request)
         if not cart:
-            cart = Cart.objects.create(user=request.user)
+            cart = cart_models.Cart.objects.create(user=request.user)
     else:
         session_key = request.COOKIES.get('cart')
         if session_key:
@@ -114,7 +117,7 @@ def add_item_in_cart(request, item_id, quantity=1):
     """
     response = redirect(request.META.get('HTTP_REFERER'))
     cart = get_current_cart(request).get('cart')
-    item = ItemHandler.get_item(item_id)
+    item = item_services.ItemHandler.get_item(item_id)
     if request.user.is_authenticated:
         if request.user.profile.is_customer:
             create_or_update_cart_item(request, cart, item, quantity)
@@ -124,7 +127,7 @@ def add_item_in_cart(request, item_id, quantity=1):
             #   создаем ключ-сессии
             session_key = create_session_key(request)
             #  создаем корзину анонимного пользователя,
-            cart, created = Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)
+            cart, created = cart_models.Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)
             #   если корзина была только что создана,
             if created:
                 #   создаем экземпляр класса (CartItem)
@@ -149,7 +152,7 @@ def remove_from_cart(request, item_id):
     :return:
     """
     cart = get_current_cart(request).get('cart')
-    cart_item = get_object_or_404(CartItem, id=item_id, all_items=cart, is_paid=False)
+    cart_item = get_object_or_404(cart_models.CartItem, id=item_id, all_items=cart, is_paid=False)
     messages.add_message(request, messages.INFO, f"{cart_item.item.title} удален из корзины")
     try:
         cart_item.delete()
@@ -213,7 +216,7 @@ def order_items_in_cart(cart) -> dict:
         # название магазина
         shop = cart_item.item.store
         # кол-во товара на складе для сравнения с кол-вом в корзине
-        item_stock = Item.objects.select_related('cart_item') \
+        item_stock = item_models.Item.objects.select_related('cart_item') \
             .values_list('stock') \
             .filter(cart_item=cart_item).first()[0]
         # заполняем словарь
@@ -239,7 +242,7 @@ def order_items_in_cart(cart) -> dict:
                     'is_not_enough': False
                 }
         # проверяем достаточно ли товара на складе
-         # если товара на складе меньше, то меняем булевое-False значение на  кол-во товара
+        # если товара на складе меньше, то меняем булевое-False значение на  кол-во товара
         if cart_item.quantity > item_stock:
             sort_by_store[shop]['items'][f'{cart_item.id}']['is_not_enough'] = item_stock
     return sort_by_store
@@ -267,20 +270,20 @@ def fees_total_amount(book):
 
 def get_auth_user_cart(request):
     """Функция возвращает корзину пользователя."""
-    cart = Cart.objects.filter(Q(user=request.user) & Q(is_archived=False)).first()
+    cart = cart_models.Cart.objects.filter(Q(user=request.user) & Q(is_archived=False)).first()
     return cart
 
 
 def get_anon_user_cart(session_key):
     """Функция возвращает корзину анонимного пользователя."""
-    cart = Cart.objects.filter(
+    cart = cart_models.Cart.objects.filter(
         Q(is_anonymous=True) & Q(is_archived=False) & Q(session_key=session_key)).first()
     return cart
 
 
 def create_cart_item(item, quantity=1, user=None):
     """Функция создает экземпляр 'CartItem'."""
-    cart_item = CartItem.objects.create(item=item, quantity=quantity, price=item.price, is_paid=False)
+    cart_item = cart_models.CartItem.objects.create(item=item, quantity=quantity, price=item.price, is_paid=False)
     try:
         cart_item.user = user
         cart_item.save()
@@ -294,7 +297,7 @@ def identify_cart(request):
     if request.user.is_authenticated and request.user.groups.first().name == 'customer':
         if request.session.session_key:
             session_key = request.session.session_key
-            cart = Cart.objects.filter(session_key=session_key).first()
+            cart = cart_models.Cart.objects.filter(session_key=session_key).first()
             if cart:
                 cart.session_key = ''
                 cart.is_anonymous = False
@@ -304,7 +307,7 @@ def identify_cart(request):
                     cart_item.save()
                 cart.save()
             else:
-                Cart.objects.create(user=request.user)
+                cart_models.Cart.objects.create(user=request.user)
 
 
 def merge_anon_cart_with_user_cart(request, cart):
@@ -349,7 +352,7 @@ def get_items_in_cart(request):
     """
     try:
         items_in_cart = get_current_cart(request).get('cart').items.all()
-        in_cart = Item.objects.filter(cart_item__in=items_in_cart)
+        in_cart = item_models.Item.objects.filter(cart_item__in=items_in_cart)
     except AttributeError:
         in_cart = None
     return in_cart
@@ -366,7 +369,6 @@ def create_session_key(request):
     """Функция создает ключ и сохраняет его в сессии."""
     if not request.session.session_key:
         session_key = request.session.save()
-
     return request.session.session_key
 
 
@@ -389,7 +391,7 @@ def create_cart(request, path=None):
     else:
         if not session_key:
             session_key = create_session_key(request)
-            cart, created = Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)
+            cart, created = cart_models.Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)
             if created:
                 path = 'app_cart:cart'
                 cart_id = cart.pk

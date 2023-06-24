@@ -1,1 +1,12 @@
-shop/db.sqlite3
+**/db.sqlite3
+**/local_settings.py
+**/.git
+**/.gitignore
+**/.env
+Dockerfile
+README.md
+docker-compose.yml
+**/.DS_Store
+**/venv
+**/new_env
+**/env

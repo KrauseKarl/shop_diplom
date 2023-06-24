@@ -9,9 +9,7 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">
-                    <input class="btn btn_default btn_square" type="button" onclick="history.back(-2); return false;" value="Назад"/>
-                    Редактировать магазин
+                <h1 class="Middle-title">Редактировать магазин
                 </h1>
                    <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
@@ -96,19 +94,13 @@
                                     {% include 'error_message.html' %}
                                     <label class="form-label" for="logo">Логотип</label>
                                     <div class="Profile-avatar Profile-avatar">
-                                        <div class="Profile-img">
-<!--                                            {% if store.logo %}-->
-                                            <img src="{{ store.logo.url }}" alt="#.png"/>
-<!--                                            {% else %}-->
-<!--                                            <img src="/assets/img/default/default_item.png" alt="#.png"/>-->
-<!--                                            {% endif %}-->
+                                        <div class="Profile-img"><img src="{{ store.logo.url }}" alt="#.png"/>
                                         </div>
-
-                                        <label class="Profile-fileLabel" for="logo">Выберите логотип</label>
+                                        <label class="Profile-fileLabel" for="logo">Выберите логотип
+                                        </label>
                                         <input class="Profile-file form-input" id="logo" name="logo"
                                                data-validate="onlyImgAvatar" type="file"/>
                                     </div>
-
                                 </div>
                                 <!--    LOGO FIELD  -->
 

@@ -6,24 +6,28 @@
     <!--    TOTAL SUM OF ORDER -->
     <div class="Cart-total Cart-total-order ">
 
-        <strong class="Cart-title Order-infoContent-left">сумма заказа:</strong>
+        <strong class="Cart-title Order-infoContent-left">сумма заказа:
+        </strong>
         {% if cart_dict.fees %}
             <span class="Card-priceOld " data-value="{{ cart.get_total_price }}">
                 $&#160;{{ cart.get_total_price }}
             </span>
         {% endif %}
-        <span class="Cart-price ">${{ cart.get_total_price_with_discount|floatformat:'2' }}</span>
+        <span class="Cart-price ">${{ cart.get_total_price_with_discount|floatformat:'2' }}
+        </span>
     </div>
     <!--    TOTAL SUM OF ORDER -->
 
     <!--    DISCOUNT  -->
     {% if cart_dict.fees %}
     <div class="Cart-total Cart-total-order ">
-        <strong class="Cart-title Order-infoContent-left">скидка:</strong>
+        <strong class="Cart-title Order-infoContent-left">скидка:
+        </strong>
         <div>
             {% for shop, discount in cart_dict.book.items %}
                 {% if discount.fees != 0 %}
-            <strong class="Cart-price">{{ discount.fees }}%</strong>&#160;{{ shop }}
+                    <strong class="Cart-price">{{ discount.fees }}%
+                    </strong>&#160;{{ shop }}
                 {% endif %}
             {% endfor %}
         </div>
@@ -35,14 +39,17 @@
 
     {% if cart.is_free_delivery != 0 %}
     <div class="Cart-total Cart-total-order">
-        <strong class="Cart-title Order-infoContent-left" >стоимость доставки:</strong>
-        <span   class="Cart-price">+&#160;${{ cart.is_free_delivery|floatformat:'2' }}</span>
+        <strong class="Cart-title Order-infoContent-left" >стоимость доставки:
+        </strong>
+        <span   class="Cart-price">+&#160;${{ cart.is_free_delivery|floatformat:'2' }}
+        </span>
     </div>
     <!--    DELIVERY COST -->
 
     <!--    TOTAL SUM OF ORDER WITH DELIVERY COST -->
     <div class="Cart-total Cart-total-order ">
-        <strong class="Cart-title Order-infoContent-left">сумма заказа  с учетом доставки:</strong>
+        <strong class="Cart-title Order-infoContent-left">сумма заказа  с учетом доставки:
+        </strong>
         <span   class="Cart-price"
               id='total_price'
               data-value="{{ cart.total_cost_with_delivery }}">

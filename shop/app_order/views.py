@@ -1,34 +1,34 @@
-from time import sleep
-
 from celery.result import AsyncResult
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, Http404
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import mixins
+from django.http import HttpResponseRedirect, JsonResponse, Http404
+from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import CreateView, TemplateView, ListView, DetailView, UpdateView, DeleteView
+from django.views import generic
 
-from app_cart.context_processors import get_cart
-from app_cart.models import CartItem
-from app_cart.services.cart_services import get_current_cart
-from app_invoice.forms import PaymentForm
-from app_item.models import Item
-from app_settings.models import SiteSettings
-from app_user.services.register_services import ProfileHandler
-from utils.my_utils import MixinPaginator, CustomerOnlyMixin
-from app_order.forms import OrderCreateForm, AddressForm
+# models
 from app_order import models as order_models
-from app_order.services.order_services import CustomerOrderHandler, AddressHandler, Payment
-from app_order.tasks import pay_order
-from app_store.forms import UpdateOrderStatusForm
-from app_store.models import Store
+from app_settings import models as settings_models
+# forms
+from app_invoice import forms as invoice_forms
+from app_order import forms as order_forms
+from app_store import forms as store_forms
+# services
+from app_order.services import order_services
+# others
+from utils.my_utils import MixinPaginator, CustomerOnlyMixin
+from app_order.tasks import paying
 
 
-class OrderCreate(CreateView):
+class OrderCreate(generic.CreateView):
+    """"""  # todo OrderCreate DOC
     model = order_models.Order
-    form_class = OrderCreateForm
-    extra_context = {'type_of_delivery': SiteSettings.DELIVERY, 'type_of_payment': SiteSettings.PAY_TYPE}
+    form_class = order_forms.OrderCreateForm
+    extra_context = {
+        'type_of_delivery': settings_models.SiteSettings.DELIVERY,
+        'type_of_payment': settings_models.SiteSettings.PAY_TYPE
+    }
+    MESSAGE = 'Заказ успешно сформирован'
 
     def get_template_names(self):
         super(OrderCreate, self).get_template_names()
@@ -41,14 +41,15 @@ class OrderCreate(CreateView):
         return name
 
     def form_valid(self, form):
-        order = CustomerOrderHandler.create_order(self.request, form)
+        order = order_services.CustomerOrderHandler.create_order(self.request, form)
+        messages.add_message(self.request, messages.INFO, self.MESSAGE)
         return redirect('app_order:progress_payment', order.id)
 
     def form_invalid(self, form):
         return render(self.request, 'app_order/failed_order.html', {'error': form.errors})
 
 
-class SuccessOrdered(TemplateView):
+class SuccessOrdered(generic.TemplateView):
     template_name = 'app_order/successful_order.html'
 
     def get(self, request, *args, **kwargs):
@@ -57,11 +58,12 @@ class SuccessOrdered(TemplateView):
         return self.render_to_response(context)
 
 
-class FailedOrdered(TemplateView):
+class FailedOrdered(generic.TemplateView):
     template_name = 'app_order/failed_order.html'
 
 
-class OrderList(CustomerOnlyMixin, ListView, MixinPaginator):
+class OrderList(CustomerOnlyMixin, generic.ListView, MixinPaginator):
+    """"""  # todo OrderList DOC
     model = order_models.Order
     template_name = 'app_order/order_list.html'
     context_object_name = 'orders'
@@ -69,10 +71,8 @@ class OrderList(CustomerOnlyMixin, ListView, MixinPaginator):
     login_url = '/accounts/login/'
     redirect_field_name = 'login'
 
-    # permission_required = ('app_order.view_order', 'app_order.change_order')
-
     def get_queryset(self, delivery_status=None):
-        return CustomerOrderHandler.get_customer_order_list(self.request, delivery_status)
+        return order_services.CustomerOrderHandler.get_customer_order_list(self.request, delivery_status)
 
     def get(self, request, status=None, **kwargs):
         super().get(request, **kwargs)
@@ -86,7 +86,8 @@ class OrderList(CustomerOnlyMixin, ListView, MixinPaginator):
         return render(request, self.template_name, context=context)
 
 
-class OrderDetail(UserPassesTestMixin, DetailView):
+class OrderDetail(mixins.UserPassesTestMixin, generic.DetailView):
+    """"""  # todo OrderDetail DOC
     model = order_models.Order
     template_name = 'app_order/order_detail.html'
     context_object_name = 'order'
@@ -98,12 +99,12 @@ class OrderDetail(UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['order_items'] = CustomerOrderHandler.get_order_items(order=self.get_object())
-        print(context['order_items'])
+        context['order_items'] = order_services.CustomerOrderHandler.get_order_items(order=self.get_object())
+        context['status_list'] = order_models.OrderItem().STATUS
         return context
 
 
-class OrderCancel(UserPassesTestMixin, DeleteView):
+class OrderCancel(mixins.UserPassesTestMixin, generic.DeleteView):
     """
     Функция удаляет заказа.
     :return: возвращает на страницу списка заказов
@@ -124,11 +125,12 @@ class OrderCancel(UserPassesTestMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class OrderUpdatePayWay(UserPassesTestMixin, UpdateView):
+class OrderUpdatePayWay(mixins.UserPassesTestMixin, generic.UpdateView):
+    """"""  # todo OrderUpdatePayWay DOC
     model = order_models.Order
     template_name = 'app_order/order_update_pay_way.html'
     fields = ['pay']
-    extra_context = {'type_of_payment': SiteSettings().PAY_TYPE}
+    extra_context = {'type_of_payment': settings_models.SiteSettings().PAY_TYPE}
 
     def test_func(self):
         user = self.request.user
@@ -139,7 +141,8 @@ class OrderUpdatePayWay(UserPassesTestMixin, UpdateView):
         return reverse('app_order:progress_payment', kwargs={'pk': self.object.pk})
 
 
-class SuccessPaid(UserPassesTestMixin, TemplateView):
+class SuccessPaid(mixins.UserPassesTestMixin, generic.TemplateView):
+    """"""  # todo SuccessPaid DOC
     template_name = 'app_order/successful_pay.html'
 
     def test_func(self):
@@ -158,7 +161,8 @@ class SuccessPaid(UserPassesTestMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class FailedPaid(UserPassesTestMixin, TemplateView):
+class FailedPaid(mixins.UserPassesTestMixin, generic.TemplateView):
+    """"""  # todo FailedPaid DOC
     template_name = 'app_order/failed_pay.html'
 
     def test_func(self):
@@ -177,12 +181,12 @@ class FailedPaid(UserPassesTestMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class PaymentView(CustomerOnlyMixin, DetailView, CreateView):
+class PaymentView(CustomerOnlyMixin, generic.DetailView, generic.CreateView):
+    """"""  # todo OrderCreate DOC
     model = order_models.Order
-    form_class = PaymentForm
+    form_class = invoice_forms.PaymentForm
     template_name = 'app_order/order_pay_account.html'
     success_url = reverse_lazy('app_order:progress_payment')
-    extra_context = {'type_of_delivery': SiteSettings.DELIVERY, 'type_of_payment': SiteSettings.PAY_TYPE}
 
     def get_template_names(self):
         super(PaymentView, self).get_template_names()
@@ -200,6 +204,8 @@ class PaymentView(CustomerOnlyMixin, DetailView, CreateView):
         if order.is_paid:
             raise Http404('Заказ уже оплачен')
         context['order'] = order
+        context['type_of_delivery'] = settings_models.SiteSettings.DELIVERY
+        context['type_of_payment'] = settings_models.SiteSettings.PAY_TYPE
         return context
 
     def form_valid(self, form):
@@ -207,11 +213,12 @@ class PaymentView(CustomerOnlyMixin, DetailView, CreateView):
         return super().form_valid(form)
 
 
-def validate_username(request):
+def pay_order(request):
+    """"""  # todo pay_order DOC
     order_id = request.POST.get('order', None)
     number = int(str(request.POST.get('number', None)).replace(' ', ''))
     pay = request.POST.get('pay', None)
-    task = pay_order.delay(order_id, number, pay)
+    task = paying.delay(order_id, number, pay)
     response = {
         "task_id": task.id,
         "task_status": task.status,
@@ -227,6 +234,7 @@ def validate_username(request):
 
 
 def get_status_payment(request, task_id, order_id):
+    """"""  # todo get_status_payment DOC
     task_result = AsyncResult(task_id)
     response = {
         "task_id": task_id,
@@ -242,16 +250,17 @@ def get_status_payment(request, task_id, order_id):
     return JsonResponse(response)
 
 
-class PaymentProgress(TemplateView):
+class PaymentProgress(generic.TemplateView):
+    """"""  # todo PaymentProgress DOC
     template_name = 'app_order/progress_payment.html'
 
 
-class ConfirmReceiptPurchase(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
+class ConfirmReceiptPurchase(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.UpdateView):
     """Класс-представления для подтверждения получения заказа."""
     model = order_models.Order
     template_name = 'app_order/order_detail.html'
     context_object_name = 'order'
-    form_class = UpdateOrderStatusForm
+    form_class = store_forms.UpdateOrderStatusForm
 
     def test_func(self):
         user = self.request.user
@@ -260,7 +269,7 @@ class ConfirmReceiptPurchase(CustomerOnlyMixin, UserPassesTestMixin, UpdateView)
 
     def post(self, request, *args, **kwargs):
         order = self.get_object()
-        form = UpdateOrderStatusForm(request.POST)
+        form = store_forms.UpdateOrderStatusForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data.get('status')
             order.status = status
@@ -270,12 +279,12 @@ class ConfirmReceiptPurchase(CustomerOnlyMixin, UserPassesTestMixin, UpdateView)
             return redirect(path)
 
 
-class RejectOrder(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
+class RejectOrder(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.UpdateView):
     """Класс-представления для отмены заказа."""
     model = order_models.Order
     template_name = 'app_order/order_list.html'
     context_object_name = 'order'
-    form_class = UpdateOrderStatusForm
+    form_class = store_forms.UpdateOrderStatusForm
 
     def test_func(self):
         user = self.request.user
@@ -284,18 +293,19 @@ class RejectOrder(CustomerOnlyMixin, UserPassesTestMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         order = self.get_object()
-        form = UpdateOrderStatusForm(request.POST)
+        form = store_forms.UpdateOrderStatusForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data.get('status')
             order.status = status
             order.order_items.update(status='deactivated')
             order.save()
-            messages.info(self.request, f"{order} отменен")
+            messages.add_message(self.request, messages.INFO, f"{order} отменен")
             path = self.request.META.get('HTTP_REFERER')
             return redirect(path)
 
 
-class AddressList(LoginRequiredMixin, ListView):
+class AddressList(mixins.LoginRequiredMixin, generic.ListView):
+    """"""  # todo AddressList DOC
     model = order_models.Address
     template_name = 'app_user/customer/address_list.html'
     context_object_name = 'addresses'
@@ -307,31 +317,35 @@ class AddressList(LoginRequiredMixin, ListView):
 
     def get(self, request, *args, **kwargs):
         super(AddressList, self).get(request, *args, **kwargs)
-        object_list = AddressHandler.get_address_list(self.request)
-        form = AddressForm
+        object_list = order_services.AddressHandler.get_address_list(self.request)
+        form = order_forms.AddressForm
         context = {'form': form, 'object_list': object_list}
         return render(request, self.template_name, context=context)
 
 
-class AddressCreate(AddressList, CreateView):
+class AddressCreate(AddressList, generic.CreateView):
+    """"""  # todo AddressCreate DOC
     model = order_models.Address
-    form_class = AddressForm
+    form_class = order_forms.AddressForm
+    MESSAGE = "Новый адрес доставки сохранен"
 
     def form_valid(self, form):
         address = form.save(commit=False)
         address.city = form.cleaned_data.get('city').title()
         address.user = self.request.user
         address.save()
-        messages.add_message(self.request, messages.INFO, f"Новый адрес доставки сохранен")
+        messages.add_message(self.request, messages.INFO,  self.MESSAGE)
         return redirect('app_order:address_list')
 
     def form_invalid(self, form):
         return redirect('app_order:address_list')
 
 
-class AddressUpdate(CustomerOnlyMixin, AddressList, UpdateView):
+class AddressUpdate(CustomerOnlyMixin, AddressList, generic.UpdateView):
+    """"""  # todo AddressUpdate DOC
     model = order_models.Address
-    form_class = AddressForm
+    form_class = order_forms.AddressForm
+    MESSAGE = "Данные адреса доставки изменены"
 
     def test_func(self):
         user = self.request.user
@@ -339,12 +353,14 @@ class AddressUpdate(CustomerOnlyMixin, AddressList, UpdateView):
         return True if user == address.user else False
 
     def get_success_url(self):
-        messages.add_message(self.request, messages.INFO, f"Данные адреса доставки изменены")
+        messages.add_message(self.request, messages.INFO, self.MESSAGE)
         return redirect('app_order:address_list')
 
 
-class AddressDelete(CustomerOnlyMixin, UserPassesTestMixin, DeleteView):
+class AddressDelete(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.DeleteView):
+    """"""  # todo AddressDelete DOC
     model = order_models.Address
+    MESSAGE = "Адрес успешно удален"
 
     def test_func(self):
         user = self.request.user
@@ -353,6 +369,6 @@ class AddressDelete(CustomerOnlyMixin, UserPassesTestMixin, DeleteView):
 
     def get(self, request, *args, **kwargs):
         address_id = kwargs['pk']
-        AddressHandler.delete_address(request, address_id)
-        messages.add_message(self.request, messages.INFO, f"Адрес  успешно удален")
+        order_services.AddressHandler.delete_address(request, address_id)
+        messages.add_message(self.request, messages.INFO, self.MESSAGE)
         return redirect('app_order:address_list')

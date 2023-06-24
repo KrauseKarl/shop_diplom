@@ -8,13 +8,48 @@ then
       sleep 0.1
     done
 
-    echo "PostgreSQL started"
+    echo "________________________  PostgreSQL started"
 fi
 
-python manage.py flush --no-input
-python manage.py migrate
-python manage.py collectstatic --no-input --clear
+#while ! python manage.py flush --no-input   2>&1; do
+#   echo "flush is in progress status"
+#   sleep 0.1
+#done
+#
+#echo "________________________  flush DONE"
+#
+#while ! python manage.py migrate  --noinput  2>&1; do
+#   echo "migration is in progress status"
+#   sleep 0.1
+#done
+#
+#echo "________________________  migration DONE"
+#
+#
+#while ! python manage.py shell  < contenttype.py  2>&1; do
+#   echo "shell is in progress status"
+#   sleep 0.1
+#done
+#
+#echo "________________________  shell DONE"
+#
+#while ! python manage.py loaddata  all.json  2>&1; do
+#   echo "load data is in progress status"
+#   sleep 0.1
+#done
+#
+#echo "________________________  load data DONE"
 
-python manage.py loaddata dump.json
+#while ! python manage.py collectstatic  --noinput  2>&1; do
+#   echo "collectstatic is in progress status"
+#   sleep 0.1
+#done
+
+#echo "*** collectstatic DONE"
+
+echo "________________________  FULL Django docker is fully configured successfully "
+
+# gunicorn shop.wsgi:application --bind 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8000
 
 exec "$@"

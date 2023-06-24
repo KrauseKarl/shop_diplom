@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('app_order', '0001_initial'),
         ('app_order', '0003_order_archived'),
     ]
 
