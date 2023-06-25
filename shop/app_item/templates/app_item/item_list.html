@@ -368,7 +368,7 @@
                 <!--    SORT BY END    -->
 
                 <!--       PAGINATION         -->
-                <div>{% include "pagination.html" %}<br><br></div>
+                <div>{% include "pagination.html" %}<br></div>
                 <!--       PAGINATION         -->
 
                 <!--    CARD    -->
@@ -381,51 +381,62 @@
                          data-new="{{ item.created }}">
 
                         <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}" title="{{ item.title }}">
-                            <img class="card-picture-image
-                                        {% if not item.is_available %}
-                                        not_available
-                                        {% endif %}"
-                                 src="{% if item.main_image %}
-                                    {{ item.main_image }}
-                                    {% else %}/media/default_images/default_item.png
-                                    {% endif %}"
-                                 alt="{{ item.title|truncatechars:'6'    }}"/>
+                            <img class="card-picture-image{% if not item.is_available %}not_available{% endif %}"
+                                 src="{{ item.main_image }}"
+                                 alt="{{ item.title|truncatechars:'6' }}"/>
                         </a>
 
-                         {% if not item.is_available %}
-                            <div class="sold_out">
-                                <span style="padding-top:20px">РАЗОБРАЛИ</span>
-                            </div>
+                        {% if not item.is_available %}
+                        <div class="sold_out">
+                            <span style="padding-top:20px">РАЗОБРАЛИ
+                            </span>
+                        </div>
                         {% endif %}
-
+                        {% if item.id in favorites %}
+                        <div class="Card-item_in_cart">В ИЗБРАННОМ
+                        </div>
+                        {% endif %}
 
                         {% if item in in_cart %}
-                            <div class="Card-item_in_cart">В КОРЗИНЕ</div>
+                        <div class="Card-item_in_cart">
+                            <i class="uil uil-shopping-cart-alt" style="margin-right: 10px"></i>в корзине
+                        </div>
                         {% endif %}
-
-                        <div class="Card-pin"></div>
+                        {% if item.pk in request.session.favorites.values %}
+                        <div class="Cart-item-favorites in-favorites">
+                             <a href="{% url 'app_favorite:remove_item' item.pk %}">
+                                <img src="/assets/img/icons/favorites.svg" width="20">
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="Cart-item-favorites">
+                            <a href="{% url 'app_favorite:add_item' item.pk %}">
+                                <img src="/assets/img/icons/favorites.svg" width="20">
+                            </a>
+                        </div>
+                        {% endif %}
                         <div class="Card-content">
                             <strong class="Card-title">
                                 <a href="{% url 'app_item:item_detail' item.pk %}" data-value="{{item.title}}"
                                    title="{{ item.title }}">
-                                    {{  item.title|truncatechars:14  }}
+                                    {{ item.title|truncatechars:14 }}
 
                                 </a>
                             </strong>
                             <div class="Card-icon-view-and-sell">
-                            <div class="Card-icon Card-icon-image">
-                                <a href="{% url 'app_item:item_detail' item.pk %}#reviews">
-                                    <img src="/assets/img/icons/comments.svg" width="20" height="20">
-                                </a>
+                                <div class="Card-icon Card-icon-image">
+                                    <a href="{% url 'app_item:item_detail' item.pk %}#reviews">
+                                        <img src="/assets/img/icons/comments.svg" width="20" height="20">
+                                    </a>
+                                </div>
+                                <div class="Card-icon">{{ item.comments.count }}</div>
+                                <div class="Card-icon Card-icon-image">
+                                    <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
+                                <div class="Card-icon">{{ item.total_views }}</div>
+                                <div class="Card-icon Card-icon-image">
+                                    <img src="/assets/img/icons/cart.svg" width="20" height="20"></div>
+                                <div class="Card-icon">{{ item.purchases }}</div>
                             </div>
-                            <div class="Card-icon">{{ item.comments.count }}</div>
-                            <div class="Card-icon Card-icon-image">
-                                <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
-                            <div class="Card-icon">{{ item.total_views }}</div>
-                            <div class="Card-icon Card-icon-image">
-                                <img src="/assets/img/icons/cart.svg" width="20" height="20"></div>
-                            <div class="Card-icon">{{ item.purchases }}</div>
-                        </div>
                             <div class="Card-description">
                                 <div class="Card-cost">
                                     <span class="Card-price" id="price_item">
@@ -437,21 +448,21 @@
 
                                 <div class="Card-category">
                                     {% if item.category.parent_category %}
-                                        {{item.category.parent_category}} / {{item.category}}
+                                    {{item.category.parent_category}} / {{item.category}}
                                     {% else %}
-                                        {{item.category}}
+                                    {{item.category}}
                                     {% endif %}
                                 </div>
-<!--    FOR DEBUG   -->
+                                <!--    FOR DEBUG   -->
                                 {% for value in item.feature_value.all %}
-                                <span  class="seller_label"
-                                       style="font-weight:700; font-size:12px; display: flex; justify-contents: start">
+                                <span class="seller_label"
+                                      style="font-weight:700; font-size:12px; display: flex; justify-contents: start">
                                     {{ value|truncatechars:19 }}</span>
                                 {% endfor %}
-<!--      FOR DEBUG  -->
+                                <!--      FOR DEBUG  -->
 
 
-                                {% if not request.user.profile.is_seller %}
+                                {% if request.user.profile.is_customer %}
                                 <div class="Card-hover">
                                     {% if item in in_cart %}
                                     <a href="{% url 'app_cart:remove_cart' pk=item.pk  %}">удалить из корзины</a>
@@ -461,6 +472,7 @@
                                         <p> добавить в корзину</p>
                                     </a>
                                     {% endif %}
+
                                 </div>
                                 {% endif %}
                             </div>

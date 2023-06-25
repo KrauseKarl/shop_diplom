@@ -50,6 +50,19 @@
                                 <span style="padding-top:20px">РАЗОБРАЛИ</span>
                             </div>
                         {% endif %}
+                                {% if item.pk in request.session.favorites.values %}
+                        <div class="Cart-item-favorites in-favorites">
+                             <a href="{% url 'app_favorite:remove_item' item.pk %}">
+                                <img src="/assets/img/icons/favorites.svg" width="20">
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="Cart-item-favorites">
+                            <a href="{% url 'app_favorite:add_item' item.pk %}">
+                                <img src="/assets/img/icons/favorites.svg" width="20">
+                            </a>
+                        </div>
+                        {% endif %}
                         <div class="Card-content">
                             <strong class="Card-title">
                                 <a href="{% url 'app_item:item_detail' item.pk %}">{{ item.title }}</a>
@@ -164,6 +177,19 @@
                                     <a class="Card-picture" href="{{ itemLE.get_absolute_url }}">
                                         <img src="{{ itemLE.main_image }}" alt="card.jpg"/>
                                     </a>
+                                    {% if item.pk in request.session.favorites.values %}
+                                    <div class="Cart-item-favorites ">
+                                        <a href="{% url 'app_favorite:remove_item' itemLE.pk %}" title="удалить из избранного">
+                                            <img src="/assets/img/icons/favorites.svg" width="27" style="color: #E6BE15">
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                    <div class="Cart-item-favorites">
+                                        <a href="{% url 'app_favorite:add_item' itemLE.pk %}" title="добавить в избранное">
+                                            <img src="/assets/img/icons/favorites.svg" width="27">
+                                        </a>
+                                    </div>
+                                    {% endif %}
                                     <div class="Card-content">
                                         <strong class="Card-title">
                                             <a href="{{ itemLE.get_absolute_url }}">{{ itemLE.title }}</a>

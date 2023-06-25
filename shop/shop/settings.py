@@ -85,6 +85,9 @@ TEMPLATES = [
 
                 # app_settings
                 'app_settings.context_processors.load_settings',
+
+                # app_favorite
+                'app_favorite.context_processors.favorites'
             ],
             'libraries': {
 
@@ -211,10 +214,14 @@ USE_CACHE = True
 
 # Session settings
 # SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-# SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 # SESSION_COOKIE_HTTPONLY = True
-# SESSION_COOKIE_AGE = 31536000
+#
+# SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+# SESSION_COOKIE_AGE = 1209600
 
+SEARCH_SESSION_ID = 'search'
+
+FAVORITE_SESSION_ID = 'favorites'
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")

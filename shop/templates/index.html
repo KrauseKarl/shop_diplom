@@ -65,6 +65,8 @@
     <span style="background-color: {% if request.user.is_authenticated %} coral {% else %}red{% endif %};" class="seller_label">
         USER   <b style="color:black; font-size:19px;">{{ request.user }}</b>
     </span>
+    <br>
+<div>{% for k,v in request.session.favorites.items %} {{ k }}|{{ v }} {% endfor %}</div>
 </div>
 <!--   ONLY FOR DEBUG    -->
 
@@ -118,8 +120,7 @@
                         <div class="row-block">
                             {% if request.user.profile.avatar %}
 
-                            <img src="{{ request.user.profile.avatar.url }}"
-                                 height="20" width="20" style="border-radius:50px; margin-right: 5px">
+                            <img src="{{ request.user.profile.avatar.url }}" height="20" width="20" style="border-radius:50px; margin-right: 5px">
                             {% endif %}
                             {% if request.user.is_authenticated %}
                             <a class="ControlPanel-title" href="{% url 'app_user:account' request.user.pk %}">
@@ -128,10 +129,13 @@
                                 {% else %} {{ request.user.username }}
                                 {% endif %}
                             </a>&#160;/&#160;
-                            <a class="ControlPanel-title" href="{% url 'app_user:logout' %}">Выйти</a>
+                            <a class="ControlPanel-title" href="{% url 'app_user:logout' %}">Выйти
+                            </a>
                             {% else %}
-                            <a class="ControlPanel-title" href="{% url 'app_user:login' %}">Войти</a>&#160;/&#160;
-                            <a class="ControlPanel-title" href="{% url 'app_user:register' %}">Регистрация</a>
+                            <a class="ControlPanel-title" href="{% url 'app_user:login' %}">Войти
+                            </a>&#160;/&#160;
+                            <a class="ControlPanel-title" href="{% url 'app_user:register' %}">Регистрация
+                            </a>
                             {% endif %}
                         </div>
                     </div>
@@ -154,23 +158,7 @@
             <!--    CART  -->
             <div class="row-block">
                 <div class="CartBlock">
-                    <a class="CartBlock-block" id="index_cart"
-                       href="{% if cart_dict.cart %}
-                       {% url 'app_cart:cart' pk=cart_dict.cart.pk  %}
-                       {% else %}
-                       {% url 'app_cart:cart_create' %}
-                       {% endif %}">
-                        <img class="CartBlock-img" src="/assets/img/icons/cart.svg" alt="cart.svg"/>
-                        <!--  ITEM'S COUNTER OF THE CART   -->
-                        {% if not cart_dict.cart.is_empty and  cart_dict.cart %}
-                        <span class="CartBlock-amount">
-                            {{ cart_dict.cart.get_total_quantity }}
-                        </span>
-                        {% endif %}
-                        <!--  ITEM'S COUNTER OF THE CART   -->
-
-                    </a>
-                    <!--  ITEM'S COST COUNTER OF THE CART   -->
+                      <!--  ITEM'S COST COUNTER OF THE CART   -->
                     <div class="CartBlock-block">
                             <span class="CartBlock-price">
                                 {% if cart_dict.cart %}
@@ -179,27 +167,37 @@
                                </span>
                     </div>
                     <!--  ITEM'S COST COUNTER OF THE CART   -->
-
-                    <a class="CartBlock-block"
-                       href="#">
-                       <i class="uil  uil-chart " style="font-size:30px;color:#555555"></i>
+                    <a class="CartBlock-block" id="index_cart" href="{% if cart_dict.cart %}
+                                                               {% url 'app_cart:cart' pk=cart_dict.cart.pk  %}
+                                                               {% else %}
+                                                               {% url 'app_cart:cart_create' %}
+                                                               {% endif %}">
+                        <img class="CartBlock-img" src="/assets/img/icons/cart.svg" alt="cart.svg"/>
                         <!--  ITEM'S COUNTER OF THE CART   -->
-
+                        {% if not cart_dict.cart.is_empty and cart_dict.cart %}
                         <span class="CartBlock-amount">
-                           2
+                            {{ cart_dict.cart.get_total_quantity }}
                         </span>
-
+                        {% endif %}
                         <!--  ITEM'S COUNTER OF THE CART   -->
-                    </a>
 
+                    </a>
+                    <a class="CartBlock-block" href="{% url 'app_favorite:detail_favorites' %}">
+                       <i class="uil  uil-favorite " style="font-size:30px; color:#555555"></i>
+                        <!--  ITEM'S COUNTER OF THE FAVORITES   -->
+                        {% if favorites_count > 0 %}
+                        <span class="CartBlock-amount">
+                           {{ favorites_count }}
+                        </span>
+                        {% endif %}
+                        <!--  ITEM'S COUNTER OF THE FAVORITES   -->
+                    </a>
                     <!--    ORDERS  -->
                     {% if new_order.count != 0  and new_order.count %}
                     <a class="CartBlock-block" href="{% url 'app_order:order_list' %}">
 <!--                        <img class="CartBlock-img" src="/assets/img/icons/orders.svg" width="25" height="25"-->
 <!--                             alt="order.svg"/>-->
-                        <i class="uil  uil-box" style="font-size:30px;color:#555555"></i>
-
-
+                        <i class="uil uil-box" style="font-size:30px; color:#555555"></i>
                         <span class="CartBlock-amount" title="новые заказы">
                             {{ new_order.count }}
                         </span>

@@ -613,23 +613,46 @@ input: invalid {
 }
 
 .Card-item_in_cart {
-  position: absolute;
-  font-size: 14px;
-  color: white;
-  font-weight: 700;
-  background-color: #3CB878;
-  top: 14px;
-  left: 14px;
-  width: 150px;
-  height: 36px;
-  background-size: contain;
-  border-radius: 10px;
-  padding: 5px;
-  z-index: 10;
- -webkit-box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
--moz-box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
-box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
+    position: absolute;
+    font-size: 14px;
+    color: white;
+    text-align: end
+    font-weight: 700;
+    background-color: #3CB878;
+    top: 14px;
+    left: -7px;
+    width: 150px;
+    height: 36px;
+    background-size: contain;
+    border-radius: 10px;
+    padding: 5px;
+    z-index: 10;
+    -webkit-box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
+    -moz-box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
+    box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
  }
+.Cart-item-favorites {
+    position: absolute;
+    font-size: 14px;
+    color: black;
+    text-align: end
+    font-weight: 900;
+    top: 14px;
+    right: 5px;
+    width: 50px;
+    height: 36px;
+    background-size: contain;
+    border-radius: 10px;
+    padding: 5px;
+    padding-top: 10px;
+    z-index: 10;
+}
+.in-favorites {
+    background-color: #F4CA16;
+    -webkit-box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
+    -moz-box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
+    box-shadow: 5px 5px 5px -5px rgba(34, 60, 80, 0.6);
+}
 .store-item-image {
     max-height: 100px;
     max-width: 100%;

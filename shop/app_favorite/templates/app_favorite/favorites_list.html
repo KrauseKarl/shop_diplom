@@ -1,0 +1,199 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Избранные товары{% endblock %}
+
+{% block heard %}
+    {% include 'search_string.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Избранные товары
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'main_page' %}">главная стариница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item">
+                       <span>
+                        </span>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>
+                            Избранные товары
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <!--  IF CATEGORY IS CHOSEN -->
+
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">
+                        </strong>
+                    </header>
+                    <div>
+                       <div class="primary-text" style="margin-bottom: 5px">
+                            <b>показать только различия</b>
+
+
+                        </div>
+                        {% for i in unique %}
+                        <div>{{ i }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!--  IF CATEGORY IS CHOSEN -->
+            </div>
+
+            <!--    SORT BY     -->
+            <div class="Section-content">
+                <div class="Sort">
+                    <div class="Sort-title">Сравнить по:</div>
+                    <div class="Sort-variants">
+                        <a class="Sort-sortBy Sort-sortBy_inc"
+                            href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}compare=compare">
+                             показать только различия
+                        </a>
+                        <a class="Sort-sortBy Sort-sortBy_dec"
+                           href="{% url 'app_favorite:detail_favorites' %}">
+                             показать все характеристики
+                        </a>
+
+                    </div>
+
+                </div>
+                <!--    SORT BY END    -->
+
+                <!--       PAGINATION         -->
+                <div>{% include "pagination.html" %}<br></div>
+                <!--       PAGINATION         -->
+
+                <!--    CARD    -->
+                <div class="Cards" id="all_cards">
+                    {% for item in object_list %}
+                    <div class="Card"
+                         data-price="{{ item.price }}"
+                         data-views="{{ item.total_views }}"
+                         data-comments="{{ item.item_comments.count }}"
+                         data-new="{{ item.created }}">
+
+                        <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}" title="{{ item.title }}">
+                            <img class="card-picture-image{% if not item.is_available %}not_available{% endif %}"
+                                 src="{{ item.main_image }}"
+                                 alt="{{ item.title|truncatechars:'6' }}"/>
+                        </a>
+
+                        {% if not item.is_available %}
+                        <div class="sold_out">
+                            <span style="padding-top:20px">РАЗОБРАЛИ
+                            </span>
+                        </div>
+                        {% endif %}
+                        {% if item.id in favorites %}
+                        <div class="Card-item_in_cart">В ИЗБРАННОМ
+                        </div>
+                        {% endif %}
+
+                        {% if item in in_cart %}
+                        <div class="Card-item_in_cart">
+                            <i class="uil uil-shopping-cart-alt" style="margin-right: 10px"></i>в корзине
+                        </div>
+                        {% endif %}
+                        {% if item.pk in request.session.favorites.values %}
+                        <div class="Cart-item-favorites in-favorites">
+                             <a href="{% url 'app_favorite:remove_item' item.pk %}">
+                                <img src="/assets/img/icons/favorites.svg" width="20">
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="Cart-item-favorites">
+                            <a href="{% url 'app_favorite:add_item' item.pk %}">
+                                <img src="/assets/img/icons/favorites.svg" width="20">
+                            </a>
+                        </div>
+                        {% endif %}
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <a href="{% url 'app_item:item_detail' item.pk %}" data-value="{{item.title}}"
+                                   title="{{ item.title }}">
+                                    {{ item.title|truncatechars:14 }}
+                                </a>
+                            </strong>
+                            <div class="Card-icon-view-and-sell">
+                                <div class="Card-icon Card-icon-image">
+                                    <a href="{% url 'app_item:item_detail' item.pk %}#reviews">
+                                        <img src="/assets/img/icons/comments.svg" width="20" height="20">
+                                    </a>
+                                </div>
+                                <div class="Card-icon">{{ item.comments.count }}</div>
+                                <div class="Card-icon Card-icon-image">
+                                    <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
+                                <div class="Card-icon">{{ item.total_views }}</div>
+                                <div class="Card-icon Card-icon-image">
+                                    <img src="/assets/img/icons/cart.svg" width="20" height="20"></div>
+                                <div class="Card-icon">{{ item.purchases }}</div>
+                            </div>
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" id="price_item">
+                                        {% if  item.is_available  %}
+                                            ${{  item.price  }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            {% for value in item.feature_value.all %}
+                            {% if value.feature in unique %}
+                            <div class="Card-description">
+                                <br>
+                                <strong class="Card-title" style="font-weight:700; font-size:18px; display: flex;
+                                    justify-contents: start">
+                                    {{ value|truncatechars:19 }}
+                                </strong>
+                                <hr>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="form-group">
+                     <img src="/media/default_images/not_found.png" width="100%">
+                    </div>
+                    {% endfor %}
+                </div>
+
+
+                <!--    CARD     -->
+
+                <!--       PAGINATION         -->
+                {% include "pagination.html" %}
+                <!--       PAGINATION         -->
+
+
+            </div>
+            <!--    SORT BY     -->
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
