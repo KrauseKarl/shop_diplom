@@ -85,8 +85,8 @@ class CartDetail(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['curr_cart'] = get_cart(self.request)
-        total_lis = get_cart(self.request).get('cart_dict').get('book').values()
-        context['total_amount_sum'] = sum(Counter([d['total'] for d in total_lis]).keys())
+        total_list = get_cart(self.request).get('cart_dict').get('book').values()
+        context['total_amount_sum'] = sum(Counter([d['total'] for d in total_list]).keys())
         return context
 
 

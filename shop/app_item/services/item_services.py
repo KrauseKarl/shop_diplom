@@ -419,7 +419,6 @@ class ItemHandler:
             object_list = reduce(or_, [i for i in all_queryset_list])
             object_list = object_list.distinct()
 
-
         return object_list.distinct()
 
     @staticmethod
@@ -742,6 +741,10 @@ class CategoryHandler:
 
 
 class CountView:
+    def fake_ip(self):
+        ip_number_list = [str(random.randint(0, 255)) for _ in range(4)]
+        ip = '.'.join(ip_number_list)
+        return item_models.IpAddress.objects.create(ip=ip)
 
     def get_client_ip(self, request):
         """Функция для получения IP-адреса пользователя."""
@@ -759,7 +762,10 @@ class CountView:
         if request.user.is_authenticated:
             ip_address, created = item_models.IpAddress.objects.get_or_create(user=request.user, ip=ip)
         else:
-            ip_address, created = item_models.IpAddress.objects.get_or_create(ip=ip)
+            try:
+                ip_address, created = item_models.IpAddress.objects.get_or_create(ip=ip)
+            except:
+                ip_address = self.fake_ip()
         if ip_address not in item.views.all():
             item.views.add(ip_address)
 

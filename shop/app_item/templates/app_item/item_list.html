@@ -58,42 +58,43 @@
 
 
                 {% if store %}
-                 <header class="Section-header">
-                        <strong class="Section-title">{{ store.title }}</strong>
-                    </header>
-                    <div class="Section-columnContent">
-                        <!--    FORM    -->
-                        <div class="form">
-                            <form>
-                                <div class="form-group">
-                                    <div class="ProductCard-title">
-                                        <i class="uil uil-store-alt"></i>{{ store.title }}</div>
+                <header class="Section-header">
+                    <strong class="Section-title">{{ store.title }}</strong>
+                </header>
+                <div class="Section-columnContent">
+                    <!--    FORM    -->
+                    <div class="form">
+                        <form>
+                            <div class="form-group">
+                                <div class="ProductCard-title">
+                                    <i class="uil uil-store-alt"></i>{{ store.title }}
                                 </div>
-                                 <div class="form-group">
-                                    <div class="Card-content Card-title">
-                                        <div class="Card-content">скидка
-                                            <b class="success-text">{{ store.discount }}%
-                                            </b>
-                                        </div>
-                                        <div class="Card-content">при заказе от:
-                                            <b class="primary-text">${{ store.min_for_discount }}
-                                            </b>
-                                        </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="Card-content Card-title">
+                                    <div class="Card-content">скидка
+                                        <b class="success-text">{{ store.discount }}%
+                                        </b>
+                                    </div>
+                                    <div class="Card-content">при заказе от:
+                                        <b class="primary-text">${{ store.min_for_discount }}
+                                        </b>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <div class="Profile-avatar">
-                                        <div class="Profile-img">
-                                            <img class="" src="{{ store.logo.url }}">
-                                        </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="Profile-avatar">
+                                    <div class="Profile-img">
+                                        <img class="" src="{{ store.logo.url }}">
                                     </div>
                                 </div>
+                            </div>
 
-                            </form>
-                        </div>
-                        <!--    FORM    -->
+                        </form>
                     </div>
-                 {% endif %}
+                    <!--    FORM    -->
+                </div>
+                {% endif %}
                 <!--  IF CATEGORY IS CHOSEN -->
                 {% if category %}
                 <div class="Section-columnSection">
@@ -324,7 +325,6 @@
                 <!--     MOST POPULAR 10 TAGS -->
                  {% endif %}
             </div>
-
             <!--    SORT BY     -->
             <div class="Section-content">
                 <div class="Sort">
@@ -392,28 +392,42 @@
                             </span>
                         </div>
                         {% endif %}
-                        {% if item.id in favorites %}
-                        <div class="Card-item_in_cart">В ИЗБРАННОМ
-                        </div>
-                        {% endif %}
 
                         {% if item in in_cart %}
                         <div class="Card-item_in_cart">
                             <i class="uil uil-shopping-cart-alt" style="margin-right: 10px"></i>в корзине
                         </div>
                         {% endif %}
+
                         {% if item.pk in request.session.favorites.values %}
-                        <div class="Cart-item-favorites in-favorites">
-                             <a href="{% url 'app_favorite:remove_item' item.pk %}">
-                                <img src="/assets/img/icons/favorites.svg" width="20">
+                        <div class="Cart-item-favorites ">
+                             <a href="{% url 'app_favorite:remove_item' item.pk %}" title="Добавить в избранное">
+                                 <img src="/assets/img/icons/star.svg" width="35">
                             </a>
                         </div>
                         {% else %}
                         <div class="Cart-item-favorites">
-                            <a href="{% url 'app_favorite:add_item' item.pk %}">
-                                <img src="/assets/img/icons/favorites.svg" width="20">
+                            <a href="{% url 'app_favorite:add_item' item.pk %}" title="Убрать из избранного">
+                                <img src="/assets/img/icons/star_off.svg" width="35">
                             </a>
                         </div>
+                        {% endif %}
+
+
+                        {% if category %}
+                        {% if item.pk in request.session.compares.values %}
+                        <div class="Cart-item-compare ">
+                             <a href="{% url 'app_compare:remove_item' item.pk %}" title="Убрать из сравнения">
+                                   <i class="uil-graph-bar " style="color:#ffca00; font-size:25px"></i>
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="Cart-item-compare in-compare">
+                            <a href="{% url 'app_compare:add_item' item.pk %}" title="добавить в сравнение">
+                                   <i class="uil-graph-bar " style="color:#A5ABBA; font-size:25px"></i>
+                            </a>
+                        </div>
+                        {% endif %}
                         {% endif %}
                         <div class="Card-content">
                             <strong class="Card-title">
@@ -495,7 +509,6 @@
 
             </div>
             <!--    SORT BY     -->
-
         </div>
     </div>
 </div>

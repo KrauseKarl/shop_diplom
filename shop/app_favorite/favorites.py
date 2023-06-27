@@ -20,18 +20,14 @@ class Favorite(object):
     def add(self, item_pk):
         """ Функция для добавления продукта в избранного."""
         item = get_object_or_404(item_models.Item, pk=item_pk)
-        first_item_id = list(self.favorites.values())[0]
-        first_item = get_object_or_404(item_models.Item, pk=first_item_id)
-        if item.category == first_item.category:
-            if self.favorites.__len__() < 4:
-                if item_pk not in self.favorites:
-                    self.favorites[str(item)] = item.pk
-                self.save()
-                messages.add_message(self.request, messages.SUCCESS, 'товар добавлен в избранное')
-            else:
-                messages.add_message(self.request, messages.WARNING, 'Превышен лимит')
+        if self.favorites.__len__() < 100:
+            if item_pk not in self.favorites:
+                self.favorites[str(item)] = item.pk
+            self.save()
+            messages.add_message(self.request, messages.SUCCESS, 'товар добавлен в избранное')
         else:
-            messages.add_message(self.request, messages.WARNING, 'Товары для сравнения должны быть одно категорией.')
+            messages.add_message(self.request, messages.WARNING, 'Превышен лимит')
+
     def save(self):
         """ Функция для обновление сессии избранного."""
         self.session[settings.FAVORITE_SESSION_ID] = self.favorites

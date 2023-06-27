@@ -95,7 +95,6 @@
                             </div>
                         </div>
 
-
                         {% if item.is_available  and  request.user.profile.is_customer %}
                             <div class="ProductCard-cart">
 
@@ -357,12 +356,12 @@
                                 <!--COMMENT FORM -->
 
                             </div>
-                            {% if request.user.profile.is_customer %}
+
                             <header class="Section-header Section-header_product" >
                                 <h3 class="Section-title">Добавить отзыв</h3>
                             </header>
 
-                                {% if request.user.is_authenticated %}
+                                {% if request.user.is_authenticated  and request.user.profile.is_customer %}
                                 <div class="Tabs-addComment">
 
                                     <form class="form" action="" method="post">
@@ -393,7 +392,6 @@
                                       <h3 class="Section-title">{{ request.user.get_full_name }}</h3>
                                 </div>
                                 {% endif %}
-                             {% endif %}
                         </div>
                     </div>
                 </div>

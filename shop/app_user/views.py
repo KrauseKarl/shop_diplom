@@ -5,7 +5,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import views as auth_views
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.contrib.auth.models import User
@@ -163,16 +163,15 @@ class UserLoginView(auth_views.LoginView):
         """Логинит пользователя и вызывает функцию удаления cookies['cart] & cookies['has_cart]. """
         login(self.request, form.get_user())
         if user_services.user_in_group(self.request.user, ['customer']):
-            response = cart_services.delete_cart_cookies(
-                self.request,
-                path=reverse('app_user:account', kwargs={'pk': self.request.user.pk})
-            )
+            if self.request.GET.get('next'):
+                path = self.request.GET.get('next')
+            else:
+                print(reverse('app_user:account', kwargs={'pk': self.request.user.pk}))
+                path = reverse('app_user:account', kwargs={'pk': self.request.user.pk})
+            response = cart_services.delete_cart_cookies(self.request, path=path)
             return response
         elif user_services.user_in_group(self.request.user, ['admin', 'seller']):
             return HttpResponseRedirect(reverse('main_page'))
-        if self.request.GET.get('next'):
-            return HttpResponseRedirect(reverse(self.request.GET.get('next')))
-        return HttpResponseRedirect(reverse('app_user:account', kwargs={'pk': self.request.user.pk}))
 
 
 class UserLogoutView(auth_views.LogoutView):

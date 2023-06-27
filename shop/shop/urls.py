@@ -14,6 +14,7 @@ urlpatterns = [
     path('', shop_views.MainPage.as_view(), name='main_page'),
     path('accounts/', include(('app_user.urls', 'app_user'), namespace='app_user')),
     path('cart/', include(('app_cart.urls', 'app_cart'), namespace='app_cart')),
+    path('compare/', include(('app_compare.urls', 'app_compare'), namespace='app_compare')),
     path('favorite/', include(('app_favorite.urls', 'app_favorite'), namespace='app_favorite')),
     path('order/', include(('app_order.urls', 'app_order'), namespace='app_order')),
     path('store/', include(('app_store.urls', 'app_store'), namespace='app_store')),

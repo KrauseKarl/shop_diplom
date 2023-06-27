@@ -1,3 +1,4 @@
+import random
 from urllib.parse import urlencode
 from django.contrib import messages
 from django.core.cache import cache
@@ -5,17 +6,18 @@ from urllib.parse import parse_qs
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
-from django.urls import reverse
 from django.views import generic
-
-from app_settings.models import SiteSettings
+# models
 from app_item import models as item_models
 from app_store import models as store_models
+# forms
 from app_item import forms as item_forms
-from utils.my_utils import MixinPaginator, query_counter
+# services
 from app_cart.services import cart_services
 from app_item.services import comment_services
 from app_item.services import item_services
+# others
+from utils.my_utils import MixinPaginator, query_counter
 
 
 class CategoryListView(generic.ListView, MixinPaginator):
@@ -33,6 +35,7 @@ class CategoryListView(generic.ListView, MixinPaginator):
         :param category: категория товаров
         :return: response.
         """
+
         context = item_services.CategoryHandler.category_list_view(request, self.queryset, self.paginate_by, category)
         return render(request, 'app_item/item_list.html', context=context)
 

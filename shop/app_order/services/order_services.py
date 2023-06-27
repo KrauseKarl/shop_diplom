@@ -29,7 +29,7 @@ class CustomerOrderHandler:
         cart = cart_services.get_current_cart(request).get('cart')
         user = request.user
         post_address = form.cleaned_data.get('post_address')
-        city = form.cleaned_data.get('city'),
+        city = form.cleaned_data.get('city')
         address = form.cleaned_data.get('address')
         if len(post_address) < 1:
             AddressHandler.get_post_address(request, city, address)
@@ -271,7 +271,7 @@ class AddressHandler:
     @staticmethod
     def get_post_address(request, city, address):
         post_address, created = order_models.Address.objects.get_or_create(
-            city=city[0],
+            city=city,
             address=address,
             user=request.user
         )

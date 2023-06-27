@@ -46,6 +46,7 @@ class ProfileHandler:
         profile = Profile.objects.create(
             user=user,
             telephone=ProfileHandler.telephone_formatter(telephone),
+            is_active=True,
         )
         return profile
 

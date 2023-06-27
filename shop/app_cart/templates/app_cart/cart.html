@@ -160,7 +160,8 @@
                                                 <div class="modal-body-my">
                                                     <div class="form Payment">
                                                         <div class="form-group">
-                                                            <img class="Cart-img {% if not item.item.is_available %}Cart-img-not_available{% endif %}"
+                                                            <img class="Cart-img {% if not item.item.is_available %}
+                                                            Cart-img-not_available{% endif %}"
                                                                  src="/assets/img/icons/error.svg"
                                                                  alt="{{ item.item.title }}_image"/>
                                                         </div>
@@ -292,13 +293,19 @@
                 <a href="#close" title="Close" class="close-my">×</a>
             </div>
             <div class="modal-body-my Payment">
-                <img src="/assets/img/icons/delivery.png" width="100">
+                <img src="/assets/img/icons/delivery.png" width="150">
                 <span class="Section-title">Оформить заказ?</span>
-                <h3>товаров: {{ cart_dict.cart.items.count }} шт.</h3>
-                <h3>
-                    на общую сумму: ${{ cart.total_cost_with_delivery|floatformat:'2' }}
+                <h3>товаров:
+                    <span class="primary-text">{{ cart_dict.cart.items.count }} шт.
+                    </span>
                 </h3>
-                <a class="btn btn_success btn_full" href="{% url 'app_order:order_create'  %}" id="btn_confirm_order" >
+                <h3>на общую сумму:
+                    <span class="primary-text">${{ cart.total_cost_with_delivery|floatformat:'2' }}
+                    </span>
+                </h3>
+                <a class="btn btn_success btn_full"
+                   href="{% url 'app_order:order_create'  %}"
+                   id="btn_confirm_order" >
                     да
                 </a>
             </div>

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'app_invoice.apps.AppInvoiceConfig',
     'app_settings.apps.AppSettingsConfig',
     'app_favorite.apps.AppFavoriteConfig',
+    'app_compare.apps.AppCompareConfig',
 ]
 
 MIDDLEWARE = [
@@ -87,7 +88,10 @@ TEMPLATES = [
                 'app_settings.context_processors.load_settings',
 
                 # app_favorite
-                'app_favorite.context_processors.favorites'
+                'app_favorite.context_processors.favorites',
+                
+                # app_compare
+                'app_compare.context_processors.compare_list',
             ],
             'libraries': {
 
@@ -213,15 +217,16 @@ DEBUG_TOOLBAR_CONFIG = {
 USE_CACHE = True
 
 # Session settings
-# SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-# SESSION_COOKIE_HTTPONLY = True
-#
-# SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-# SESSION_COOKIE_AGE = 1209600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_HTTPONLY = True
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_COOKIE_AGE = 1209600
 
 SEARCH_SESSION_ID = 'search'
 
 FAVORITE_SESSION_ID = 'favorites'
+
+COMPARE_SESSION_ID = 'compares'
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")

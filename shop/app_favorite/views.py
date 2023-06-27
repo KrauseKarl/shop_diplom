@@ -2,7 +2,6 @@ from django.db.models import Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views import generic, View
-from django.contrib import messages
 
 from app_favorite.favorites import Favorite
 from app_item import models as item_models
@@ -44,20 +43,26 @@ class FavoriteDetailView(generic.DetailView):
         """
         object_list = Favorite(request).all()
         value_list = object_list.values_list('feature_value', flat=True)
-        if request.GET.get('compare'):
+        compare_mode = bool(request.GET.get('compare'))
+        if compare_mode:
             final_list = {}
             unique = []
-            for v in value_list:
-                final_list[v] = final_list.get(v, 0) + 1
+            for val in value_list:
+                final_list[val] = final_list.get(val, 0) + 1
             for k, v in final_list.items():
                 if v < object_list.count():
-                    value = item_models.FeatureValue.objects.get(id=k)
-                    if value.feature not in unique:
-                        unique.append(value.feature)
+                    try:
+                        value = item_models.FeatureValue.objects.get(id=k)
+                        if value.feature not in unique:
+                            unique.append(value.feature)
+                    except ValueError:
+                        pass
         else:
             unique = item_models.Feature.objects.filter(values__in=value_list).distinct()
-
-        context = {'object_list': object_list, 'unique': unique}
+        context = {
+            'object_list': object_list,
+            'unique': unique
+        }
         return render(request, self.template_name, context=context)
 
 
