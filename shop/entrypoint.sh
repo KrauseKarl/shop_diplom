@@ -26,14 +26,14 @@ fi
 #echo "________________________  migration DONE"
 #
 #
-#while ! python manage.py shell  < contenttype.py  2>&1; do
+#while ! python manage.py shell  < fixtures/contenttype.py  2>&1; do
 #   echo "shell is in progress status"
 #   sleep 0.1
 #done
 #
 #echo "________________________  shell DONE"
 #
-#while ! python manage.py loaddata  all.json  2>&1; do
+#while ! python manage.py loaddata  fixtures/data.json 2>&1; do
 #   echo "load data is in progress status"
 #   sleep 0.1
 #done

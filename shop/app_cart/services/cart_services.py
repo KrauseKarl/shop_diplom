@@ -12,22 +12,59 @@ from app_item import models as item_models
 from app_item.services import item_services
 
 
-def cart_(request):
+# GET CART
+def get_auth_user_cart(request):
+    """Функция возвращает корзину аутентифицированного пользователя."""
+    cart = cart_models.Cart.objects.filter(Q(user=request.user) & Q(is_archived=False)).first()
+    if not cart:
+        cart = cart_models.Cart.objects.create(user=request.user)
+    return cart
+
+
+def get_anon_user_cart(request):
+    """Функция возвращает корзину анонимного пользователя."""
+
+    session_key = request.COOKIES.get('cart')
+    if session_key:
+        cart = cart_models.Cart.objects.filter(
+            Q(is_anonymous=True) &
+            Q(is_archived=False) &
+            Q(session_key=session_key)).first()
+    else:
+        cart = None
+
+    return cart
+
+
+def get_customer_cart(request):
     """Функция возвращает текущую корзину. """
 
     if request.user.is_authenticated and request.user.profile.is_customer:
         cart = get_auth_user_cart(request)
-        if not cart:
-            cart = cart_models.Cart.objects.create(user=request.user)
     else:
-        session_key = request.COOKIES.get('cart')
-        if session_key:
-            cart = get_anon_user_cart(session_key)
-        else:
-            cart = None
+        cart = get_anon_user_cart(request)
     return cart
 
 
+def get_current_cart(request) -> dict:
+    """
+    Функция берет из кеша словарь "cart_dict" или создает новый кеш
+    возвращает словарь "cart_dict"
+    :param request:
+    :return: словарь
+    """
+    cart = get_customer_cart(request)
+    try:
+        cart_dict = get_cart_cache(request)
+        if cart_dict is None:
+            cart_dict = create_or_update_cart_book(cart)
+            set_cart_cache(request, cart_dict)
+        return cart_dict
+    except (KeyError, AttributeError):
+        return {'cart': cart}
+
+
+# CACHE CART
 def get_cache_key(request):
     if request.user.is_authenticated:
         key = request.user
@@ -51,41 +88,6 @@ def delete_cart_cache(request):
     cache.delete(cache_key)
 
 
-def get_current_cart(request) -> dict:
-    """
-    Функция берет из кеша словарь "cart_dict" или создает новый кеш
-    возвращает словарь "cart_dict"
-    :param request:
-    :return: словарь
-    """
-    cart = cart_(request)
-    try:
-        cart_dict = get_cart_cache(request)
-        if cart_dict is None:
-            cart_dict = create_or_update_cart_book(cart)
-            set_cart_cache(request, cart_dict)
-        return cart_dict
-    except (KeyError, AttributeError):
-        return {'cart': cart}
-
-
-def create_or_update_cart_book(cart) -> dict:
-    """
-      Функция возвращает словарь из трех ключей(
-          - корзина с товарами ('cart'),
-          - отсортированные товары по магазинам('book'),
-          - стоимость доставки товаров по магазинам('fees')
-          )
-      :param cart:
-      :return: словарь
-      """
-    ordered_cart_by_store = order_items_in_cart(cart)
-    items_and_fees = calculate_discount(ordered_cart_by_store)
-    total_delivery_fees = fees_total_amount(items_and_fees)
-    cart_dict = {'cart': cart, 'book': ordered_cart_by_store, 'fees': total_delivery_fees}
-
-    return cart_dict
-
 
 def create_or_update_cart_item(request, cart, item, quantity):
     #   проверяем есть ли данный товар в корзине
@@ -95,18 +97,36 @@ def create_or_update_cart_item(request, cart, item, quantity):
         # увеличиваем его на переданное кол-во
         cart_item.quantity += quantity
         cart_item.save()
-        messages.add_message(request, messages.SUCCESS,
-                             f"Количество товара обновлено до {cart_item.quantity} шт.")
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            f"Количество товара обновлено до {cart_item.quantity} шт."
+        )
     else:
         #   если ли данный товар отсутствует в корзине,
         #   то создаем экземпляр класса CartItem
-        cart_item = create_cart_item(item=item, user=request.user, quantity=quantity)
+        cart_item = cart_models.CartItem.objects.create(
+            item=item,
+            quantity=quantity,
+            price=item.price,
+            is_paid=False
+        )
+        try:
+            cart_item.user = request.user
+            cart_item.save()
+        except ValueError:
+            pass
         #  добавляем его в корзину
         cart.items.add(cart_item)
-        messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            f'{item} добавлен в вашу корзину({quantity} шт.)'
+        )
     return cart
 
 
+# ADD, REMOVE, UPDATE ITEMS IN CART
 def add_item_in_cart(request, item_id, quantity=1):
     """
      Функция для добавления товара из корзины.
@@ -118,28 +138,18 @@ def add_item_in_cart(request, item_id, quantity=1):
     response = redirect(request.META.get('HTTP_REFERER'))
     cart = get_current_cart(request).get('cart')
     item = item_services.ItemHandler.get_item(item_id)
-    if request.user.is_authenticated:
-        if request.user.profile.is_customer:
-            create_or_update_cart_item(request, cart, item, quantity)
+
+    if cart:
+        create_or_update_cart_item(request, cart, item, quantity)
     else:
-        #   если корзины не существует
-        if not cart:
-            #   создаем ключ-сессии
+        session_key = request.COOKIES.get('cart')
+        if not session_key:
             session_key = create_session_key(request)
-            #  создаем корзину анонимного пользователя,
-            cart, created = cart_models.Cart.objects.get_or_create(session_key=session_key, is_anonymous=True)
-            #   если корзина была только что создана,
-            if created:
-                #   создаем экземпляр класса (CartItem)
-                cart_item = create_cart_item(item)
-                #   добавляем его в корзину
-                cart.items.add(cart_item)
-                messages.add_message(request, messages.SUCCESS, f'{item} добавлен в вашу корзину({quantity} шт.)')
-        #   если анонимная корзина существует
-        else:
-            create_or_update_cart_item(request, cart, item, quantity)
-        cart.save()
-        response = set_cart_cookies(request)
+        cart = cart_models.Cart.objects.create(session_key=session_key, is_anonymous=True)
+        path = request.META.get('HTTP_REFERER')
+        create_or_update_cart_item(request, cart, item, quantity)
+        response = set_cart_cookies(request, session_key, path, cart.id)
+
     cache.delete(get_cache_key(request))
     return response
 
@@ -181,6 +191,25 @@ def update_quantity_item_in_cart(request, quantity, update, **kwargs):
             cart_item.save()
             messages.add_message(request, messages.SUCCESS, f"Количество товара обновлено до {cart_item.quantity} шт.")
     cache.delete(get_cache_key(request))
+
+
+# CART INFORMATION
+def create_or_update_cart_book(cart) -> dict:
+    """
+      Функция возвращает словарь из трех ключей(
+          - корзина с товарами ('cart'),
+          - отсортированные товары по магазинам('book'),
+          - стоимость доставки товаров по магазинам('fees')
+          )
+      :param cart:
+      :return: словарь
+      """
+    ordered_cart_by_store = order_items_in_cart(cart)
+    items_and_fees = calculate_discount(ordered_cart_by_store)
+    total_delivery_fees = fees_total_amount(items_and_fees)
+    cart_dict = {'cart': cart, 'book': ordered_cart_by_store, 'fees': total_delivery_fees}
+
+    return cart_dict
 
 
 def order_items_in_cart(cart) -> dict:
@@ -268,30 +297,6 @@ def fees_total_amount(book):
     return sum(value['fees'] for key, value in book.items())
 
 
-def get_auth_user_cart(request):
-    """Функция возвращает корзину пользователя."""
-    cart = cart_models.Cart.objects.filter(Q(user=request.user) & Q(is_archived=False)).first()
-    return cart
-
-
-def get_anon_user_cart(session_key):
-    """Функция возвращает корзину анонимного пользователя."""
-    cart = cart_models.Cart.objects.filter(
-        Q(is_anonymous=True) & Q(is_archived=False) & Q(session_key=session_key)).first()
-    return cart
-
-
-def create_cart_item(item, quantity=1, user=None):
-    """Функция создает экземпляр 'CartItem'."""
-    cart_item = cart_models.CartItem.objects.create(item=item, quantity=quantity, price=item.price, is_paid=False)
-    try:
-        cart_item.user = user
-        cart_item.save()
-    except ValueError:
-        pass
-
-    return cart_item
-
 
 def identify_cart(request):
     if request.user.is_authenticated and request.user.groups.first().name == 'customer':
@@ -322,7 +327,7 @@ def merge_anon_cart_with_user_cart(request, cart):
     try:
         session_key = request.COOKIES.get('cart')
         # получаем из сессий корзину анонимного пользователя
-        anonymous_cart = get_anon_user_cart(session_key)
+        anonymous_cart = get_anon_user_cart(request)
         # 'перекладываем' все товары из анонимной корзины в новую корзину
         if anonymous_cart:
             items_from_anon_cart = anonymous_cart.items.prefetch_related('item').all()
@@ -358,13 +363,7 @@ def get_items_in_cart(request):
     return in_cart
 
 
-def get_cart_item_in_cart(request, item):
-    try:
-        return get_current_cart(request).get('cart').items.filter(item=item).first()
-    except AttributeError:
-        return None
-
-
+# CREATE
 def create_session_key(request):
     """Функция создает ключ и сохраняет его в сессии."""
     if not request.session.session_key:
@@ -386,7 +385,7 @@ def create_cart(request, path=None):
     session_key = request.COOKIES.get('cart')
     cart_id = None
     if request.user.is_authenticated:
-        cart = cart_(request)
+        cart = get_customer_cart(request)
         return redirect('app_cart:cart', cart.pk)
     else:
         if not session_key:
@@ -401,6 +400,7 @@ def create_cart(request, path=None):
     return response
 
 
+# COOKIES
 def set_cart_cookies(request, session_key=None, path=None, cart_id=None):
     """
     Функция устанавливает cookies['cart'] с session_key анонимной корзины и

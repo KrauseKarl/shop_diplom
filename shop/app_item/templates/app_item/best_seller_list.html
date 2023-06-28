@@ -31,11 +31,11 @@
     <div class="Section">
         <div class="wrap">
             <div class="Cards Cards_blog">
-                  {% for order_item in object_list %}
-                {% with item=order_item %}
+                  {% for item in object_list %}
+
                 <div class="Card">
                     <a class="Card-picture" href="{{ item.get_absolute_url  }}">
-                    <img  src="{{ item.main_image }}}" alt="product.png"/>
+                    <img  src="{{ item.main_image }}" alt="{{item.main_image}}"/>
                     </a>
 
                     <div class="Card-date" >
@@ -47,7 +47,7 @@
                     </div>
                     <div class="Card-content">
                         <strong class="Card-title">
-                            <a href="#">{{ item.title }}</a>
+                            <a href="{{ item.get_absolute_url }}">{{ item.title }}</a>
                         </strong>
                         <div class="Card-cost">
                                     <span class="Card-price">
@@ -71,7 +71,7 @@
                         </div>
                     </div>
                 </div>
-                {% endwith %}
+
                 {% endfor %}
             </div>
         </div>

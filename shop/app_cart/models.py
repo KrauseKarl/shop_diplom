@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import F, Q, Sum
 from django.utils.timezone import now
-
+from django.db.migrations import Migration
 from app_item.models import Item
 from app_settings.context_processors import load_settings
 from app_settings.models import SiteSettings
@@ -85,7 +85,7 @@ class CartItem(models.Model):
     def discount_price(self):
         """Стоимость выбранного товара с учетом скидки продавца."""
         shop = Store.objects.values('min_for_discount', 'discount').get(id=self.item.store.id)
-        cart = self.user.user_cart.filter(is_archived=False).first()
+        cart = self.all_items.first()
         items = cart.items.filter(item__store=self.item.store.id)
         default_price = float(items.aggregate(Sum('total')).get('total__sum'))
         if default_price > float(shop.get('min_for_discount')):
@@ -130,6 +130,10 @@ class Cart(models.Model):
         verbose_name='ключ сессии'
     )
     created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='дата создания'
+    )
+    updated = models.DateTimeField(
         auto_now_add=True,
         verbose_name='дата создания'
     )

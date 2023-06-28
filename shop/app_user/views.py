@@ -5,14 +5,13 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import views as auth_views
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.contrib.auth.models import User
 from django.contrib.auth import mixins
 
 # modals
-from app_cart import models as cart_modals
 from app_item import models as item_modals
 from app_user import models as user_modals
 # form
@@ -39,7 +38,13 @@ class CreateProfile(SuccessMessageMixin, generic.CreateView):
         return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
 
     def form_valid(self, form):
-        response = register_services.ProfileHandler.create_user(self.request, form, self.get_success_url)
+        success_url = self.get_success_url
+        response = register_services.ProfileHandler.create_user(
+            self.request,
+            form,
+            success_url
+        )
+
         return response
 
     def form_invalid(self, form):

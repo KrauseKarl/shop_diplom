@@ -19,20 +19,37 @@ from app_user.services import register_services
 
 # other
 from app_cart.context_processors import get_cart
+"""
+    Сервисы работы с заказами, оплатой, и адресами
+    
+    #1 AdminOrderHAndler - класс для работы с заказами со стороны администратора.
+    #2 CustomerOrderHandler - класс для работы с заказами со стороны покупателя.
+    #3 SellerOrderHAndler - класс для работы с заказами со стороны продавца.
+    #4 Payment - класс для работы с оплатойзаказа.
+    #5 AddressHandler - класс для работы с адресами доставки покупателя.
+"""
+
+
+class AdminOrderHAndler:
+    """ Класс для работы с заказами со стороны администратора."""
+    @staticmethod
+    def orders():
+        return order_models.Order.objects.all()
 
 
 class CustomerOrderHandler:
+    """ Класс для работы с заказами со стороны покупателя."""
 
     @staticmethod
     def create_order(request, form):
-        """Функция содает заказ."""
+        """ Функция содает заказ."""
         cart = cart_services.get_current_cart(request).get('cart')
         user = request.user
         post_address = form.cleaned_data.get('post_address')
         city = form.cleaned_data.get('city')
         address = form.cleaned_data.get('address')
         if len(post_address) < 1:
-            AddressHandler.get_post_address(request, city, address)
+            AddressHandler.create_post_address(request, city, address)
         delivery_express_cost = CustomerOrderHandler.calculate_express_delivery_fees(form.cleaned_data.get('delivery'))
         delivery_cost = cart.is_free_delivery
         with transaction.atomic():
@@ -68,26 +85,14 @@ class CustomerOrderHandler:
                     )
                     cart_item.order = order
                     cart_item.status = 'not_paid'
-                # product = Item.objects.get(id=cart_item.item.id)
-                # product.stock -= cart_item.quantity
-                # product.save()
                 cart_services.delete_cart_cache(request)
                 cart.is_archived = True
                 cart.save()
         return order
 
     @staticmethod
-    def get_customer_one_order(request):
-        """Функция для получения списка всех заказов начиная с последнего."""
-        try:
-            return order_models.Order.objects.select_related('user').\
-                filter(user_id=request.user.id).\
-                order_by('-created')
-        except ObjectDoesNotExist:
-            raise Http404("Заказ не найден")
-
-    @staticmethod
     def get_customer_order_list(request, delivery_status=None):
+        """ Функция возвращает СПИСОК заказов пользователя."""
         try:
             if delivery_status:
                 orders = order_models.Order.objects.filter(user=request.user).\
@@ -101,7 +106,7 @@ class CustomerOrderHandler:
 
     @staticmethod
     def get_last_customer_order(user):
-        """Функция возвращает самый последний заказ пользователя."""
+        """ Функция возвращает самый последний заказ пользователя."""
         try:
             last_order = order_models.Order.objects.filter(user=user).last()
         except ObjectDoesNotExist:
@@ -109,31 +114,34 @@ class CustomerOrderHandler:
         return last_order
 
     @staticmethod
-    def calculate_express_delivery_fees(delivery):
-        if delivery == 'express':
-            res = settings_models.SiteSettings().express_delivery_price
-            return res
-        return 0
-
-    @staticmethod
-    def get_order_items(order):
-        try:
-            return order_models.OrderItem.objects.filter(order=order).order_by('item__store')
-        except ObjectDoesNotExist:
-            return None
-
-    @staticmethod
     def get_order(order_id):
+        """ Функция возвращает самый заказ пользователя по ID. """
         try:
             return order_models.Order.objects.filter(id=order_id).first()
         except ObjectDoesNotExist:
             return Http404('Такого заказ нет')
 
-
-class SellerOrderHAndler:
+    @staticmethod
+    def calculate_express_delivery_fees(delivery):
+        """ Функция возвращает стоимость ЭКСПРЕСС доставки заказа. """
+        if delivery == 'express':
+            return settings_models.SiteSettings().express_delivery_price
+        return 0
 
     @staticmethod
+    def get_order_items(order):
+        """ Функция возвращает все товары в заказе. """
+        try:
+            return order_models.OrderItem.objects.filter(order=order).order_by('item__store')
+        except ObjectDoesNotExist:
+            return None
+
+
+class SellerOrderHAndler:
+    """ Класс для работы с заказами со стороны продавца."""
+    @staticmethod
     def get_seller_order_list(request):
+        """ Функция возвращает список всех заказов продавца."""
         # собственник
         owner = request.user
         # все магазины собственника
@@ -154,6 +162,7 @@ class SellerOrderHAndler:
 
     @staticmethod
     def get_seller_comment_list(request):
+        """ Функция возвращает список всех комментариев к товарам продавца."""
         # собственник
         owner = request.user
         # все магазины собственника
@@ -168,10 +177,11 @@ class SellerOrderHAndler:
         return comment_list
 
     @staticmethod
-    def get_seller_comment_new_amount(request):
+    def get_seller_comment_amount(request):
+        """ Функция возвращает колчество всех новых комментариев(на модерации) к товарам продавца."""
         comments = SellerOrderHAndler.get_seller_comment_list(request)
-        new_comment_amount = comments.filter(is_published=False).count()
-        return new_comment_amount
+        comment_amount = comments.filter(is_published=False).count()
+        return comment_amount
 
     @staticmethod
     def get_order_total_amount(request):
@@ -189,6 +199,10 @@ class SellerOrderHAndler:
 
     @staticmethod
     def update_item_in_order(request, form):
+        """
+        Функция редактирует заказ, пересчитывает его общюю стоимсоть,
+        стоимость доставки в магазине продавца.
+        """
         order_item = form.save()
         order_item.quantity = form.cleaned_data.get('quantity')
         order_item.total = order_item.item.price * form.cleaned_data.get('quantity')
@@ -216,8 +230,17 @@ class SellerOrderHAndler:
         order.save()
         return order
 
+    @staticmethod
+    def sent_order(order_id, status):
+        """ Функция отправляет заказ. Статус 'доставляется'. """
+        order = order_models.Order.objects.get(id=order_id)
+        order.status = status
+        order.save()
+        return order
+
 
 class Payment:
+    """ Класс для работы с оплатойзаказа."""
     ERROR_DICT = {
         '1': 'Оплата не выполнена, т.к. способствует вымиранию юго-восточных туканов',
         '2': 'Оплата не выполнена, т.к. способствует глобальному потеплению',
@@ -228,7 +251,7 @@ class Payment:
 
     @classmethod
     def get_invoice(cls, invoice_id):
-        """Возвращает экземпляр квитанции по ID."""
+        """ Возвращает экземпляр квитанции по ID."""
         try:
             invoice = invoice_models.Invoice.objects.get(id=invoice_id)
             return invoice
@@ -237,39 +260,24 @@ class Payment:
 
     @classmethod
     def get_invoice_status(cls, invoice_id):
-        """Возвращает статус заказа."""
+        """ Возвращает статус заказа. """
         invoice = Payment.get_invoice(invoice_id)
         return invoice.order.status
 
     @classmethod
     def error_generator(cls):
-        """Генерирует случайную ошибку."""
+        """ Генерирует случайную ошибку."""
         index = str(random.randint(1, len(cls.ERROR_DICT)))
         error = cls.ERROR_DICT[index]
         return error
 
-    @classmethod
-    def init_payment(cls):
-        """Инициирует оплату заказа."""
-        last_invoice = cls.payment_array.pop()
-        card_number = last_invoice.number
-        last_card_number = int(card_number[-1])
-
-        if last_card_number % 2 != 0 or last_card_number != 0:
-            last_invoice.order.is_paid = True
-            last_invoice.order.save()
-            cls.payment_array = cls.payment_array.remove(last_invoice)
-            return redirect('app_order:success_pay')
-        else:
-            error = cls.error_generator()
-            last_invoice.order.error = error
-            last_invoice.order.save()
-            return error
-
 
 class AddressHandler:
+    """ Класс для работы с адресами доставки покупателя."""
+
     @staticmethod
-    def get_post_address(request, city, address):
+    def create_post_address(request, city, address):
+        """ Функция создает новый адрес доставки."""
         post_address, created = order_models.Address.objects.get_or_create(
             city=city,
             address=address,
@@ -279,6 +287,7 @@ class AddressHandler:
 
     @staticmethod
     def get_address_list(request):
+        """ Функция список всех адресов доставки покупателя."""
         try:
             user = request.user
             return order_models.Address.objects.filter(user=user)
@@ -287,13 +296,10 @@ class AddressHandler:
 
     @staticmethod
     def delete_address(request, address_id):
+        """ Функция удаляет адрес доставки покупателя."""
         address = order_models.Address.objects.get(id=address_id)
         user = request.user
         if address in user.address.all():
             address.delete()
 
 
-class AdminOrderHAndler:
-    @staticmethod
-    def orders():
-        return order_models.Order.objects.all()

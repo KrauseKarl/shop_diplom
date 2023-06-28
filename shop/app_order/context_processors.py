@@ -35,7 +35,7 @@ def seller_order_list(request) -> dict:
     if request.user.is_authenticated and request.user.profile.is_seller:
         all_order_list = SellerOrderHAndler.get_seller_order_list(request)
         order_total_amount = SellerOrderHAndler.get_order_total_amount(request)
-        reviews = SellerOrderHAndler.get_seller_comment_new_amount(request)
+        reviews = SellerOrderHAndler.get_seller_comment_amount(request)
         return {'orders': all_order_list, 'all_new_order_amount': order_total_amount, 'reviews': reviews}
     else:
         return {'orders': None, 'all_new_order_amount': None, 'reviews': None}

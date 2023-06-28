@@ -48,7 +48,7 @@
             <div class="Section-content">
                 <!--     ORDER FORM -->
                 <form class="form" action="{% url 'app_user:register' %}?next={% url 'app_order:order_create' %}"
-                      method="post">
+                      method="post" id="register_form">
                     {% csrf_token %}
 
                     <div class="Order-block Order-block_OPEN" id="step1">
@@ -119,7 +119,7 @@
 
                     </div>
                         <div class="Order-footer">
-                            <button class="btn btn_success" type="submit">Дальше</button>
+                            <button class="btn btn_success"  form="register_form" type="submit">Дальше</button>
                         </div>
                     </div>
                 </form>

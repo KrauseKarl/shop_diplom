@@ -1,5 +1,3 @@
-import json
-
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction

@@ -105,8 +105,7 @@ class ItemHandler:
         """
         if not queryset:
             queryset = item_models.Item.objects.\
-                annotate(quantity=Count('cart_item__order_item__quantity')).\
-                order_by('-quantity')
+                annotate(quantity=Count('cart_item__order_item__quantity')).order_by('-quantity')
         # else:
         #      queryset = queryset.annotate(bestseller=Count('cart_item__quantity')).order_by('-bestseller')
         return queryset

@@ -27,7 +27,6 @@ from app_store.services import store_services
 from app_order import forms as order_form
 from app_store import forms as store_forms
 # other
-from app_order.tasks import delivery_in_progress
 from utils.my_utils import MixinPaginator, SellerOnlyMixin
 
 
@@ -673,18 +672,18 @@ class SentPurchase(generic.UpdateView):
     context_object_name = 'order'
     form_class = store_forms.UpdateOrderStatusForm
 
-    def post(self, request, *args, **kwargs):
+    def form_valid(self, form):
+        form = store_forms.UpdateOrderStatusForm(self.request.POST)
+        status = form.cleaned_data.get('status')
         order_id = self.kwargs['order_id']
-        order = order_models.Order.objects.get(id=order_id)
-        form = store_forms.UpdateOrderStatusForm(request.POST)
-        if form.is_valid():
-            status = form.cleaned_data.get('status')
-            order.status = status
-            order.save()
-            delivery_in_progress.delay(order.id)
-            path = self.request.META.get('HTTP_REFERER')
-            messages.success(self.request, f"Заказ  {order} отправлен")
-            return redirect(path)
+        order = order_services.SellerOrderHAndler.sent_order(order_id, status)
+        messages.add_message(self.request,messages.SUCCESS, f"Заказ {order} отправлен")
+        return redirect(self.request.META.get('HTTP_REFERER'))
+
+    def form_invalid(self, form):
+        order_id = self.kwargs['order_id']
+        messages.add_message(self.request, messages.ERROR, f"Произошла ошибка при отправки заказа.")
+        return redirect('app_store:sent_purchase', order_id)
 
 
 class CommentListView(generic.ListView, MixinPaginator):
