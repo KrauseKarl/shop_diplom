@@ -10,7 +10,7 @@ from operator import and_, or_
 from urllib.parse import parse_qs
 from datetime import date, timedelta
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models.query import QuerySet
 from django.db.models import Min, Max, Q, Count
 from django.http import Http404
@@ -674,12 +674,16 @@ class CategoryHandler:
     @staticmethod
     def category_list_view(request, queryset, paginate_by, category):
         color = None
+
         #  создаем словарь всех параметров GET-запроса
         query_get_param_dict = ItemHandler.make_get_param_dict(request)
+
         #  фильтруем товары по переданной категории
         filter_items_by_category = CategoryHandler.filter_items_by_category(queryset, category)
+
         #  находим экземпляр класса Category по slug
         category = CategoryHandler.get_categories(category)
+
         #  фильруем QuerySet по категории и переданным параметрам в GET-запросе
         object_list = ItemHandler.smart_filter(
             request,
@@ -740,12 +744,16 @@ class CategoryHandler:
 
 
 class CountView:
-    def fake_ip(self):
+
+    @staticmethod
+    def fake_ip():
         ip_number_list = [str(random.randint(0, 255)) for _ in range(4)]
         ip = '.'.join(ip_number_list)
         return item_models.IpAddress.objects.create(ip=ip)
 
-    def get_client_ip(self, request):
+
+    @staticmethod
+    def get_client_ip(request):
         """Функция для получения IP-адреса пользователя."""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
@@ -754,17 +762,18 @@ class CountView:
             ip = request.META.get('REMOTE_ADDR')
         return ip
 
-    def add_view(self, request, item_id):
+    @staticmethod
+    def add_view(request, item_id):
         """Функция для добавления просмотров товара."""
         item = ItemHandler().get_item(item_id)
-        ip = self.get_client_ip(request)
+        ip = CountView.get_client_ip(request)
         if request.user.is_authenticated:
             ip_address, created = item_models.IpAddress.objects.get_or_create(user=request.user, ip=ip)
         else:
             try:
                 ip_address, created = item_models.IpAddress.objects.get_or_create(ip=ip)
-            except:
-                ip_address = self.fake_ip()
+            except MultipleObjectsReturned:
+                ip_address = CountView.fake_ip()
         if ip_address not in item.views.all():
             item.views.add(ip_address)
 

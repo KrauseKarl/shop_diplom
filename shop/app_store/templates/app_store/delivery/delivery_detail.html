@@ -1,4 +1,4 @@
-{% extends 'seller_index.html' %}
+{% extends 'app_store/seller_index.html' %}
 {% load static  %}
 {% load cache %}
 {% block title %}
@@ -13,6 +13,10 @@
                 <h1 class="Middle-title">{{ order }}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:dashboard' %}">главная стариница
+                        </a>
+                    </li>
                     <li class="breadcrumbs-item">
                         <a href="{% url 'app_store:delivery_list' %}">Список заказов
                         </a>
@@ -30,8 +34,7 @@
     <div class="Section">
         <div class="wrap">
             <div class="Section-content">
-                <div class="Orders">
-                </div>
+                <div class="Orders"></div>
                 <div class="Order">
                     <div class="Order-infoBlock">
                         <div class="Order-personal">

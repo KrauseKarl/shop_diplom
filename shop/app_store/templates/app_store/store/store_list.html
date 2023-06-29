@@ -1,4 +1,4 @@
-{% extends 'seller_index.html' %}
+{% extends 'app_store/seller_index.html' %}
 {% load static %}
 {% load cache %}
 
@@ -11,7 +11,11 @@
             <div class="Middle-header">
                 <h1 class="Middle-title">Список моих магазинов </h1>
                 {% block breadcrumbs %}
-                <ul class="breadcrumbs Middle-breadcrumbs">
+                 <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:dashboard' %}">главная стариница
+                        </a>
+                    </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>мои магазины
                         </span>
@@ -25,7 +29,7 @@
         <div class="wrap">
             <div class="Section-column">
                 <div class="Section-columnSection">
-                    {% include 'app_user/seller/sidebar_seller.html' %}
+                     {% include "app_store/sidebar_seller.html" %}
                 </div>
             </div>
             <div class="Section-content">

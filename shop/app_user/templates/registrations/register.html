@@ -36,8 +36,10 @@
                             {{ form.errors.username }}
                         </div>
                         {% endif %}
+                        <label class="form-label" for="username">логин
+                        </label>
                         <input class="form-input" id="username" name="username" type="text"
-                               placeholder="имя пользователя" value="{{ request.POST.username }}" required/>
+                               placeholder="логин" value="{{ request.POST.username }}" required/>
                     </div>
                     <!--    USERNAME FIELDS REQUIRED    -->
 
@@ -48,6 +50,8 @@
                             {{ form.errors.password2 }}
                         </div>
                         {% endif %}
+                         <label class="form-label" for="password1">пароль
+                        </label>
                         <input class="form-input" id="password1" name="password1" type="password"
                                placeholder="пароль" required/>
                     </div>
@@ -60,22 +64,25 @@
                     <!--    TELEPHONE FIELD REQUIRED                -->
                     <div class="form-group">
                          {% if form.errors.telephone %}
-                        <div class="form-error ">
-                            {{ form.errors.telephone }}
+                        <div class="form-error ">{{ form.errors.telephone }}
                         </div>
                         {% endif %}
+                        <label class="form-label" for="telephone">телефон
+                        </label>
                         <input class="form-input" id="telephone" name="telephone" type="text"
-                               placeholder="телефон" value="{{ request.POST.telephone }}" data-mask="+7 (999) 999 99 99"/>
+                               placeholder="телефон" value="{{ request.POST.telephone }}"
+                               data-mask="+7 (999) 999 99 99"/>
                     </div>
                     <!--    TELEPHONE FIELD REQUIRED    -->
 
                     <!--    EMAIL FIELDS REQUIRED    -->
                     <div class="form-group">
                         {% if form.errors.email %}
-                        <div class="form-error ">
-                            {{ form.errors.email }}  например - post@mail.com
+                        <div class="form-error ">{{ form.errors.email }} например - post@mail.com
                         </div>
                         {% endif %}
+                        <label class="form-label" for="email">почта
+                        </label>
                         <input class="form-input" id="email" name="email" type="text"
                                placeholder="почта" value="{{ request.POST.email }}"/>
                     </div>
@@ -83,6 +90,8 @@
 
                      <!--    ROLE CHECKBOX REQUIRED    -->
                     <div class="form-group">
+                        <label class="form-label" >Роль на сайте
+                        </label>
                         <label class="toggle" style="margin-right: 10px;">
                             <input type="radio" name="group" id="customer"  checked value="customer"/>
                             <span class="toggle-box"></span>

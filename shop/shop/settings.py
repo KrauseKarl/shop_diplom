@@ -240,3 +240,11 @@ CELERY_TIMEZONE = 'Europe/Moscow'
 # CELERY_RESULT_SERIALIZER = 'json'
 # CELERY_TASK_TRACK_STARTED = True
 # CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = ''
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'shop'
+EMAIL_HOST_PASSWORD = 'shop123'

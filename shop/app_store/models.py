@@ -21,6 +21,13 @@ class Store(models.Model):
         allow_unicode=False,
         verbose_name='slug'
     )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='store',
+        verbose_name='собственник'
+    )
     discount = models.SmallIntegerField(
         default=0,
         verbose_name='скидка',
@@ -29,26 +36,12 @@ class Store(models.Model):
             MinValueValidator(0)
         ]
     )
-    owner = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='store',
-        verbose_name='собственник'
-    )
-    min_for_discount = models.DecimalField(
-        decimal_places=2,
-        max_digits=9,
+    min_for_discount = models.IntegerField(
         default=0,
-        verbose_name='минимальная сумма бесплатной доставки'
-    )
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата создания'
-    )
-    updated = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата обновления'
+        verbose_name='минимальная сумма для бесплатной доставки',
+        validators=[
+            MinValueValidator(0)
+        ]
     )
     description = models.TextField(
         default='',
@@ -63,6 +56,15 @@ class Store(models.Model):
     is_active = models.BooleanField(
         default=False
     )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='дата создания'
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='дата обновления'
+    )
+
 
     objects = models.Manager()
     active_stores = StoreIsActiveManager()

@@ -1,0 +1,125 @@
+{% extends 'app_settings/admin/admin_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Список комментариев{% endblock %}
+
+{% block content %}
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Комментарии
+                </h1>
+                {% block breadcrumbs %}
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:dashboard' %}">главная стариница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>список комментариев</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                {% include "app_store/sidebar_seller.html" %}
+            </div>
+            <!--    SORT BY     -->
+            <div class="Section-content">
+                <div class="Sort">
+                    <div class="Sort-title">Всего комментариев: </div>
+                    <div class="Sort-variants">
+                         <a class="Sort-sortBy"
+                           href="{% url 'app_settings:comments_list' %}">
+                            все
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?is_published=False">
+                            новые
+                        </a>
+                        <a class="Sort-sortBy"
+                           href="?is_published=True">
+                            опубликованные
+                        </a>
+                    </div>
+                </div>
+                <!--    SORT BY END    -->
+                <!--       PAGINATION         -->
+                <div>{% include "pagination.html" %}<br></div>
+                <!--       PAGINATION         -->
+                <div class="Orders">
+                    {% for comment in object_list %}
+
+                    <div class="Order Order_anons">
+                        <a  href="{% url 'app_store:comment_detail' pk=comment.pk %}">
+                            <div class="Order-personal">
+                            <div class="row">
+                                <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">автор:</div>
+                                        <div class="Order-infoContent">
+                                            {{ comment.user.get_full_name }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">магазин:</div>
+                                        <div class="Order-infoContent">
+                                            {{ comment.item.store|upper }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">товар:</div>
+                                        <div class="Order-infoContent">
+                                            {{ comment.item.title }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">дата:</div>
+                                        <div class="Order-infoContent">
+                                            {{ comment.created }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">модерация:</div>
+                                        <div class="Order-infoContent">
+                                            {% if  comment.is_published %}
+                                            <span class="success-text">опубликован</span>
+                                            {% elif  comment.archived  %}
+                                             <span class="secondary-text">удален в архиве</span>
+                                            {% else %}
+                                              <span class="warning-text">на модерации</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="Order">
+                        <h2>Ничего не найдено
+                        </h2>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!--       PAGINATION         -->
+                {% include "pagination.html" %}
+                <!--       PAGINATION         -->
+
+            </div>
+            <!--    SORT BY     -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

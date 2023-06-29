@@ -52,6 +52,30 @@ class CreateProfile(SuccessMessageMixin, generic.CreateView):
         return super(CreateProfile, self).form_invalid(form)
 
 
+class CreateProfileOrder(SuccessMessageMixin, generic.CreateView):
+    """Класс-представление для создания профиля пользователя."""
+    model = User
+    second_model = user_modals.Profile
+    template_name = 'app_order/create_order_anon.html'
+    form_class = user_form.RegisterUserForm
+
+    def get_success_url(self):
+        return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
+
+    def form_valid(self, form):
+        success_url = self.get_success_url
+        response = register_services.ProfileHandler.create_user(
+            self.request,
+            form,
+            success_url
+        )
+
+        return response
+
+    def form_invalid(self, form):
+        form = user_form.RegisterUserForm(self.request.POST)
+        return super(CreateProfileOrder, self).form_invalid(form)
+
 class UpdateProfile(generic.UpdateView):
     """Класс-представление для обновления профиля пользователя."""
     model = User
@@ -171,7 +195,6 @@ class UserLoginView(auth_views.LoginView):
             if self.request.GET.get('next'):
                 path = self.request.GET.get('next')
             else:
-                print(reverse('app_user:account', kwargs={'pk': self.request.user.pk}))
                 path = reverse('app_user:account', kwargs={'pk': self.request.user.pk})
             response = cart_services.delete_cart_cookies(self.request, path=path)
             return response

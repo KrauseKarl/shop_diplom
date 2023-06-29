@@ -1,4 +1,4 @@
-{% extends 'seller_index.html' %}
+{% extends 'app_store/seller_index.html' %}
 {% load static %}
 {% load cache %}
 
@@ -30,8 +30,7 @@
     {% include 'message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
-            <div class="Section-column">
-                {% include 'app_user/seller/sidebar_seller.html' %}
+            <div class="Section-column">{% include "app_store/sidebar_seller.html" %}
             </div>
             <div class="Section-content">
 

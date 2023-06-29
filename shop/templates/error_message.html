@@ -2,7 +2,7 @@
     {% for field, errors in form.errors.items %}
         {% for error in errors %}
             <ul class="messagelist">
-                <li class="error" id="error_message">{{ error }}
+                <li class="danger-text" id="error_message">{{ error }}
                     <button class="close-button" id="close-button-error">✖
                     </button>
                 </li>
@@ -12,9 +12,9 @@
 {% endif %}
 
 <script>
-        let toast = document.getElementById("error_message");
+        let toast_error = document.getElementById("error_message");
         document.getElementById("close-button-error").addEventListener("click", function () {
-            toast.remove()
+            toast_error.remove()
             }
         );
 

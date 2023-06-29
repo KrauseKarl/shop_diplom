@@ -1,0 +1,86 @@
+{% extends 'app_settings/admin/admin_index.html' %}
+{% load static  %}
+{% load cache %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+ <div class="Middle Middle_top">
+    <div class="Middle-top">
+      <div class="wrap">
+        <div class="Middle-header">
+          <h1 class="Middle-title">
+            {{ comment }}
+          </h1>
+            <ul class="breadcrumbs Middle-breadcrumbs">
+                <li class="breadcrumbs-item">
+                    <a href="{% url 'app_store:dashboard' %}">главная стариница
+                    </a>
+                </li>
+                <li class="breadcrumbs-item ">
+                     <a href="{% url 'app_store:comment_list' %}">список комментариев
+                    </a>
+                </li>
+                <li class="breadcrumbs-item breadcrumbs-item_current">
+                    <span>{{ comment }}
+                    </span>
+                </li>
+            </ul>
+        </div>
+      </div>
+    </div>
+     {% include 'message.html' %}
+    <div class="Section">
+      <div class="wrap">
+        <div class="Section-content">
+          <div class="Orders">
+          </div>
+          <div class="Order">
+            <div class="Order-infoBlock">
+              <div class="Order-personal">
+                <div class="row">
+                  <div class="row-block">
+                    <div class="Order-info Order-info_date">
+                      <div class="Order-infoType">дата создания:</div>
+                      <div class="Order-infoContent">{{ comment.created|date:'j F o H:m' }}</div>
+                    </div>
+                    <div class="Order-info">
+                      <div class="Order-infoType">автор комментария:</div>
+                      <div class="Order-infoContent">{{ comment.user.get_full_name }}</div>
+                    </div>
+                    <div class="Order-info">
+                      <div class="Order-infoType">товар:</div>
+                      <div class="Order-infoContent" >{{ comment.item }}</div>
+                    </div>
+
+                    <div class="Order-info">
+                      <div class="Order-infoType">статус:</div>
+                      {% if comment.archived %}
+                      <div class="Order-infoContent secondary-text">удален в архив</div>
+                      {% elif comment.is_published %}
+                      <div class="Order-infoContent  success-text ">опубликован</div>
+                      {% else %}
+                      <div class="Order-infoContent  warning-text ">на модерации</div>
+                      {% endif %}
+                    </div>
+
+                  </div>
+                  <div class="row-block">
+                    <div class="Order-info Order-info_delivery">
+                      <div class="Order-infoContent ">{{ comment.review }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+{% endblock %}

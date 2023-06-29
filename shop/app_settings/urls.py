@@ -4,7 +4,7 @@ from app_settings import views
 
 app_name = 'app_settings'
 urlpatterns = [
-    path('dashboard/', views.AdminDashBoardView.as_view(), name='dashboard'),
+    path('admin/dashboard/', views.AdminDashBoardView.as_view(), name='dashboard'),
     path('settings/', views.SettingsView.as_view(), name='settings'),
     path('edit/<int:pk>/', views.SettingsUpdatedView.as_view(), name='settings_edit'),
 

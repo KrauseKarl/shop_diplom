@@ -72,7 +72,7 @@ class CustomerOrderHandler:
                 order.store.add(store)
                 order.save()
 
-            cart_items = cart.items.filter(is_paid=False)
+            cart_items = cart.all_items.filter(is_paid=False)
             with transaction.atomic():
                 for cart_item in cart_items:
                     cart_item.is_paid = True

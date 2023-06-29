@@ -30,15 +30,6 @@
                         <a href="{% url 'main_page' %}">главная стариница
                         </a>
                     </li>
-                    <li class="breadcrumbs-item">
-                       <span>
-                            {% if category %}категория
-                            {% elif tag %}тег
-                            {% elif store %}магазин
-                            {% elif request.GET.q %}поиск
-                            {% endif %}
-                        </span>
-                    </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>
                             {% if category %}{{ category }}
@@ -56,7 +47,7 @@
         <div class="wrap">
             <div class="Section-column">
 
-
+                <!--  IF STORE IS CHOSEN -->
                 {% if store %}
                 <header class="Section-header">
                     <strong class="Section-title">{{ store.title }}</strong>
@@ -95,6 +86,8 @@
                     <!--    FORM    -->
                 </div>
                 {% endif %}
+                 <!--  IF STORE IS CHOSEN -->
+
                 <!--  IF CATEGORY IS CHOSEN -->
                 {% if category %}
                 <div class="Section-columnSection">
@@ -155,8 +148,7 @@
                 {% if category %}
                 <div class="Section-columnSection">
                     <header class="Section-header">
-                        <strong class="Section-title">
-                            Фильтр
+                        <strong class="Section-title">Фильтр
                         </strong>
                     </header>
                     <!-- FILTER TAGS -->
@@ -164,7 +156,8 @@
                         <!--   CANCEL ALL REQUEST PARAMS   -->
                         {% if get_params.keys %}
                         <a class="btn    btn_sm" style="margin-bottom: 5px" href="{{ request.META.PATH_INFO }}">
-                            <strong>сбросить всё</strong>
+                            <strong>сбросить всё
+                            </strong>
                             <span class="close-cross">X</span>
                         </a>
                         {% endif %}
@@ -215,8 +208,11 @@
                             <!--    ONLY AVAILABLE ITEMS CHECKBOX -->
                             <div class="form-group">
                                 <label class="toggle">
-                                    <input type="checkbox" name="is_available" value="True"
-                                     {% if 'is_available' in get_params.values  %} checked {% endif %} />
+                                    {% if 'is_available' in get_params.values %}
+                                    <input type="checkbox" name="is_available" value="True" checked/>
+                                    {% else %}
+                                    <input type="checkbox" name="is_available" value="True"/>
+                                    {% endif %}
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text">Только товары в наличии</span>
                                 </label>
@@ -323,8 +319,9 @@
                 </div>
                 {% endif %}
                 <!--     MOST POPULAR 10 TAGS -->
-                 {% endif %}
+                {% endif %}
             </div>
+
             <!--    SORT BY     -->
             <div class="Section-content">
                 <div class="Sort">
@@ -380,10 +377,14 @@
                          data-comments="{{ item.item_comments.count }}"
                          data-new="{{ item.created }}">
 
-                        <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}" title="{{ item.title }}">
-                            <img class="card-picture-image{% if not item.is_available %}not_available{% endif %}"
-                                 src="{{ item.main_image }}"
-                                 alt="{{ item.title|truncatechars:'6' }}"/>
+                        <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}"
+                           title="{{ item.title }}">
+                            <img class="card-picture-image
+                            {% if not item.is_available %}
+                            not_available
+                            {% endif %}"
+                             src="{{ item.main_image }}"
+                             alt="{{ item.title|truncatechars:'6' }}"/>
                         </a>
 
                         {% if not item.is_available %}
@@ -476,7 +477,7 @@
                                 <!--      FOR DEBUG  -->
 
 
-                                {% if request.user.profile.is_customer %}
+                                {% if not request.user.is_authenticated or request.user.profile.is_customer %}
                                 <div class="Card-hover">
                                     {% if item in in_cart %}
                                     <a href="{% url 'app_cart:remove_cart' pk=item.pk  %}">удалить из корзины</a>
@@ -486,7 +487,6 @@
                                         <p> добавить в корзину</p>
                                     </a>
                                     {% endif %}
-
                                 </div>
                                 {% endif %}
                             </div>

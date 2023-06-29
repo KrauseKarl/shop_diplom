@@ -1,5 +1,5 @@
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.http.response import HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect
@@ -54,11 +54,13 @@ def get_current_cart(request) -> dict:
     :return: словарь
     """
     cart = get_customer_cart(request)
+
     try:
-        cart_dict = get_cart_cache(request)
-        if cart_dict is None:
-            cart_dict = create_or_update_cart_book(cart)
-            set_cart_cache(request, cart_dict)
+        cart_dict = create_or_update_cart_book(cart)
+        # cart_dict = get_cart_cache(request)
+        # if cart_dict is None:
+        #
+        #     set_cart_cache(request, cart_dict)
         return cart_dict
     except (KeyError, AttributeError):
         return {'cart': cart}
@@ -88,10 +90,12 @@ def delete_cart_cache(request):
     cache.delete(cache_key)
 
 
-
 def create_or_update_cart_item(request, cart, item, quantity):
     #   проверяем есть ли данный товар в корзине
-    cart_item = cart.items.filter(item=item, is_paid=False).first()
+    cart_item = cart_models.CartItem.objects.filter(Q(item=item) &
+                                                    Q(is_paid=False) &
+                                                    Q(cart=cart)
+                                                    ).first()
     #   если ли данный товар в корзине
     if cart_item:
         # увеличиваем его на переданное кол-во
@@ -109,15 +113,15 @@ def create_or_update_cart_item(request, cart, item, quantity):
             item=item,
             quantity=quantity,
             price=item.price,
-            is_paid=False
+            is_paid=False,
+            cart=cart
         )
         try:
             cart_item.user = request.user
             cart_item.save()
         except ValueError:
             pass
-        #  добавляем его в корзину
-        cart.items.add(cart_item)
+
         messages.add_message(
             request,
             messages.SUCCESS,
@@ -162,7 +166,7 @@ def remove_from_cart(request, item_id):
     :return:
     """
     cart = get_current_cart(request).get('cart')
-    cart_item = get_object_or_404(cart_models.CartItem, id=item_id, all_items=cart, is_paid=False)
+    cart_item = get_object_or_404(cart_models.CartItem, id=item_id, cart=cart, is_paid=False)
     messages.add_message(request, messages.INFO, f"{cart_item.item.title} удален из корзины")
     try:
         cart_item.delete()
@@ -182,7 +186,7 @@ def update_quantity_item_in_cart(request, quantity, update, **kwargs):
     item_id = kwargs['item_id']
     cart = get_current_cart(request).get('cart')
     if update:
-        cart_item = cart.items.get(id=item_id)
+        cart_item = cart_models.CartItem.objects.get(Q(id=item_id) & Q(cart=cart))
         if quantity == 0:
             cart_item.delete()
             messages.add_message(request, messages.SUCCESS, f"Товар удален из корзины")
@@ -234,14 +238,15 @@ def order_items_in_cart(cart) -> dict:
     """
     # все товары в корзине
 
-    items = cart.items.select_related('item__store').filter(
+    cart_items = cart_models.CartItem.objects.select_related('item__store').filter(
+        Q(cart=cart) &
         Q(item__is_available=True) &
         Q(item__stock__gt=0) &
         Q(is_paid=False)
     ).order_by('-updated')
 
     sort_by_store = {}
-    for cart_item in items:
+    for cart_item in cart_items:
         # название магазина
         shop = cart_item.item.store
         # кол-во товара на складе для сравнения с кол-вом в корзине
@@ -252,7 +257,6 @@ def order_items_in_cart(cart) -> dict:
         if shop not in sort_by_store:
             # если магазина нет словаре,
             # добавляем вложенный словарь с суммой, товаром и булевым значением
-
             sort_by_store[shop] = {'total': float(cart_item.total),
                                    'items': {
                                        f'{cart_item.id}': {
@@ -260,7 +264,7 @@ def order_items_in_cart(cart) -> dict:
                                            'is_not_enough': False
                                        }
                                    }
-                                   }
+                                }
         else:
             # добавляем сумму к имеющейся сумме всех товаров этого магазина
             sort_by_store[shop]['total'] += float(cart_item.total)
@@ -275,6 +279,23 @@ def order_items_in_cart(cart) -> dict:
         if cart_item.quantity > item_stock:
             sort_by_store[shop]['items'][f'{cart_item.id}']['is_not_enough'] = item_stock
     return sort_by_store
+
+
+def enough_checker(cart) -> dict:
+    """
+    Функция провереят соответсвие количество товара на складе
+     и количество товара в заказе.
+     Возвращает словарь с ключами:
+    - 'enough' - булевок знаечние,
+    - 'items' - спискок диффицитных товаров,
+    """
+    enough_dict = {'enough': False, 'items': []}
+    print('____________________ ',type(cart))
+    for cart_item in cart.all_items.filter(is_paid=False):
+        if cart_item.quantity > cart_item.item.stock:
+            enough_dict['enough'] = True
+            enough_dict['items'].append(cart_item.item)
+    return enough_dict
 
 
 def calculate_discount(ordered_cart_by_store):
@@ -297,7 +318,6 @@ def fees_total_amount(book):
     return sum(value['fees'] for key, value in book.items())
 
 
-
 def identify_cart(request):
     if request.user.is_authenticated and request.user.groups.first().name == 'customer':
         if request.session.session_key:
@@ -307,7 +327,7 @@ def identify_cart(request):
                 cart.session_key = ''
                 cart.is_anonymous = False
                 cart.user = request.user
-                for cart_item in cart.items.all():
+                for cart_item in cart.all_items.all():
                     cart_item.user = request.user
                     cart_item.save()
                 cart.save()
@@ -324,25 +344,40 @@ def merge_anon_cart_with_user_cart(request, cart):
         :return: корзина зарегистрированного пользователя
         объединенная с товарами из анонимной корзины.
     """
+    print('#1 CART =  ', cart)
     try:
-        session_key = request.COOKIES.get('cart')
         # получаем из сессий корзину анонимного пользователя
         anonymous_cart = get_anon_user_cart(request)
+        print('#2 anonymous_cart =  ', anonymous_cart)
+        # получсем все товары в корзине пользователя
+        items_in_user_cart = cart_models.CartItem.objects.filter(cart=cart)
+
         # 'перекладываем' все товары из анонимной корзины в новую корзину
         if anonymous_cart:
-            items_from_anon_cart = anonymous_cart.items.prefetch_related('item').all()
-            for cart_item in items_from_anon_cart:
-                cart_item.user = request.user
-                cart_item.save(update_fields=['user'])
-                already_in_cart_item = cart.items.filter(item__id=cart_item.item.id).first()
-                if already_in_cart_item:
-                    already_in_cart_item.quantity += cart_item.quantity
-                    already_in_cart_item.save()
-                else:
-                    cart.items.add(cart_item)
+            anonymous_cart_items = cart_models.CartItem.objects.filter(cart=anonymous_cart)
 
-            delete_cart_cache(request)
+            if items_in_user_cart.count() > 0:
+                for cart_item_anon in anonymous_cart_items:
+                    for cart_item_user in items_in_user_cart:
+                        if cart_item_anon.item.id == cart_item_user.item.id:
+
+                            cart_item_user.quantity += cart_item_anon.quantity
+                            cart_item_user.save(update_fields=['quantity'])
+                            cart_models.CartItem.objects.get(id=cart_item_anon.id).delete()
+                        else:
+
+                            cart_item_anon.cart = cart
+                            cart_item_anon.user = request.user
+                            cart_item_anon.save(update_fields=['user', 'cart'])
+
+            else:
+                for cart_item_anon in anonymous_cart_items:
+                    cart_item_anon.cart = cart
+                    cart_item_anon.user = request.user
+                    cart_item_anon.save(update_fields=['user', 'cart'])
+                cart.save()
             create_or_update_cart_book(cart)
+
             # удаляем анонимную корзину
             anonymous_cart.delete()
     except KeyError:
@@ -356,12 +391,20 @@ def get_items_in_cart(request):
     значка "В КОРЗИНЕ" в каталоге товаров.
     """
     try:
-        items_in_cart = get_current_cart(request).get('cart').items.all()
-        in_cart = item_models.Item.objects.filter(cart_item__in=items_in_cart)
+        cart_item = get_current_cart(request).get('cart').all_items.all()
+        in_cart = item_models.Item.objects.filter(cart_item__in=cart_item)
     except AttributeError:
         in_cart = None
     return in_cart
 
+
+def get_cart_item(request, item):
+    try:
+        cart = get_current_cart(request).get('cart')
+        cart_items = cart.all_items.filter(item=item).first()
+    except AttributeError:
+        cart_items = None
+    return cart_items
 
 # CREATE
 def create_session_key(request):
@@ -441,6 +484,7 @@ def delete_cart_cookies(request, path):
     """
     if request.user.is_authenticated:
         cart = get_current_cart(request).get('cart')
+        print('\n\n&&&&&&', cart, '\n\n\n')
         merge_anon_cart_with_user_cart(request, cart)
         if request.COOKIES.get('cart'):
             response = HttpResponseRedirect(path)

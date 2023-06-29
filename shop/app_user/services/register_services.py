@@ -68,10 +68,7 @@ class ProfileHandler:
             password=form.cleaned_data.get('password1')
         )
         login(request, user)
-        if request.GET.get('next'):
-            path = request.GET.get('next')
-        else:
-            path = success_path
+        path = request.GET.get('next')
         # удаление данных об анонимной корзине из COOKIES  при создании нового пользователя
         response = cart_services.delete_cart_cookies(request, path)
         return response

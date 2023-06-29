@@ -1,4 +1,4 @@
-{% extends 'seller_index.html' %}
+{% extends 'app_store/seller_index.html' %}
 {% load static %}
 {% load cache %}
 
@@ -35,17 +35,6 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="row-block">
-                                <!--    TITLE FIELD  -->
-                                <div class="form-group">
-                                    <label class="form-label" for="title">название магазина</label>
-                                    <input class="form-input" id="title" name="title" type="text"/>
-                                    {% if form.errors.title %}
-                                    <div class="form-error">{{ form.errors.title }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <!--    TITLE FIELD  -->
-
                                 <!--    OWNER FIELD  -->
                                 <div class="form-group">
                                     <label class="form-label" for="owner">собственник </label>
@@ -58,6 +47,17 @@
                                     {% endif %}
                                 </div>
                                 <!--    OWNER FIELD  -->
+
+                                <!--    TITLE FIELD  -->
+                                <div class="form-group">
+                                    <label class="form-label" for="title">название магазина</label>
+                                    <input class="form-input" id="title" name="title" type="text"/>
+                                    {% if form.errors.title %}
+                                    <div class="form-error">{{ form.errors.title }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <!--    TITLE FIELD  -->
 
                                 <!--    DELIVERY FEES FIELD  -->
                                 <div class="form-group">
@@ -83,6 +83,7 @@
                                 <!--    MINIMUM FREE DELIVERY  FIELD  -->
 
 
+
                             </div>
                             <div class="row-block">
                                 <!--    LOGO FIELD  -->
@@ -105,8 +106,7 @@
                                     </div>
                                 </div>
                                 <!--    LOGO FIELD  -->
-
-                                 <!--    TITLE DESCRIPTION  -->
+                                    <!--    TITLE DESCRIPTION  -->
                                 <div class="form-group">
                                     <label class="form-label" for="description">описание</label>
                                     <textarea class="form-input" id="description" name="description"
@@ -120,7 +120,8 @@
 
                                 <div class="form-group">
                                     <div class="Profile-btn">
-                                        <button class="btn btn_success btn_square" type="submit">Сохранить</button>
+                                        <button class="btn btn_success btn_square btn_full" type="submit">Сохранить
+                                        </button>
                                     </div>
                                 </div>
                             </div>

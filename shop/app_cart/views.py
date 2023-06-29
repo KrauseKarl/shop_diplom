@@ -76,17 +76,17 @@ class CartDetail(generic.DetailView):
     template_name = 'app_cart/cart.html'
     context_object_name = 'cart'
 
-    # def test_func(self):
-    #     cart = self.get_object()
-    #     if self.request.user.id == cart.user.id:
-    #         return True
-    #     return False
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['curr_cart'] = get_cart(self.request)
-        total_list = get_cart(self.request).get('cart_dict').get('book').values()
-        context['total_amount_sum'] = sum(Counter([d['total'] for d in total_list]).keys())
+        context['cart'] = get_cart(self.request).get('cart_dict').get('cart')
+        context['not_enough'] = cart_services.enough_checker(context['cart'])
+        print(context['not_enough'])
+        try:
+            total_list = get_cart(self.request).get('cart_dict').get('book').values()
+
+            context['total_amount_sum'] = sum(Counter([d['total'] for d in total_list]).keys())
+        except AttributeError:
+            context['total_amount_sum'] = 0
         return context
 
 

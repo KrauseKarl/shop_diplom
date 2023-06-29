@@ -2,11 +2,13 @@
 <nav class="row-block row-block_right Header-menu">
     <div class="menuModal" id="navigate">
         <ul class="menu menu_main">
-            <li class="menu-item">
-                <a class="menu-link" href="{% url 'app_store:store_list' %}">Мои магазины</a>
+             <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:dashboard' %}">главная
+                </a>
             </li>
             <li class="menu-item">
-                <a class="menu-link" href="{% url 'app_store:create_store' %}">+ Создать магазин</a>
+                <a class="menu-link" href="{% url 'app_store:store_list' %}">магазины
+                </a>
             </li>
             <li class="menu-item">
                 <a class="menu-link" href="{% url 'app_store:delivery_list' %}">Доставка

@@ -88,16 +88,18 @@ class ItemDetail(generic.DetailView, generic.CreateView):
         if context is None:
             # список всех  товаров (Item) в корзине
             item_in_cart = cart_services.get_items_in_cart(request)
+
             # список всех добавленных товаров (CartItem) в корзине
-            cart_item_in_cart = cart_services.get_cart_item_in_cart(request, item)
+            cart_item = cart_services.get_cart_items(request,  item)
+
             context = item_services.ItemHandler.item_detail_view(request, item)
             # количество всех добавленных в корзину товаров (CartItem)
             try:
-                cart_item_in_cart_quantity = cart_item_in_cart.quantity
+                cart_item_in_cart_quantity = cart_item.quantity
             except (AttributeError, ObjectDoesNotExist):
                 cart_item_in_cart_quantity = 0
             context['already_in_cart'] = item_in_cart
-            context['cart_item_in_cart'] = cart_item_in_cart
+            context['cart_item_in_cart'] = cart_item
             context['already_in_cart_count'] = cart_item_in_cart_quantity
         
         return self.render_to_response(context)
@@ -133,7 +135,7 @@ class ItemDetail(generic.DetailView, generic.CreateView):
 class ItemBestSellerList(generic.ListView):
     """Класс-представление для отображения списка всех товаров отсортированных по продажам."""
     model = item_models.Item
-    template_name = 'app_item/best_seller_list.html'
+    template_name = 'app_item/best_seller/best_seller_list.html'
     queryset = item_services.ItemHandler.get_bestseller()
     paginate_by = 8
 
@@ -141,7 +143,7 @@ class ItemBestSellerList(generic.ListView):
 class ItemNewList(generic.ListView):
     """Класс-представление для отображения списка всех новых товаров."""
     model = item_models.Item
-    template_name = 'app_item/new_items.html'
+    template_name = 'app_item/new_items/new_items.html'
     queryset = item_services.ItemHandler.get_new_item_list()
     paginate_by = 8
 
@@ -149,7 +151,7 @@ class ItemNewList(generic.ListView):
 class ItemForYouList(generic.ListView, MixinPaginator):
     """Класс-представление для отображения  всех товаров, подходящих для покупателя."""
     model = item_models.Item
-    template_name = 'app_item/items_for_you.html'
+    template_name = 'app_item/items_for_you/items_for_you.html'
     paginate_by = 8
 
     def get(self, request, *args, **kwargs):
@@ -196,7 +198,7 @@ class EditComment(generic.UpdateView):
     """Класс-представление для редактирования комментария."""
     model = item_models.Comment
     context_object_name = 'comments'
-    template_name = 'app_item/comment_edit.html'
+    template_name = 'app_item/comments/comment_edit.html'
     form_class = item_forms.CommentForm
 
     def get(self, request, *args, **kwargs):

@@ -28,28 +28,24 @@
             <form method="post" class="form Payment form-shadow" action="">
                 {% csrf_token %}
                 <div class="Payment-card">
+                    {% include 'error_message.html' %}
                     <div class="form-group">
-<!--                        {% if form.errors %}-->
-<!--                        {% for i, err in form.errors.items %}-->
-<!--                        <div class="form-error form-textarea_error" style="border: 4px double red; margin:10px">-->
-<!--                            {{ err }}-->
-<!--                        </div>-->
-<!--                        {% endfor %}-->
-<!--                        {% endif %}-->
-<!--                        -->
-
-                        {% include "error_message.html" %}
-                        <input class="form-input" id="username" name="username" type="text"
-                               placeholder="имя пользователя"/>
+                        {% if form.errors.username %}
+                        <div class="form-error form-textarea_error">{{ form.errors.username }}
+                        </div>
+                        {% endif %}
+                        <label class="form-label" for="username">логин
+                        </label>
+                        <input class="form-input" id="username" name="username" type="text" placeholder="логин"/>
                     </div>
                     <div class="form-group">
                         {% if form.errors.password %}
-                        <div class="form-error form-textarea_error" style="border: 4px double red; margin:10px">
-                            {{ form.errors.password }}
+                        <div class="form-error form-textarea_error">{{ form.errors.password }}
                         </div>
                         {% endif %}
-                        <input class="form-input" id="password" name="password" type="password"
-                               placeholder="пароль"/>
+                        <label class="form-label" for="password">пароль
+                        </label>
+                        <input class="form-input" id="password" name="password" type="password" placeholder="пароль"/>
                     </div>
                     <div class="form-group">
                         <input type="hidden" name="next" value="{{ request.GET.next }}"/>

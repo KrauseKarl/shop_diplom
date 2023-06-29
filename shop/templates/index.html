@@ -36,23 +36,23 @@
 <body class="Site" style="background-color: transparent">
 
 <!--   ONLY FOR DEBUG    -->
-<div class="row-block seller_label" style="background-color: #F4CA16; text-transform: uppercase; color:black; padding: 0 20px">
+<div class="row-block seller_label" style="background-color: #F4CA16; text-transform: uppercase; color:black; padding: 0 10px">
    <b>только для тестирования</b>
     {% if request.user.is_authenticated %}
-    <span class="seller_label">ROLE  - <b style="color:black; font-size:19px;">{{ request.user.groups.first  }}</b></span>
+    <span class="seller_label">ROLE  - <b style="color:black; font-size:12px;">{{ request.user.groups.first  }}</b></span>
     {% endif %}
     <span style="background-color: {% if request.session.session_key %}blue{% else %}red{% endif %};" class="seller_label">
         SESSION_KEY -   {% if request.COOKIES.cart %}
-            <b style=" font-size:19px;">{{ request.session.session_key|truncatechars:12 }}</b>
+            <b style=" font-size:19px;">{{ request.session.session_key|truncatechars:7 }}</b>
         {% else %}
             <b style="font-size:19px;">NONE</b>
         {% endif %}
     </span>
     <span style="background-color: {% if request.COOKIES.cart %} orange {% else %}red{% endif %};" class="seller_label">
         COOKIES  -  {% if request.COOKIES.cart %}
-            <b style="color:black; font-size:19px;">{{ request.COOKIES.cart|truncatechars:12 }}</b>
+            <b style="color:black; font-size:12px;">{{ request.COOKIES.cart|truncatechars:7 }}</b>
         {% else %}
-            <b style="color:black; font-size:19px;">NONE</b>
+            <b style="color:black; font-size:12px;">NONE</b>
         {% endif %}
     </span>
     <span style="background-color: {% if cart_dict.cart %} green {% else %}red{% endif %};" class="seller_label">КОРЗИНА
@@ -187,7 +187,7 @@
                      <!--  FAVORITES   -->
                     <a class="CartBlock-block" href="{% url 'app_favorite:detail_favorites' %}"
                        title="Сравнение товаров" >
-                        <img src="/assets/img/icons/favorites.svg" style="font-size:20px; color:#555">
+                        <img src="/assets/img/icons/star_off.svg" width="30px">
                         <!--  ITEM'S COUNTER OF THE FAVORITES   -->
                          {% if favorites_count > 0 %}
                         <span class="CartBlock-amount">{{ favorites_count }}

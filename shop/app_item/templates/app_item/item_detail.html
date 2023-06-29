@@ -1,5 +1,4 @@
 {% extends 'index.html' %}
-
 {% load static  %}
 {% load cache %}
 
@@ -100,21 +99,21 @@
 
                                 {% if item in already_in_cart %}
                                     <!-- UPDATE ITEM IN CART FORM & BUTTON -->
-                                    {% for cart_item in cart_dict.cart.items.all %}
+                                    {% for cart_item in cart_dict.cart.all_items.all %}
                                         {% if cart_item.item == item %}
                                             <div class="ProductCard-cartElement ProductCard-cartElement_amount">
-                                    <form class="Amount Amount_product" id="update_form" method="post"
-                                          action="{% url 'app_cart:update' pk=cart_dict.cart.pk item_id=cart_item.pk %}">
-                                        {% csrf_token %}
-                                        <a class="Amount-remove" type="button" id="_update-button-remove"
-                                           data-index="{{ item.id }}"></a>
-                                        <input id="update{{ item.id }}" name="update" type="hidden" value="1"/>
-                                        <input class="Amount-input form-input" id="_input{{ item.id }}" readonly
-                                               name="quantity" value="{{ cart_item.quantity }}" type="text"/>
-                                        <a class="Amount-add" type="button" id="_update-button-add"
-                                           data-index="{{ item.id }}"></a>
-                                    </form>
-                                </div>
+                                                <form class="Amount Amount_product" id="update_form" method="post"
+                                                      action="{% url 'app_cart:update' pk=cart_dict.cart.pk item_id=cart_item.pk %}">
+                                                    {% csrf_token %}
+                                                    <a class="Amount-remove" type="button" id="_update-button-remove"
+                                                       data-index="{{ item.id }}"></a>
+                                                    <input id="update{{ item.id }}" name="update" type="hidden" value="1"/>
+                                                    <input class="Amount-input form-input" id="_input{{ item.id }}" readonly
+                                                           name="quantity" value="{{ cart_item.quantity }}" type="text"/>
+                                                    <a class="Amount-add" type="button" id="_update-button-add"
+                                                       data-index="{{ item.id }}"></a>
+                                                </form>
+                                            </div>
                                         {% endif %}
                                     {% endfor %}
                                         <div class="ProductCard-cartElement">

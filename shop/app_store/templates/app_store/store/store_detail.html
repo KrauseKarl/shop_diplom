@@ -1,4 +1,4 @@
-{% extends 'seller_index.html' %}
+{% extends 'app_store/seller_index.html' %}
 {% load static %}
 {% load cache %}
 
@@ -18,6 +18,10 @@
                 </h1>
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
+                     <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:dashboard' %}">главная стариница
+                        </a>
+                    </li>
                     <li class="breadcrumbs-item">
                         <a href="{% url 'app_store:store_list' %}">мои магазины</a>
                     </li>

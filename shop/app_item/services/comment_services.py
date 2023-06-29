@@ -3,6 +3,7 @@ from django.db.models import QuerySet, Q
 from app_item.forms import CommentForm
 from app_item import models as item_models
 from app_item.services import item_services
+from app_store import models as store_models
 
 
 class CommentHandler:
@@ -13,6 +14,12 @@ class CommentHandler:
     @staticmethod
     def total_comments() -> QuerySet:
         return item_models.Comment.objects.order_by('-created')[:10]
+
+    @staticmethod
+    def seller_stores_comments(request) -> QuerySet:
+        seller = request.user
+        store = store_models.Store.objects.filter(owner=seller)
+        return item_models.Comment.objects.filter(item__store__in=store)
 
     @staticmethod
     def comment_counter(item_id) -> int:

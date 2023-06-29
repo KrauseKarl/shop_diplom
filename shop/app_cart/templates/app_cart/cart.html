@@ -220,19 +220,14 @@
             <div class="form Cart">
                 <!--  ITEM CARD    -->
 
-                {% for item in cart_dict.cart.items.all %}
+                {% for item in cart_dict.cart.all_items.all %}
                 {% if not item.item.is_available or item.item.stock < 1 %}
                 <div class="Cart-product">
                     <div class="Cart-block Cart-block_row">
                         <div class="Cart-block Cart-block_pict">
                             <a class="Cart-pict" href="{% url 'app_item:item_detail' item.item.pk %}">
-                                {% if item.item.image.first %}
                                 <img class="Cart-img Cart-img-not_available"
-                                     src="{{ item.item.image.first.image.url }}" alt="card.jpg"/>
-                                {% else %}
-                                <img class="Cart-img" src="/media/default_images/default_item.png" alt="card.jpg"/>
-                                {% endif %}
-
+                                     src="{{ item.item.main_image }}" alt="card.jpg"/>
                             </a>
                         </div>
                         <div class="Cart-block Cart-block_info">
@@ -296,7 +291,7 @@
                 <img src="/assets/img/icons/delivery.png" width="150">
                 <span class="Section-title">Оформить заказ?</span>
                 <h3>товаров:
-                    <span class="primary-text">{{ cart_dict.cart.items.count }} шт.
+                    <span class="primary-text">{{ cart_dict.cart.all_items.count }} шт.
                     </span>
                 </h3>
                 <h3>на общую сумму:
@@ -304,12 +299,10 @@
                     </span>
                 </h3>
                 <a class="btn btn_success btn_full"
-                   href="{% url 'app_order:order_create'  %}"
-                   id="btn_confirm_order" >
-                    да
+                   href="{% url 'app_order:order_create'  %}" id="btn_confirm_order">да
                 </a>
             </div>
-             <div class="modal-footer-my Payment"></div>
+            <div class="modal-footer-my Payment"></div>
         </div>
     </div>
 </div>

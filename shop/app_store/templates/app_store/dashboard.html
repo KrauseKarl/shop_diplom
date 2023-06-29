@@ -1,0 +1,109 @@
+{% extends 'app_store/seller_index.html' %}
+{% load static %}
+{% block title %}Главная страница{% endblock %}
+
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Главная страница продавца
+                </h1>
+                 <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <span>главная стариница
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% include 'message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">Навигация</strong>
+                    </header>
+                    {% include "app_store/sidebar_seller.html" %}
+                </div>
+            </div>
+            <div class="Section-content">
+
+                <!--    CARD    -->
+                <div class="Cards">
+                    <!-- ORDERS -->
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_store:delivery_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/orders_image.png" alt="заказы"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Заказы
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price">{{ orders }}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ORDERS -->
+
+                    <!-- STORES -->
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_store:store_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/stores_image.png" alt="магазины"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Магазины
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" >{{ stores }}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- STORES -->
+
+                    <!-- COMMENTS -->
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_store:comment_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/comments.png" alt="Комментарии"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title"><span> Отзывы
+                                </span>
+                            </strong>
+                            <div class="Card-description">
+                                <div class="Card-cost"><span class="Card-price" >{{ comments.count }}
+                                    </span>
+                                </div>
+                                <div class="Card-category"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--COMMENTS -->
+                </div>
+                <!--    CARD     -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

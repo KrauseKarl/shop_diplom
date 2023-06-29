@@ -3,14 +3,15 @@
     {% for message in messages %}
         <ul class="messagelist">
             <li class="{{ message.tags }}"  id="message">{{ message }}
-                <button class="close-button" id="close-button">✖</button>
+                <button class="close-button" id="close-button-message">✖</button>
             </li>
         </ul>
     {% endfor %}
 {% endif %}
+
 <script>
         let toast = document.getElementById("message");
-        document.getElementById("close-button").addEventListener("click", function () {
+        document.getElementById("close-button-message").addEventListener("click", function () {
             toast.remove()
             }
         );

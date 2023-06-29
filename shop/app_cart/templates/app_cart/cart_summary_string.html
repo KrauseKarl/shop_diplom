@@ -72,9 +72,20 @@
 
     <!--    MAKE ORDER BUTTON -->
     <div class="Cart-total Cart-total-order ">
-        <a href="#openModal" id="open_order_modal" class="btn btn_success btn_lg">
+        {% if not_enough.enough %}
+        <div class="limited_edition_label" style="padding:5px; width:22rem; margin-bottom:5px">
+            Недостаточно товара на складе: <br>
+            {% for item in not_enough.items %}
+            - <strong> {{ item }}</strong><br>
+            {% endfor %}
+            Пожалуйста уменьшите количество в заказе
+        </div>
+
+        {% else %}
+        <a href="#openModal" id="open_order_modal" class="btn btn_success btn_lg btn_full">
             <span>Оформить заказ </span>
         </a>
+        {% endif %}
     </div>
     <!--    MAKE ORDER BUTTON -->
 

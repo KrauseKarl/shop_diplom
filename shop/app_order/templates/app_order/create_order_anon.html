@@ -47,7 +47,7 @@
 
             <div class="Section-content">
                 <!--     ORDER FORM -->
-                <form class="form" action="{% url 'app_user:register' %}?next={% url 'app_order:order_create' %}"
+                <form class="form" action="{% url 'app_user:register_next_to_order' %}?next={% url 'app_order:order_create' %}"
                       method="post" id="register_form">
                     {% csrf_token %}
 
@@ -58,19 +58,27 @@
                         <div class="row">
                             <div class="row-block">
 
+                                <!--   GROUP NAME HIDDEN INPUT -->
+                                <input type="hidden" name="group" value="customer"/>
+                                <!--   GROUP NAME HIDDEN INPUT -->
+
                                 <!--  USERNAME FIELD       -->
                                 <div class="form-group">
+                                    {% if form.errors.username %}
+                                    <div class="form-error ">{{ form.errors.username }}
+                                    </div>
+                                    {% endif %}
                                     <label class="form-label" for="username">Никнейм</label>
                                     <input class="form-input" id="username" name="username" type="text"
-                                           value="{{request.user.get_full_name}}" required />
+                                           value="{{ request.POST.username }}" required />
                                      <div class="form-group">
                                     <label class="form-label" for="first_name">Имя</label>
                                     <input class="form-input" id="first_name" name="first_name" type="text"
-                                           value="{{request.user.get_full_name}}" />
+                                           value="{{ request.POST.first_name }}" />
                                           <div class="form-group">
                                     <label class="form-label" for="last_name">Фамилия</label>
                                     <input class="form-input" id="last_name" name="last_name" type="text"
-                                           value="{{request.user.get_full_name}}"/>
+                                           value="{{ request.POST.last_name }}"/>
                                 </div>
                                 </div>
                                 </div>
@@ -78,18 +86,26 @@
 
                                 <!--    TELEPHONE  FIELD     -->
                                 <div class="form-group">
+                                    {% if form.errors.telephone %}
+                                    <div class="form-error ">{{ form.errors.telephone }}
+                                    </div>
+                                    {% endif %}
                                     <label class="form-label" for="telephone">Телефон</label>
                                     <input class="form-input" id="telephone" name="telephone" type="text"
                                            data-mask="+7 (999) 999 99 99" required
-                                           value="{{request.user.profile.telephone}}"/>
+                                           value="{{ request.POST.telephone }}"/>
                                 </div>
                                 <!--    TELEPHONE  FIELD     -->
 
                                 <!--    EMAIL FIELD     -->
                                 <div class="form-group">
+                                    {% if form.errors.email %}
+                                    <div class="form-error ">{{ form.errors.email }}
+                                    </div>
+                                    {% endif %}
                                     <label class="form-label" for="email">E-mail</label>
                                     <input class="form-input" id="email" name="email" type="text"
-                                           value="{{request.user.email}}" required
+                                           value="{{ request.POST.email }}" required
                                            data-validate="require"/>
                                 </div>
                                 <!--    EMAIL FIELD     -->
@@ -98,19 +114,28 @@
                             <!--                  БЛОК ВВОДА ПАРОЛЯ-->
                             <div class="row-block">
                                 <div class="form-group">
+                                    {% if form.errors.password1 %}
+                                    <div class="form-error ">{{ form.errors.password1 }}
+                                    </div>
+                                    {% endif %}
                                     <label class="form-label" for="password1">Пароль
                                     </label>
                                     <input class="form-input" id="password1" name="password1" type="password"
                                            placeholder="Тут можно изменить пароль" required />
                                 </div>
                                 <div class="form-group">
+                                    {% if form.errors.password2 %}
+                                    <div class="form-error ">{{ form.errors.password2 }}
+                                    </div>
+                                    {% endif %}
                                     <label class="form-label" for="password2">Подтверждение пароля
                                     </label>
                                     <input class="form-input" id="password2" name="password2" type="password"
-                                           placeholder="Введите пароль повторно" required />
+                                           placeholder="Введите пароль повторно" required/>
                                 </div>
                                 <div class="form-group">
-                                    <a class="btn btn_muted Order-btnReg" href="{% url 'app_user:login' %}?next={% url 'app_order:order_create' %}">
+                                    <a class="btn btn_muted Order-btnReg"
+                                       href="{% url 'app_user:login' %}?next={% url 'app_order:order_create' %}">
                                         Я уже зарегистрирован
                                     </a>
                                 </div>
