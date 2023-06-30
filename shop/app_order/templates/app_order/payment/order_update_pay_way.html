@@ -1,0 +1,56 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Выбрать способ оплаты
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Выбрать способ оплаты</h1>
+            </div>
+        </div>
+    </div>
+    {% include 'messages/message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <form method="post" class="form Payment form-shadow" action="">
+                {% csrf_token %}
+                <div class="Payment-card">
+                    <div class="form-group">
+                        <strong class="Section-title ">Выберите способ оплаты</strong>
+                    </div>
+                    <div class="form-group">
+                        <form method="post" action="{% url 'app_order:order_update' object.pk %}">
+                            {% csrf_token %}
+                            {% for type_pay in type_of_payment %}
+                            <div class="form-group Order-infoContent-left ">
+                                <label class="toggle btn  btn_narrow  btn_sm">
+                                    <input type="radio" name="pay"
+                                           value="{{ type_pay.0|lower}}"
+                                           {% if type_pay.0 == object.pay  %} checked="checked" {% endif %}/>
+                                    <span class="toggle-box "></span>
+                                    <span class="toggle-text " id="{{ type_pay.0|lower }}">{{ type_pay.1|lower }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                            <div class="form-group">
+                                <button class="btn btn_success" type="submit">Сохранить
+                                </button>
+                                <a class="btn btn_dark" href="{% url 'app_store:comment_detail' pk=object.pk %}">назад
+                                </a>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

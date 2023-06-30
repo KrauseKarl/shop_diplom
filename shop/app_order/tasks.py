@@ -1,5 +1,3 @@
-import json
-import time
 from time import sleep
 
 from celery import Celery
@@ -11,11 +9,9 @@ from django.db.models import Sum
 from django.shortcuts import redirect
 
 # models
-from app_cart import models as cart_models
-from app_item import models as item_models
-from app_store.models import Store
 from app_order import models as order_models
 from app_invoice import models as invoice_models
+from app_item import models as item_models
 # services
 from app_order.services import order_services
 # others
@@ -38,12 +34,15 @@ def paying(order_id, number, pay):
             order = order_models.Order.objects.get(id=order_id)
             order.status = 'paid'
             order.is_paid = True
+
             if pay and pay != order.pay:
                 order.pay = pay
-            order.order_items.update(status='in_progress')
+            order.order_items.update(status='paid')
+
             if order.error:
                 order.error = ''
             order.save()
+
             with transaction.atomic():
                 invoice_models.Invoice.objects.create(
                     order=order,
@@ -52,10 +51,10 @@ def paying(order_id, number, pay):
                     delivery_cost=order.delivery_fees,
                     total_sum=order.total_sum
                 )
-        # with transaction.atomic():
-        #     for product in order.order_items.all():
-        #         item = Item.objects.get(cart_item=product.id)
-        #         item.stock -= product.quantity
-        #         item.save()
+        with transaction.atomic():
+            for order_item in order.order_items.all():
+                item = item_models.Item.objects.get(cart_item=order_item.item)
+                item.stock -= order_item.quantity
+                item.save(update_fields=['stock'])
 
         return True

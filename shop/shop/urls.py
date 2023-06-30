@@ -11,7 +11,7 @@ handler500 = 'shop.views.my_server_error'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', shop_views.MainPage.as_view(), name='main_page'),
+    path('', shop_views.MainPage.as_view(), name='main'),
     path('accounts/', include(('app_user.urls', 'app_user'), namespace='app_user')),
     path('cart/', include(('app_cart.urls', 'app_cart'), namespace='app_cart')),
     path('compare/', include(('app_compare.urls', 'app_compare'), namespace='app_compare')),

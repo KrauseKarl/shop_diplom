@@ -20,7 +20,7 @@
                 <!--    breadcrumbs     -->
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">главная стариница
+                        <a href="{% url 'main' %}">главная стариница
                         </a>
                     </li>
                     <li class="breadcrumbs-item">
@@ -38,7 +38,7 @@
             </div>
         </div>
     </div>
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <div class="Section">
         <div class="wrap">
             <div class="{% if not item.is_available %} non_available {% endif %} Product">

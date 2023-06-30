@@ -18,7 +18,7 @@
                 <h1 class="Middle-title">Товары для вас</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">главная стариница
+                        <a href="{% url 'main' %}">главная стариница
                         </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
@@ -28,7 +28,7 @@
             </div>
         </div>
     </div>
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <div class="Section">
         <div class="wrap">
             <div class="Cards Cards_blog">
@@ -77,7 +77,7 @@
                 {% endfor %}
             </div>
             <!--       PAGINATION         -->
-            <div>{% include "pagination.html" %}<br><br></div>
+            <div>{% include "pagination/pagination.html" %}<br><br></div>
             <!--       PAGINATION         -->
         </div>
     </div>

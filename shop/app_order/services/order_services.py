@@ -235,7 +235,8 @@ class SellerOrderHAndler:
         """ Функция отправляет заказ. Статус 'доставляется'. """
         order = order_models.Order.objects.get(id=order_id)
         order.status = status
-        order.save()
+        order.order_items.update(status=status)
+        order.save(update_fields=['status'])
         return order
 
 

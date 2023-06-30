@@ -691,17 +691,17 @@ class SentPurchase(generic.UpdateView):
     form_class = store_forms.UpdateOrderStatusForm
 
     def form_valid(self, form):
-        form = store_forms.UpdateOrderStatusForm(self.request.POST)
-        status = form.cleaned_data.get('status')
-        order_id = self.kwargs['order_id']
+        super().form_invalid(form)
+        form.save()
+        status = form.cleaned_data['status']
+        order_id = self.kwargs['pk']
         order = order_services.SellerOrderHAndler.sent_order(order_id, status)
         messages.add_message(self.request, messages.SUCCESS, f"Заказ {order} отправлен")
         return redirect(self.request.META.get('HTTP_REFERER'))
 
     def form_invalid(self, form):
-        order_id = self.kwargs['order_id']
         messages.add_message(self.request, messages.ERROR, f"Произошла ошибка при отправки заказа.")
-        return redirect('app_store:sent_purchase', order_id)
+        return super().form_invalid(form)
 
 
 class CommentListView(generic.ListView, MixinPaginator):

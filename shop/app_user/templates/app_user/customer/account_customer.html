@@ -15,7 +15,7 @@
                 <h1 class="Middle-title">Личный кабинет </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                      <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">главная стариница
+                        <a href="{% url 'main' %}">главная стариница
                         </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
@@ -26,7 +26,7 @@
             </div>
         </div>
     </div>
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
@@ -34,7 +34,7 @@
                     <header class="Section-header">
                         <strong class="Section-title">Навигация</strong>
                     </header>
-                    {% include "app_user/customer/sidebar_customer.html" %}
+                    {% include 'app_user/customer/sidebar/sidebar_customer.html' %}
                 </div>
             </div>
             <div class="Section-content">

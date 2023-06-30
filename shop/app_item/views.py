@@ -90,17 +90,17 @@ class ItemDetail(generic.DetailView, generic.CreateView):
             item_in_cart = cart_services.get_items_in_cart(request)
 
             # список всех добавленных товаров (CartItem) в корзине
-            cart_item = cart_services.get_cart_items(request,  item)
+            cart_item = cart_services.get_cart_item(request, item)
 
             context = item_services.ItemHandler.item_detail_view(request, item)
             # количество всех добавленных в корзину товаров (CartItem)
             try:
-                cart_item_in_cart_quantity = cart_item.quantity
+                cart_item_quantity = cart_item.quantity
             except (AttributeError, ObjectDoesNotExist):
-                cart_item_in_cart_quantity = 0
+                cart_item_quantity = 0
             context['already_in_cart'] = item_in_cart
             context['cart_item_in_cart'] = cart_item
-            context['already_in_cart_count'] = cart_item_in_cart_quantity
+            context['already_in_cart_count'] = cart_item_quantity
         
         return self.render_to_response(context)
 

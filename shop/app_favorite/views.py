@@ -1,13 +1,11 @@
-from django.db.models import Count
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
-from django.views import generic, View
+from django.shortcuts import render, redirect
+from django.views import generic
 
 from app_favorite.favorites import Favorite
 from app_item import models as item_models
 
 
-class FavoriteAddItem(View):
+class FavoriteAddItem(generic.TemplateView):
     """ Класс-представление для добавления товара в избранное"""
 
     model = item_models.Item
@@ -24,7 +22,6 @@ class FavoriteRemoveItem(generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         Favorite(request).remove(kwargs['pk'])
-
         return redirect(request.META.get('HTTP_REFERER'))
 
 
@@ -74,29 +71,11 @@ class CompareItemView(generic.DetailView):
     queryset = item_models.Item.objects.all()
 
     def get(self, request, *args, **kwargs):
-        # query_set = ['quantity', 'price', 'square', 'floor']
-        # values_list = list((item, request.GET.get(item)) for item in query_set if request.GET.get(item))
+
         favorites = request.session['favorites'].keys()
         favorites_id = [int(item) for item in favorites]
         queryset = self.queryset.filter(id__in=favorites_id)
         sort = None
-
-        # if values_list:
-        #     if values_list[0][1] == 'up':
-        #         order_by = f'{values_list[0][0]}'
-        #     else:
-        #         order_by = f'-{values_list[0][0]}'
-        #     queryset = queryset.order_by(order_by)
-        #     label_list = {
-        #         'price': 'по возрастанию цены',
-        #         '-price': 'по убыванию цены',
-        #         'floor': 'по возрастанию этажности',
-        #         '-floor': 'по убыванию этажности',
-        #         'square': 'по возрастанию площади ',
-        #         '-square': 'по убыванию площади',
-        #     }
-        #     if order_by in label_list.keys():
-        #         sort = label_list[order_by]
         favorites = Favorite(request)
         context = {'favorites': queryset, 'order_by': sort}
 

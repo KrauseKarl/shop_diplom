@@ -13,7 +13,7 @@
                 <h1 class="Middle-title">Недавно просмотренные товары</h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">главная стариница</a>
+                        <a href="{% url 'main' %}">главная стариница</a>
                     </li>
                     <li class="breadcrumbs-item">
                         <a href="{% url 'app_user:account' user.id %}">личный кабинет</a>
@@ -26,7 +26,7 @@
     <div class="Section">
         <div class="wrap">
               <!--       PAGINATION         -->
-                <div>{% include "pagination.html" %}<br><br></div>
+                <div>{% include "pagination/pagination.html" %}<br><br></div>
                 <!--       PAGINATION         -->
 
             <div class="Cards Cards_blog">

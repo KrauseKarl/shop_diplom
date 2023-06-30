@@ -145,14 +145,14 @@
     <div class="wrap">
         <div class="row Header-rowMain">
             <div class="row-block Header-logo">
-                <a class="logo" href="{% url 'main_page' %}">
+                <a class="logo" href="{% url 'main' %}">
                     <img class="logo-image" src="/assets/img/logo.png" alt="logo.png"/>
                 </a>
             </div>
 
             {% if request.user.groups.first.name == 'customer' or not request.user.is_authenticated %}
             <!--    NAVBAR  -->
-            {% include 'nav_bar.html' %}
+            {% include 'app_user/customer/navbar/nav_bar.html' %}
             <!--    NAVBAR END -->
             <!--    CART  -->
             <div class="row-block">
@@ -271,13 +271,12 @@
 <!-- CONTENT -->
 <div>
     {% block content %}
-
     {% endblock %}
 </div>
 <!-- CONTENT -->
 
 <!-- FOOTER -->
-{% include 'footer.html' %}
+{% include 'footer/footer.html' %}
 <!-- FOOTER -->
 
 

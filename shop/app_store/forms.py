@@ -196,7 +196,7 @@ class CreateValueForm(forms.ModelForm):
         model = FeatureValue
         fields = ('value',)
 
-    def clean_Value(self):
+    def clean_value(self):
         """Функция валидирует сущетвование значене характеристики в базе данных"""
 
         value = self.cleaned_data.get('value').lower()
@@ -211,7 +211,7 @@ class ImportDataFromCVS(forms.Form):
 
 
 class UpdateOrderStatusForm(forms.ModelForm):
-    """Форма для экспорта данных."""
+    """Форма для отправки заказа."""
 
     class Meta:
         model = Order

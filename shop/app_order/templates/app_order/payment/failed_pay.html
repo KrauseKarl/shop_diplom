@@ -1,0 +1,57 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Ошибка
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Произошла ошибка</h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'main' %}">главная страница
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% include 'messages/message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Payment form-shadow">
+                <div class="Payment-card">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <img src="/assets/img/icons/error.svg" width="100">
+                            <span class="form-label Section-title">Произошла ошибка</span>
+                            <span class="form-label danger-text">
+                             {{ error }}
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="btn-inline">
+                        <a class="btn  btn_dark" href="{% url 'app_order:progress_payment' order %}">
+                            <span>Вернуться к оплате заказа</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">перейти
+                        <a href="{% url 'app_order:order_list'  %}">
+                            в мои заказы
+                        </a>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

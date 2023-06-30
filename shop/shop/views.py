@@ -6,7 +6,7 @@ from app_item.services import item_services
 
 class MainPage(TemplateView):
     """Класс-представление для отображения главной страницы."""
-    template_name = 'main_page.html'
+    template_name = 'main.html'
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)

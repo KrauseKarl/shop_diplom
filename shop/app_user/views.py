@@ -76,6 +76,7 @@ class CreateProfileOrder(SuccessMessageMixin, generic.CreateView):
         form = user_form.RegisterUserForm(self.request.POST)
         return super(CreateProfileOrder, self).form_invalid(form)
 
+
 class UpdateProfile(generic.UpdateView):
     """Класс-представление для обновления профиля пользователя."""
     model = User
@@ -174,7 +175,7 @@ class HistoryDetailView(CustomerOnlyMixin, generic.ListView, MixinPaginator):
 class CommentList(generic.ListView, MixinPaginator):
     """Класс-представление для отображения списка всех товаров."""
     model = item_modals.Comment
-    template_name = 'app_user/customer/comment_list.html'
+    template_name = 'app_user/customer/comments/comment_list.html'
     paginate_by = 2
 
     def get_queryset(self):
@@ -186,7 +187,8 @@ class CommentList(generic.ListView, MixinPaginator):
 
 # LOG IN & OUT #
 class UserLoginView(auth_views.LoginView):
-    template_name = 'registrations/login.html'
+    """ Класс-представление для входа в аккаунт."""
+    template_name = 'registrations/login/login.html'
 
     def form_valid(self, form):
         """Логинит пользователя и вызывает функцию удаления cookies['cart] & cookies['has_cart]. """
@@ -199,16 +201,18 @@ class UserLoginView(auth_views.LoginView):
             response = cart_services.delete_cart_cookies(self.request, path=path)
             return response
         elif user_services.user_in_group(self.request.user, ['admin', 'seller']):
-            return HttpResponseRedirect(reverse('main_page'))
+            return HttpResponseRedirect(reverse('main'))
 
 
 class UserLogoutView(auth_views.LogoutView):
-    template_name = 'registrations/logout.html'
+    """ Класс-представление для выхода из аккаунта."""
+    template_name = 'registrations/login/logout.html'
     next_page = reverse_lazy('app_user:login')
 
 
 class BlockView(generic.TemplateView):
-    template_name = 'registrations/block_page.html'
+    """ Класс-представление для отображения страницы блокировки аккаунта."""
+    template_name = 'registrations/block_account/block_account_page.html'
 
 
 # ACTIVATE ACCOUNT #
@@ -262,35 +266,35 @@ class InvalidActivatedAccount(generic.TemplateView):
 
 class PasswordChange(auth_views.PasswordChangeView):
     form_class = password_form.PasswordChangeForm
-    template_name = 'registrations/password_change_form.html'
+    template_name = 'registrations/password/password_change_form.html'
     title = 'Password change'
     success_url = reverse_lazy('app_user:password_change_done')
 
 
 class PasswordChangeDone(auth_views.PasswordChangeDoneView):
-    template_name = 'registrations/password_change_done.html'
+    template_name = 'registrations/password/password_change_done.html'
 
 
 class PasswordReset(auth_views.PasswordResetView):
-    template_name = 'registrations/password_reset_form.html'
-    email_template_name = 'registrations/password_reset_email.html'
+    template_name = 'registrations/password/password_reset_form.html'
+    email_template_name = 'registrations/password/password_reset_email.html'
     form_class = password_form.PasswordResetForm
     from_email = None
     html_email_template_name = None
-    subject_template_name = 'registration/password_reset_subject.txt'
+    subject_template_name = 'registrations/password/password_reset_subject.txt'
     success_url = reverse_lazy('app_user:password_reset_done')
     title = 'Password reset'
     token_generator = default_token_generator
 
 
 class PasswordResetDone(auth_views.PasswordResetDoneView):
-    template_name = 'registrations/password_reset_done.html'
+    template_name = 'registrations/password/password_reset_done.html'
 
 
 class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
     success_url = reverse_lazy('app_user:password_reset_complete')
-    template_name = 'registrations/password_reset_confirm.html'
+    template_name = 'registrations/password/password_reset_confirm.html'
 
 
 class PasswordResetComplete(auth_views.PasswordResetCompleteView):
-    template_name = 'registrations/password_reset_complete.html'
+    template_name = 'registrations/password/password_reset_complete.html'

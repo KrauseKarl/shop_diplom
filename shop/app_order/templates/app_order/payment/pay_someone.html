@@ -1,0 +1,110 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+{% block title %}
+Онлайн со случайного чужого счёта
+{% endblock %}
+
+
+{% block content %}
+<div id="spinner"   class="Middle Middle_top hide_comment">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">процесс оплаты
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="Section">
+        <div class="wrap">
+            <div class="ProgressPayment">
+                <div class="ProgressPayment-title">Ждем подтверждения оплаты платежной системой
+                </div>
+                <div class="ProgressPayment-icon">
+                    <div class="cssload-thecube">
+                        <div class="cssload-cube cssload-c1"></div>
+                        <div class="cssload-cube cssload-c2"></div>
+                        <div class="cssload-cube cssload-c4"></div>
+                        <div class="cssload-cube cssload-c3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div  id="form_container" class="Middle Middle_top">
+    <div class="Middle-top">
+    <div class="wrap">
+        <div class="Middle-header">
+            <h1 class="Middle-title">Онлайн со случайного чужого счёта
+            </h1>
+            <ul class="breadcrumbs Middle-breadcrumbs">
+                <li class="breadcrumbs-item">
+                    <a href="{% url 'main' %}">главная стариница</a>
+                </li>
+                <li class="breadcrumbs-item breadcrumbs-item_current">
+                    <span>Оплата со счета
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    </div>
+    {% include 'messages/message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <form id="form" class="form Payment" action="" method="post">
+                {% csrf_token %}
+                <div class="Payment-card form-shadow">
+                    <div class="form-group">
+                      <div class="Order-infoContent-left">
+                            <label class="Order-infoContent-left" style="margin-bottom:20px;">номер заказа
+                            </label>
+                            <input class="form-input Payment-bill" id="pay" name="pay" type="hidden" value="{{ order.pay }}">
+                            <input type="hidden" name="order" id='order' value="{{ order.id }}" multiple>
+                            <span class="Order-infoContent-right ">{{ order }}
+                            </span>
+                            <label class="Cart-total-order form-label">сумма заказа
+                            </label>
+                            <label class="Cart-total-order Cart-price form-label">${{ order.total_sum|floatformat:"2" }}
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <a href="{% url 'app_order:order_update'  pk=order.pk %}">Сменить способ оплаты
+                            </a>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        {% if form.errors %}
+                        <div class="form-error form-textarea_error" role="alert">
+                            <ul>{% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                <li>{{error}}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        <label class="form-label">Номер счета </label>
+                        <input class="form-input Payment-bill" name="number"
+                               type="text" placeholder="9999 9999" data-mask="9999 9999" data-validate="require pay"/>
+                    </div>
+                    <div class="form-group">
+                        <a class="btn btn_success Payment-generate" href="#">Сгенирировать случайный счет
+                        </a>
+                    </div>
+                </div>
+                <div class="Payment-pay">
+                    <button class="btn btn_primary" type="submit">Оплатить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

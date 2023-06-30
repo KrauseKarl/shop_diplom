@@ -32,11 +32,16 @@ class Comparison(object):
                     messages.add_message(self.request, messages.WARNING, 'Превышен лимит для сравнения')
             else:
                 messages.add_message(self.request, messages.WARNING, 'Товары должны быть из одной категории. ')
-                messages.add_message(
-                    self.request,
-                    messages.INFO,
-                    f'Добавьте товар категории {first_item.category} или очистите список для сравнения'
-                )
+                messages.add_message(self.request, messages.INFO,
+                f'Добавьте товар категории {first_item.category} или очистите список для сравнения')
+        else:
+            if self.compare_items.__len__() < 3:
+                if item_pk not in self.compare_items:
+                    self.compare_items[str(item)] = item.pk
+                self.save()
+                messages.add_message(self.request, messages.SUCCESS, 'товар добавлен в список среавнения')
+            else:
+                messages.add_message(self.request, messages.WARNING, 'Превышен лимит для сравнения')
 
 
     def save(self):

@@ -525,7 +525,6 @@ input: invalid {
     color: white;
     padding: 2px;
     border-radius: 10px;
-
 }
 .seller_label {
     background-color: #3CB878;
@@ -942,4 +941,33 @@ input: invalid {
     color: #e98338;
     font-weight:bold;
     text-transform: uppercase;
+}
+.label-color {
+    color: white;
+    padding: 5px 5px;
+    border-radius: 5px;
+    text-transform: uppercase;
+}
+
+.created {
+    background-color: #F4CA16;
+}
+.paid {
+    background-color: #50C878;
+}
+.is_preparing {
+    background-color: #20B2AA;
+}
+.on_the_way {
+    background-color:  #0CCBE7;
+}
+.is_ready {
+    background-color: #318CE7;
+}
+
+.completed {
+    background-color: #9457EB;
+}
+.deactivated {
+    background-color: #EB4C42;
 }

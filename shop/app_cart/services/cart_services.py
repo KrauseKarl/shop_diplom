@@ -290,7 +290,6 @@ def enough_checker(cart) -> dict:
     - 'items' - спискок диффицитных товаров,
     """
     enough_dict = {'enough': False, 'items': []}
-    print('____________________ ',type(cart))
     for cart_item in cart.all_items.filter(is_paid=False):
         if cart_item.quantity > cart_item.item.stock:
             enough_dict['enough'] = True
@@ -344,11 +343,9 @@ def merge_anon_cart_with_user_cart(request, cart):
         :return: корзина зарегистрированного пользователя
         объединенная с товарами из анонимной корзины.
     """
-    print('#1 CART =  ', cart)
     try:
         # получаем из сессий корзину анонимного пользователя
         anonymous_cart = get_anon_user_cart(request)
-        print('#2 anonymous_cart =  ', anonymous_cart)
         # получсем все товары в корзине пользователя
         items_in_user_cart = cart_models.CartItem.objects.filter(cart=cart)
 

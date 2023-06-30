@@ -35,7 +35,7 @@
         </div>
     </div>
     <!--    MESSAGE STRING  -->
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <!--    MESSAGE STRING  -->
     <div class="Section">
         <div class="wrap">
@@ -134,14 +134,28 @@
                                 <div class="row-block ">
                                     <div class="Order-info">
                                         <div class="Order-info Order-infoContent-left">
-                                            <span class="{% if  order.status == 'created' %}secondary_label
-                                                     {% elif order.status == 'paid' %}danger_label
-                                                     {% elif order.status == 'is_preparing' %}warning_label
-                                                     {% elif order.status == 'on_the_way' %}info_label
-                                                     {% elif order.status == 'is_ready' %}success_label
-                                                     {% elif order.status == 'completed' %}primary_label
-                                                     {% elif order.status == 'deactivated' %}danger-text
-                                                     {% endif %}">{{ order.get_status_display|upper }}</span>
+                                            {% if order.status == 'created' %}
+                                            <span class="label-color created">{{ order.get_status_display }}
+                                            </span>
+                                            {% elif order.status == 'paid' %}
+                                            <span class="label-color paid ">{{ order.get_status_display }}
+                                            </span>
+                                            {% elif order.status == 'is_preparing' %}
+                                            <span class="label-color is_preparing">{{ order.get_status_display }}
+                                            </span>
+                                            {% elif order.status == 'on_the_way' %}
+                                            <span class="label-color on_the_way">{{ order.get_status_display }}
+                                            </span>
+                                            {% elif order.status == 'is_ready' %}
+                                            <span class="label-color is_ready">{{ order.get_status_display }}
+                                            </span>
+                                            {% elif order.status == 'completed' %}
+                                            <span class="label-color completed">{{ order.get_status_display }}
+                                            </span>
+                                            {% elif order.status == 'deactivated' %}
+                                            <span class="label-color deactivated">{{ order.get_status_display }}
+                                            </span>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -152,9 +166,11 @@
                                     <div class="Order-info">
                                         <div class="Order-infoType ">
                                             {% if order.is_paid %}
-                                            <span class="Order-price success-text">оплачен</span>
+                                            <span > &#9989;&emsp;оплачен
+                                            </span>
                                             {% else %}
-                                            <span class="Order-price danger-text">не оплачен</span>
+                                            <span >&#9888;&emsp;не ополачен
+                                            </span>
                                             {% endif %}
                                         </div>
                                     </div>

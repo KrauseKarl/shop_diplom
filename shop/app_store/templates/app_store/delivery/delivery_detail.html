@@ -99,7 +99,29 @@
                                     </div>
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoType">Статус:</div>
-                                        <div class="Order-infoContent">{{ order.get_status_display }}
+                                        <div class="Order-infoContent">
+                                              {% if order.status == 'created' %}
+                                        <span class="label-color created">{{ order.get_status_display }}
+                                            </span>
+                                        {% elif order.status == 'paid' %}
+                                        <span class="label-color paid ">{{ order.get_status_display }}
+                                            </span>
+                                        {% elif order.status == 'is_preparing' %}
+                                        <span class="label-color is_preparing">{{ order.get_status_display }}
+                                            </span>
+                                        {% elif order.status == 'on_the_way' %}
+                                        <span class="label-color on_the_way">{{ order.get_status_display }}
+                                            </span>
+                                        {% elif order.status == 'is_ready' %}
+                                        <span class="label-color is_ready">{{ order.get_status_display }}
+                                            </span>
+                                        {% elif order.status == 'completed' %}
+                                        <span class="label-color completed">{{ order.get_status_display }}
+                                            </span>
+                                        {% elif order.status == 'deactivated' %}
+                                        <span class="label-color deactivated">{{ order.get_status_display }}
+                                            </span>
+                                        {% endif %}
 
                                         </div>
                                     </div>
@@ -165,7 +187,7 @@
                                      {% endif %}
                                         {% if order.status == 'paid' %}
                                         <form method="post"
-                                              action="{% url 'app_store:sent_purchase' order_id=order.pk %}">
+                                              action="{% url 'app_store:sent_purchase' pk=order.pk %}">
                                             {% csrf_token %}
                                             <input type="hidden" name="status" value="on_the_way">
                                             <button class="btn btn_square btn_success btn_narrow  btn_sm">

@@ -22,7 +22,7 @@ urlpatterns = [
     path('delivery/detail/<int:pk>/', views.DeliveryDetailView.as_view(), name='delivery_detail'),
     path('delivery/detail/<int:pk>/edit/', views.DeliveryUpdateView.as_view(), name='delivery_edit'),
     path('delivery/order_item/<int:pk>/edit/', views.OrderItemUpdateView.as_view(), name='order_item_edit'),
-    path('delivery/detail/<int:order_id>/sent/', views.SentPurchase.as_view(), name='sent_purchase'),
+    path('delivery/sent/<int:pk>/', views.SentPurchase.as_view(), name='sent_purchase'),
 
     path('comment/list/', views.CommentListView.as_view(), name='comment_list'),
     path('comment/<int:pk>/', views.CommentDetail.as_view(), name='comment_detail'),

@@ -26,7 +26,7 @@
             </div>
         </div>
     </div>
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
@@ -53,7 +53,7 @@
                 </div>
                 <!--    SORT BY END    -->
                 <!--       PAGINATION         -->
-                <div>{% include "pagination.html" %}<br></div>
+                <div>{% include "pagination/pagination.html" %}<br></div>
                 <!--       PAGINATION         -->
                 <div class="Orders">
                     {% for comment in object_list %}
@@ -113,7 +113,7 @@
                 </div>
 
                 <!--       PAGINATION         -->
-                {% include "pagination.html" %}
+                {% include "pagination/pagination.html" %}
                 <!--       PAGINATION         -->
 
             </div>

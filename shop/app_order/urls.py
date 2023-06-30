@@ -13,15 +13,10 @@ urlpatterns = [
 
     path('order_detail/<int:pk>/', views.OrderDetail.as_view(), name='order_detail'),
     path('order_update/<int:pk>/update/', views.OrderUpdatePayWay.as_view(), name='order_update'),
-    path('order_detail/<int:order_id>/confirm/', views.ConfirmReceiptPurchase.as_view(), name='order_confirm'),
+    path('order_detail/<int:pk>/confirm/', views.ConfirmReceiptPurchase.as_view(), name='order_confirm'),
     path('order_list/<int:pk>/cancel/', views.OrderCancel.as_view(), name='order_cancel'),
     path('success_order/', views.SuccessOrdered.as_view(), name='success_order'),
     path('failed_order/', views.FailedOrdered.as_view(), name='failed_order'),
-
-    path('address/create/', views.AddressCreate.as_view(), name='address_create'),
-    path('address/list/', views.AddressList.as_view(), name='address_list'),
-    path('address/edit/<int:pk>/', views.AddressUpdate.as_view(), name='address_edit'),
-    path('address/remove/<int:pk>/', views.AddressDelete.as_view(), name='address_remove'),
 
     path('progress_payment/<int:pk>/', views.PaymentView.as_view(), name='progress_payment'),
     path("pay_order/", views.pay_order, name="pay_order"),
