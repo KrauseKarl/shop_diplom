@@ -15,7 +15,6 @@ from django.http import HttpResponse
 from app_item import models as item_models
 from app_order import models as order_models
 from app_store import models as store_models
-from app_user import models as auth_models
 
 # services
 from app_item.services import comment_services
@@ -29,6 +28,7 @@ from app_store import forms as store_forms
 
 # other
 from utils.my_utils import MixinPaginator, SellerOnlyMixin
+from app_order import tasks
 
 
 class SellerDashBoardView(SellerOnlyMixin, generic.TemplateView):
@@ -37,10 +37,11 @@ class SellerDashBoardView(SellerOnlyMixin, generic.TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         context['comments'] = comment_services.CommentHandler.seller_stores_comments(request)
-        context['orders'] = order_services.SellerOrderHAndler.get_seller_order_list(request).count()
+        context['orders'] = order_services.SellerOrderHAndler.get_seller_order_list(request.user.id).count()
         context['stores'] = store_services.StoreHandler.get_all_story_by_owner(request.user).count()
 
         return self.render_to_response(context)
+
 
 # STORE VIEWS #
 class StoreListView(SellerOnlyMixin, generic.ListView):
@@ -593,10 +594,11 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
     model = order_models.Order
     template_name = 'app_store/delivery/delivery_list.html'
     context_object_name = 'orders'
+    STATUS_LIST = order_models.Order().STATUS
 
     def get_queryset(self):
         stores = self.request.user.store.all()
-        queryset = order_models.Order.objects.filter(store__in=stores)
+        queryset = order_models.Order.objects.filter(store__in=stores).distinct().order_by('-created')
         return queryset
 
     def get(self, request, status=None, **kwargs):
@@ -618,7 +620,8 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
 
         context = {
             'orders': object_list,
-            'status_list': order_models.Order.STATUS,
+            'stores': request.user.store.all(),
+            'status_list': self.STATUS_LIST
         }
         return render(request, self.template_name, context=context)
 
@@ -628,6 +631,8 @@ class DeliveryDetailView(UserPassesTestMixin, generic.DetailView):
     model = order_models.Order
     template_name = 'app_store/delivery/delivery_detail.html'
     context_object_name = 'order'
+    STATUS_LIST_ORDER = order_models.Order().STATUS
+    STATUS_LIST_ITEM = order_models.OrderItem().STATUS
 
     def test_func(self):
         # user = self.request.user
@@ -641,6 +646,8 @@ class DeliveryDetailView(UserPassesTestMixin, generic.DetailView):
         order = self.get_object()
         context['items'] = order.order_items.filter(item__item__store__in=stores)
         context['total'] = context['items'].aggregate(total_cost=Sum('total')).get('total_cost')
+        context['status_list'] = self.STATUS_LIST_ORDER
+        context['status_list_item'] = self.STATUS_LIST_ITEM
         return self.render_to_response(context)
 
 
@@ -685,7 +692,7 @@ class OrderItemUpdateView(generic.UpdateView):
 
 class SentPurchase(generic.UpdateView):
     """Класс-представление для отправки товара покупателю."""
-    model = order_models.Order
+    model = order_models.OrderItem
     template_name = 'app_store/delivery/delivery_detail.html'
     context_object_name = 'order'
     form_class = store_forms.UpdateOrderStatusForm
@@ -694,9 +701,11 @@ class SentPurchase(generic.UpdateView):
         super().form_invalid(form)
         form.save()
         status = form.cleaned_data['status']
-        order_id = self.kwargs['pk']
-        order = order_services.SellerOrderHAndler.sent_order(order_id, status)
-        messages.add_message(self.request, messages.SUCCESS, f"Заказ {order} отправлен")
+        print('****************', status)
+        order_item_id = self.kwargs['pk']
+        order_item = order_services.SellerOrderHAndler.sent_item(order_item_id, status)
+        tasks.check_order_status.delay(order_item.order.id)
+        messages.add_message(self.request, messages.SUCCESS, f"{order_item} отправлен")
         return redirect(self.request.META.get('HTTP_REFERER'))
 
     def form_invalid(self, form):
@@ -767,7 +776,7 @@ class CommentList(generic.ListView):
 
 
 # EXPORT & IMPORT DATA-STORE FUNCTION #
-def export_data_to_csv(**kwargs):
+def export_data_to_csv(*args, **kwargs):
     """Функция для экспорта данных из магазина продавца в формате CSV."""
     store_id = kwargs['pk']
     store = store_models.Store.active_stores.get(id=store_id)

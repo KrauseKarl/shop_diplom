@@ -58,13 +58,14 @@
                 <div class="Payment-card form-shadow">
                     <div class="form-group ">
                         <div class="Order-infoContent-left">
-                            <label class="Order-infoContent-left" style="margin-bottom:20px;">номер заказа</label>
-                            <input type="hidden" name="order" id='order' value="{{ order.id }}" multiple>
-
-                            <span class="Order-infoContent-right ">{{ order }}</span>
+                            <label class="Order-infoContent-left" style="margin-bottom:20px;">номер заказа
+                            </label>
+                            <input type="hidden" name="order" id='order' value="{{ order.id }}">
+                            <input type="hidden" name="pay"   id="pay"   value="{{ order.pay }}">
+                            <span class="Order-infoContent-right ">{{ order }}
+                            </span>
                             <label class="Cart-total-order form-label">сумма заказа</label>
-                            <label class="Cart-total-order Cart-price form-label">
-                                ${{ order.total_sum}}
+                            <label class="Cart-total-order Cart-price form-label">${{ order.total_sum}}
                             </label>
                         </div>
                     </div>

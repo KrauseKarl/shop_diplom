@@ -1,5 +1,6 @@
+# from django.core.cache import cache
 from django.core.cache import cache
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from django.http.response import HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect
@@ -13,11 +14,11 @@ from app_item.services import item_services
 
 
 # GET CART
-def get_auth_user_cart(request):
+def get_auth_user_cart(user):
     """Функция возвращает корзину аутентифицированного пользователя."""
-    cart = cart_models.Cart.objects.filter(Q(user=request.user) & Q(is_archived=False)).first()
+    cart = cart_models.Cart.objects.select_related('user').filter(Q(user=user) & Q(is_archived=False)).first()
     if not cart:
-        cart = cart_models.Cart.objects.create(user=request.user)
+        cart = cart_models.Cart.objects.create(user=user)
     return cart
 
 
@@ -40,7 +41,7 @@ def get_customer_cart(request):
     """Функция возвращает текущую корзину. """
 
     if request.user.is_authenticated and request.user.profile.is_customer:
-        cart = get_auth_user_cart(request)
+        cart = get_auth_user_cart(request.user)
     else:
         cart = get_anon_user_cart(request)
     return cart
@@ -56,11 +57,11 @@ def get_current_cart(request) -> dict:
     cart = get_customer_cart(request)
 
     try:
-        cart_dict = create_or_update_cart_book(cart)
-        # cart_dict = get_cart_cache(request)
-        # if cart_dict is None:
-        #
-        #     set_cart_cache(request, cart_dict)
+
+        cart_dict = get_cart_cache(request)
+        if cart_dict is None:
+            cart_dict = create_or_update_cart_book(cart)
+            set_cart_cache(request, cart_dict)
         return cart_dict
     except (KeyError, AttributeError):
         return {'cart': cart}
@@ -154,7 +155,7 @@ def add_item_in_cart(request, item_id, quantity=1):
         create_or_update_cart_item(request, cart, item, quantity)
         response = set_cart_cookies(request, session_key, path, cart.id)
 
-    cache.delete(get_cache_key(request))
+    # cache.delete(get_cache_key(request))
     return response
 
 
@@ -170,7 +171,7 @@ def remove_from_cart(request, item_id):
     messages.add_message(request, messages.INFO, f"{cart_item.item.title} удален из корзины")
     try:
         cart_item.delete()
-        cache.delete(get_cache_key(request))
+        # cache.delete(get_cache_key(request))
     except ObjectDoesNotExist:
         pass
 
@@ -194,7 +195,7 @@ def update_quantity_item_in_cart(request, quantity, update, **kwargs):
             cart_item.quantity = int(quantity)
             cart_item.save()
             messages.add_message(request, messages.SUCCESS, f"Количество товара обновлено до {cart_item.quantity} шт.")
-    cache.delete(get_cache_key(request))
+    # cache.delete(get_cache_key(request))
 
 
 # CART INFORMATION
@@ -257,14 +258,15 @@ def order_items_in_cart(cart) -> dict:
         if shop not in sort_by_store:
             # если магазина нет словаре,
             # добавляем вложенный словарь с суммой, товаром и булевым значением
-            sort_by_store[shop] = {'total': float(cart_item.total),
-                                   'items': {
-                                       f'{cart_item.id}': {
-                                           'product': cart_item,
-                                           'is_not_enough': False
-                                       }
-                                   }
-                                }
+            sort_by_store[shop] = {
+                'total': float(cart_item.total),
+                'items': {
+                    f'{cart_item.id}': {
+                        'product': cart_item,
+                        'is_not_enough': False
+                    }
+                }
+            }
         else:
             # добавляем сумму к имеющейся сумме всех товаров этого магазина
             sort_by_store[shop]['total'] += float(cart_item.total)
@@ -402,6 +404,7 @@ def get_cart_item(request, item):
     except AttributeError:
         cart_items = None
     return cart_items
+
 
 # CREATE
 def create_session_key(request):

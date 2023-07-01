@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from app_item import models as item_models
 
 
-class Favorite(object):
+class Favorite:
     """ Класс для создания и управления списка избранных товаров."""
 
     def __init__(self, request):

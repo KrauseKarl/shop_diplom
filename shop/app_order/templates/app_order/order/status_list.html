@@ -1,0 +1,8 @@
+{% for status in status_list %}
+    {% if order.status == status.0 %}
+        <span class="label-color {{ status.0 }}">
+
+            {{ order.get_status_display }}
+        </span>
+    {% endif %}
+{% endfor %}

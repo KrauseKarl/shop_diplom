@@ -9,6 +9,7 @@ from django.views import generic
 # models
 from app_order import models as order_models
 from app_settings import models as settings_models
+from app_invoice import models as invoice_models
 # forms
 from app_invoice import forms as invoice_forms
 from app_order import forms as order_forms
@@ -49,16 +50,20 @@ class OrderDetail(mixins.UserPassesTestMixin, generic.DetailView):
     model = order_models.Order
     template_name = 'app_order/order/order_detail.html'
     context_object_name = 'order'
+    STATUS_LIST_ORDER = order_models.Order().STATUS
+    STATUS_LIST_ITEM = order_models.OrderItem().STATUS
 
     def test_func(self):
         user = self.request.user
-        order = self.get_object()
-        return True if user == order.user else False
+        order = self.get_object().user
+        return True if user == order else False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['order_items'] = order_services.CustomerOrderHandler.get_order_items(order=self.get_object())
-        context['status_list'] = order_models.OrderItem().STATUS
+        context['status_list'] = self.STATUS_LIST_ORDER
+        context['status_list_item'] = self.STATUS_LIST_ITEM
+        context['invoice'] = invoice_models.Invoice.objects.filter(order=self.get_object()).filter()
         return context
 
 

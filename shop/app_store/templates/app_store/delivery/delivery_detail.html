@@ -10,7 +10,7 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">{{ order }}
+                <h1 class="Middle-title">{{ order }}| {{ status_list.3.0 }}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-
+    {% include 'messages/message.html' %}
     <div class="Section">
         <div class="wrap">
             <div class="Section-content">
@@ -100,29 +100,7 @@
                                     <div class="Order-info Order-info_status">
                                         <div class="Order-infoType">Статус:</div>
                                         <div class="Order-infoContent">
-                                              {% if order.status == 'created' %}
-                                        <span class="label-color created">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'paid' %}
-                                        <span class="label-color paid ">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'is_preparing' %}
-                                        <span class="label-color is_preparing">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'on_the_way' %}
-                                        <span class="label-color on_the_way">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'is_ready' %}
-                                        <span class="label-color is_ready">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'completed' %}
-                                        <span class="label-color completed">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'deactivated' %}
-                                        <span class="label-color deactivated">{{ order.get_status_display }}
-                                            </span>
-                                        {% endif %}
-
+                                            {% include 'app_order/order/status_list.html' %}
                                         </div>
                                     </div>
                                     {% if order.invoices.first %}
@@ -163,6 +141,17 @@
                                             {{ order_item.item.item.title }}
                                         </a>
                                     </div>
+                                    <div class="Cart-block Cart-block_info">
+                                        <span class="Cart-title">
+                                            {% for status in status_list_item %}
+                                                {% if order_item.status == status.0 %}
+                                                    <span class="label-color {{ status.0 }}">
+                                                        {{ order_item.get_status_display }}
+                                                    </span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
+                                    </div>
                                     <div class="Cart-block Cart-block_price">
                                         <span
                                             class="Cart-price">${{ order_item.item.item.price }}
@@ -176,23 +165,23 @@
                                     <div class="Cart-block Cart-block_price">
                                         <span class="Cart-price">${{ order_item.total }}
                                         </span>
-
                                     </div>
                                     <div class="Cart-block Cart-block_price">
                                         {% if order.status == 'created' %}
-                                     <a class="btn btn_square btn_dark btn_narrow btn_sm" style="margin-left:10px"
-                                        href="{% url 'app_store:order_item_edit' order_item.id %}">
-                                         редактировать
-                                     </a>
-                                     {% endif %}
-                                        {% if order.status == 'paid' %}
+                                        <a class="btn btn_square btn_dark btn_narrow btn_sm" style="margin-left:10px"
+                                           href="{% url 'app_store:order_item_edit' order_item.id %}">
+                                            редактировать
+                                        </a>
+                                        {% endif %}
+
+                                        {% if order_item.status == 'paid' %}
                                         <form method="post"
-                                              action="{% url 'app_store:sent_purchase' pk=order.pk %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="status" value="on_the_way">
-                                            <button class="btn btn_square btn_success btn_narrow  btn_sm">
+                                              action="{% url 'app_store:sent_purchase' pk=order_item.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="{{ status_list.3.0 }}">
+                                                <button class="btn btn_square btn_success btn_narrow  btn_sm">
                                                 отправить товар
-                                            </button>
+                                                </button>
                                         </form>
                                         {% endif %}
                                     </div>

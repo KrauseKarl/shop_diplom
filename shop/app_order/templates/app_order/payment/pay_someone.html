@@ -62,7 +62,7 @@
                       <div class="Order-infoContent-left">
                             <label class="Order-infoContent-left" style="margin-bottom:20px;">номер заказа
                             </label>
-                            <input class="form-input Payment-bill" id="pay" name="pay" type="hidden" value="{{ order.pay }}">
+                            <input type="hidden" name="pay" id="pay"  value="{{ order.pay }}">
                             <input type="hidden" name="order" id='order' value="{{ order.id }}" multiple>
                             <span class="Order-infoContent-right ">{{ order }}
                             </span>

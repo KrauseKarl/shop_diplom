@@ -85,7 +85,7 @@ class CustomerOrderHandler:
                     )
                     cart_item.order = order
                     cart_item.status = 'not_paid'
-                cart_services.delete_cart_cache(request)
+                # cart_services.delete_cart_cache(request)
                 cart.is_archived = True
                 cart.save()
         return order
@@ -139,11 +139,10 @@ class CustomerOrderHandler:
 
 class SellerOrderHAndler:
     """ Класс для работы с заказами со стороны продавца."""
+    
     @staticmethod
-    def get_seller_order_list(request):
+    def get_seller_order_list(owner):
         """ Функция возвращает список всех заказов продавца."""
-        # собственник
-        owner = request.user
         # все магазины собственника
         stores = store_models.Store.objects.select_related('owner').filter(owner=owner)
         # все товары в магазинах собственника
@@ -151,13 +150,7 @@ class SellerOrderHAndler:
 
         # все заказанные товары из магазинов
         items_in_cart = cart_models.CartItem.objects.select_related('item').filter(item_id__in=items)
-        order_items = order_models.OrderItem.objects.filter(item__in=items_in_cart)
-        # # all sold product
-        # items_my_store = items.filter(cart_item__in=items_in_cart)
-        # все заказы в магазинах собственника
-        # order_list = OrderItem.objects.select_related('user').prefetch_related('store'). \
-        #     filter(order_items__in=items_in_cart). \
-        #     order_by('-created')
+        order_items = order_models.Order.objects.filter(store__in=stores)
         return order_items
 
     @staticmethod
@@ -191,10 +184,12 @@ class SellerOrderHAndler:
         :param request: request
         :return: int()
         """
-        order_list = SellerOrderHAndler.get_seller_order_list(request)
-        # кол-во всех заказов со статусами ('new')
-        order_total_amount = order_list.values_list('status').filter(status='new').count()
+        paid_order = order_models.Order().STATUS[1][0]
 
+        order_list = SellerOrderHAndler.get_seller_order_list(owner=request.user.id)
+        # кол-во всех заказов со статусами ('new')
+        order_total_amount = order_list.values_list('status').filter(status=paid_order).count()
+        print('___________________', paid_order, order_list.values_list('status').filter(status=paid_order))
         return order_total_amount
 
     @staticmethod
@@ -231,13 +226,12 @@ class SellerOrderHAndler:
         return order
 
     @staticmethod
-    def sent_order(order_id, status):
+    def sent_item(order_id, status):
         """ Функция отправляет заказ. Статус 'доставляется'. """
-        order = order_models.Order.objects.get(id=order_id)
-        order.status = status
-        order.order_items.update(status=status)
-        order.save(update_fields=['status'])
-        return order
+        order_item = order_models.OrderItem.objects.get(id=order_id)
+        order_item.status = status
+        order_item.save(update_fields=['status'])
+        return order_item
 
 
 class Payment:

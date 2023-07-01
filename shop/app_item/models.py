@@ -3,6 +3,7 @@ import os
 import random
 from io import BytesIO, StringIO
 from PIL import Image as PilImage
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
@@ -11,7 +12,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MinLengthValidator
 
-from utils.my_utils import slugify_for_cyrillic_text
+from utils.my_utils import slugify_for_cyrillic_text, query_counter
 from app_store.models import Store
 from app_item.managers import app_item_managers
 
@@ -303,9 +304,18 @@ class Category(models.Model):
     def get_parent_url(self):
         return reverse('app_item:item_category', kwargs={'category': self.parent_category.slug})
 
+
     def item_count(self):
         """Функция по количеству товаров в конкретной категории."""
-        return Item.available_items.filter(Q(category__parent_category=self) | Q(category=self)).count()
+        count = cache.get('item_count')
+        if not count:
+            count = Item.available_items.select_related('category', 'category__parent_category'). \
+                filter(
+                Q(category__parent_category=self) |
+                Q(category=self)
+            ).count()
+            cache.set('item_count', count, 60 * 60)
+        return count
 
 
 class Tag(models.Model):

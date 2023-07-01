@@ -114,7 +114,7 @@ class ItemDetail(generic.DetailView, generic.CreateView):
         user = self.request.user
         data = self.request.POST
         comment_services.CommentHandler.add_comment(user=user, item_id=item_id, data=data)
-        cache.delete(item_id)
+        # cache.delete(item_id)
         messages.add_message(
             self.request,
             messages.SUCCESS,
@@ -215,7 +215,7 @@ class EditComment(generic.UpdateView):
         if form.is_valid():
             comment.is_published = False
             comment.save(force_update=True)
-            cache.delete(item_id)
+            # cache.delete(item_id)
             messages.add_message(
                 self.request,
                 messages.SUCCESS,

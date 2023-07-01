@@ -12,7 +12,7 @@ from datetime import date, timedelta
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models.query import QuerySet
-from django.db.models import Min, Max, Q, Count
+from django.db.models import Min, Max, Q, Count, F
 from django.http import Http404
 
 from app_item import models as item_models
@@ -41,9 +41,6 @@ def get_colors(queryset: QuerySet) -> List[str]:
 
 
 class ItemHandler:
-    COLOR_DICT = {
-
-    }
 
     @staticmethod
     def get_item(item_id: int) -> Any:
@@ -103,12 +100,11 @@ class ItemHandler:
             :param queryset: queryset товаров
             :return: отсортированный queryset товара.
         """
-        if not queryset:
-            queryset = item_models.Item.objects.\
-                annotate(quantity=Count('cart_item__order_item__quantity')).order_by('-quantity')
-        # else:
-        #      queryset = queryset.annotate(bestseller=Count('cart_item__quantity')).order_by('-bestseller')
+        base = item_models.Item.objects.annotate(quantity=F('cart_item__order_item__quantity'))
+        queryset = queryset if queryset else base
+        queryset = queryset.annotate(quantity=F('cart_item__order_item__quantity')).order_by('-quantity')
         return queryset
+
 
     @staticmethod
     def get_new_item_list() -> QuerySet:
@@ -306,7 +302,6 @@ class ItemHandler:
                     for feature_key in feature:
                         get_param_dict[f'{feature_key.feature.title} - {feature_key.value}'] = feature_key.slug
                 else:
-                    print(value)
                     feature = item_models.FeatureValue.objects.prefetch_related('item_features').filter(slug__in=value).first()
                     get_param_dict[f'{feature.feature.title} - {feature.value}'] = feature.slug
                 feature_list.append(feature)
@@ -611,7 +606,7 @@ class CategoryHandler:
                 category = item_models.Category.objects.select_related('parent_category').exclude(items=None)
             return category
         except ObjectDoesNotExist:
-            raise Http404('Не найдена ни одина категория товаров, соответствующий запросу')
+            raise Http404('Не найдена ни одна категория товаров, соответствующий запросу')
 
     @staticmethod
     def get_related_category_list(queryset: QuerySet) -> QuerySet:
@@ -664,11 +659,14 @@ class CategoryHandler:
         return categories
 
     @staticmethod
-    def filter_items_by_category(queryset: QuerySet, category) -> QuerySet:
-        category = CategoryHandler.get_categories(slug=category)
-        queryset = queryset.select_related('category', 'store'). \
-            prefetch_related('tag', 'views', 'images', 'feature_value'). \
-            filter(Q(category=category.id) | Q(category__parent_category=category.id))
+    def filter_items_by_category(queryset: QuerySet, category_slug: str) -> QuerySet:
+        category = item_models.Category.objects.values('id', 'slug').get(slug=category_slug)
+        queryset = queryset.select_related('category', 'category__parent_category', 'store').\
+            prefetch_related('tag', 'views', 'images', 'feature_value').filter(
+            Q(category=category['id']) |
+            Q(category__parent_category=category['id'])
+        )
+
         return queryset
 
     @staticmethod

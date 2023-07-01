@@ -5,7 +5,7 @@ app_name = 'app_item'
 
 
 urlpatterns = [
-    # path('list/', ItemList.as_view(), name='item_list'),
+
     path('list/best_seller', ItemBestSellerList.as_view(), name='item_best_seller'),
     path('list/new', ItemNewList.as_view(), name='item_new'),
     path('list/for_you', ItemForYouList.as_view(), name='item_for_you'),

@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from app_item import models as item_models
 
 
-class Comparison(object):
+class Comparison:
     """ Класс для создания и управления списка товаров для сравнения."""
 
     def __init__(self, request):
@@ -20,6 +20,7 @@ class Comparison(object):
     def add(self, item_pk):
         """ Функция для добавления товаров для сравнения."""
         item = get_object_or_404(item_models.Item, pk=item_pk)
+
         if self.compare_items.__len__() > 0:
             first_item = self.all()[0]
             if first_item.category == item.category:
@@ -27,22 +28,29 @@ class Comparison(object):
                     if item_pk not in self.compare_items:
                         self.compare_items[str(item)] = item.pk
                     self.save()
-                    messages.add_message(self.request, messages.SUCCESS, 'товар добавлен в список среавнения')
+                    message_type = messages.SUCCESS
+                    message_body = 'товар добавлен в список среавнения'
                 else:
-                    messages.add_message(self.request, messages.WARNING, 'Превышен лимит для сравнения')
+                    message_type = messages.WARNING
+                    message_body = 'Превышен лимит для сравнения'
             else:
-                messages.add_message(self.request, messages.WARNING, 'Товары должны быть из одной категории. ')
-                messages.add_message(self.request, messages.INFO,
-                f'Добавьте товар категории {first_item.category} или очистите список для сравнения')
+                message_type = messages.INFO
+                message_body = f"""  Товары должны быть из одной категории.
+                                    Добавьте товар категории {first_item.category}.
+                                    Или очистите список для сравнения
+                                    """
         else:
             if self.compare_items.__len__() < 3:
                 if item_pk not in self.compare_items:
                     self.compare_items[str(item)] = item.pk
                 self.save()
-                messages.add_message(self.request, messages.SUCCESS, 'товар добавлен в список среавнения')
+                message_type = messages.SUCCESS
+                message_body = 'товар добавлен в список среавнения'
             else:
-                messages.add_message(self.request, messages.WARNING, 'Превышен лимит для сравнения')
+                message_type = messages.WARNING
+                message_body = 'Превышен лимит для сравнения'
 
+        messages.add_message(self.request, message_type, message_body)
 
     def save(self):
         """ Функция для обновление сессии товаров."""
@@ -76,5 +84,5 @@ class Comparison(object):
     def all(self):
         """  Функция возвращает все товары из списка. """
         item_id_list = [i for i in self.compare_items.values()]
-        items = item_models.Item.objects.filter(id__in=item_id_list)
+        items = item_models.Item.objects.filter(id__in=item_id_list).values_list('feature_value', flat=True)
         return items

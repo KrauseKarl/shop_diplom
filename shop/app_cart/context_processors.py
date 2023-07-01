@@ -1,8 +1,10 @@
 from pprint import pprint
 
 from app_cart.services.cart_services import get_current_cart, get_items_in_cart
+from utils.my_utils import query_counter
 
 
+@query_counter
 def get_cart(request) -> dict:
     """
     Функция возвращает словарь состоящий

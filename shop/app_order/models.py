@@ -10,6 +10,14 @@ from app_store.models import Store
 
 class OrderItem(models.Model):
     """Модель оплаченного товара."""
+    #   STATUS = (
+    #     ('has_been_created', 'заказан'),
+    #     ('is_paid', 'оплачен'),
+    #     ('has_been_sent', 'отправлен'),
+    #     ('is_ready', 'готов к выдаче'),
+    #     ('completed', 'доставлен'),
+    #     ('deactivated', 'отменен')
+    # )
     STATUS = (
         ('not_paid', 'заказан'),
         ('paid', 'оплачен'),
@@ -44,7 +52,11 @@ class OrderItem(models.Model):
         max_length=20,
         choices=STATUS,
         verbose_name='статус выбранного товара',
-        default='in_cart'
+        default=STATUS[0][0]
+    )
+    is_paid = models.BooleanField(
+        default=False,
+        verbose_name='оплачен'
     )
     order = models.ForeignKey(
         'Order',
@@ -54,6 +66,7 @@ class OrderItem(models.Model):
         related_name='order_items',
         verbose_name='заказ'
     )
+
     created = models.DateTimeField(
         auto_now_add=True,
         verbose_name='дата создания'
@@ -67,16 +80,16 @@ class OrderItem(models.Model):
         verbose_name_plural = 'оплаченный товары'
 
     def __str__(self):
-        return f'Оплаченный товар {self.item}'
+        return f'{self.item.item}'
 
     def save(self, *args, **kwargs):
         self.total = self.price * self.quantity
-        self.status = self.STATUS[0][0]
         super().save(*args, **kwargs)
 
 
 class Order(models.Model):
     """Модель заказа."""
+
     STATUS = (
         ('created', 'сформирован'),
         ('paid', 'оплачен'),

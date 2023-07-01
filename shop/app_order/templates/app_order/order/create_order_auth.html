@@ -103,7 +103,7 @@
                             <div>
                                 <label class="toggle">
                                     <input type="radio" name="delivery" id="delivery_{{ type.0|lower }}"
-
+                                    {% if  forloop.counter  == 1 %} checked {% endif %}
                                     value="{{ type.0|lower}}"/>
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text" id="{{ type.0|lower }}"> {{ type.1|capfirst }} </span>
@@ -153,7 +153,7 @@
                                 <label class="toggle">
                                     <input type="radio" name="pay" id="pay_{{ type_pay.0|lower }}"
                                            value="{{ type_pay.0|lower }}"
-
+                                     {% if  forloop.counter  == 1 %} checked {% endif %}
                                     />
                                     <span class="toggle-box"></span>
                                     <span class="toggle-text" id="{{ type_pay.0|lower }}">{{ type_pay.1|lower }}</span>
@@ -251,18 +251,23 @@
                                 {% endfor %}
                                 <div class="Cart-total Cart-total-order ">
                                     <div class="Cart-block-order ">
-                                        <strong class="Cart-title-order"> сумма заказа:</strong>
-                                        <span class="Cart-price Cart-total-price">$</span>
+                                        <strong class="Cart-title-order"> сумма заказа:
+                                        </strong>
+                                        <span class="Cart-price Cart-total-price">$
+                                        </span>
                                         <span id="total_item_cost" class="Cart-price Cart-total-price"
                                               data-value="{{ cart_dict.cart.total_cost_with_delivery }}">
-                                               {{ cart_dict.cart.get_total_price_with_discount|floatformat:'2' }}</span>
+                                               {{ cart_dict.cart.get_total_price_with_discount|floatformat:'2' }}
+                                        </span>
 
                                     </div>
                                 </div>
                                 <div class="Cart-total-order">
                                     <div class="Cart-title-order">
-                                        <span class="Cart-title-order">доставка:</span>
-                                        <span class="Cart-price">$</span>
+                                        <span class="Cart-title-order">доставка:
+                                        </span>
+                                        <span class="Cart-price">$
+                                        </span>
                                         <span class=" Cart-price Cart-total-quantity">
                                             {{ cart_dict.cart.is_free_delivery|floatformat:'2' }}
                                         </span>
@@ -271,17 +276,20 @@
                                 </div>
                                 <div class="Cart-total-order" id="delivery_express_block">
                                     <div class="Cart-title-order">
-                                        <span class="Cart-title-order" id="delivery_cost_span">
-                                            экспресс доставка:
+                                        <span class="Cart-title-order" id="delivery_cost_span">экспресс доставка:
                                         </span>
-                                        <span class="Cart-price">$</span>
-                                        <span id='delivery_cost' class=" Cart-price Cart-total-quantity">0</span>
+                                        <span class="Cart-price">$
+                                        </span>
+                                        <span id='delivery_cost' class=" Cart-price Cart-total-quantity">0
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="Cart-total Cart-total-order ">
                                     <div class="Cart-title-order ">
-                                        <strong class="Cart-title Cart-title-order">ИТОГО:</strong>
-                                        <span class="Cart-price">$</span>
+                                        <strong class="Cart-title Cart-title-order">ИТОГО:
+                                        </strong>
+                                        <span class="Cart-price">$
+                                        </span>
                                         <strong id='total_cost' class="Cart-price">
                                         </strong>
                                         <input class="form-input" type="hidden" id="total_sum" name="total_sum"

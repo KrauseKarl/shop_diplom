@@ -27,7 +27,7 @@ def seller_order_list(request) -> dict:
        :return: словарь
        """
     if request.user.is_authenticated and request.user.profile.is_seller:
-        all_order_list = order_services.SellerOrderHAndler.get_seller_order_list(request)
+        all_order_list = order_services.SellerOrderHAndler.get_seller_order_list(request.user.id)
         order_total_amount = order_services.SellerOrderHAndler.get_order_total_amount(request)
         reviews = order_services.SellerOrderHAndler.get_seller_comment_amount(request)
         return {'orders': all_order_list, 'all_new_order_amount': order_total_amount, 'reviews': reviews}

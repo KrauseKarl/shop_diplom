@@ -18,7 +18,7 @@
                     {% endif %}
                     {% endfor %}
                     {% else %}
-                    список всех заказов
+                    список заказаных товаров
                     {% endif %}
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
@@ -110,93 +110,73 @@
                         </div>
                     </div>
                 </div>
+                    {% for order in orders %}
                     <div class="Order Order_anons">
-                        {% for order in orders %}
-                        <div class="Order-personal">
-                            <div class="row">
-                                <div class="row-block ">
-                                    <a class="Order-info" href="{% url 'app_store:delivery_detail' order.id %}">
+                        <div class="Order ">
+                            <div class="Order-personal">
+                                <div class="row">
+                                    <div class="row-block ">
+                                        <a class="Order-info" href="{% url 'app_store:delivery_detail' order.id %}">
                                         <span class="Order-numberOrder">{{ order }}
                                         </span>
-                                    </a>
-                                    {{ order.created|date:"j M o" }}<br>
-                                </div>
-                                <div class="row-block ">
-                                    <div class="Order-info" >
-                                        {% for shop in order.store.all %}
-                                    {% if shop in user.store.all %}
-                                    {{ shop|upper }}
-                                    {% endif %}
-                                    {% endfor %}
+                                        </a>
+                                        {{ order.created|date:"j M o" }}<br>
                                     </div>
-                                </div>
+                                    <div class="row-block ">
+                                        <div class="Order-info">
+                                            {% for shop in order.store.all %}
+                                            {% if shop in user.store.all %}
+                                            {{ shop|upper }}
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
 
-                                <div class="row-block ">
-                                    <div class="Order-info">
-                                        <div class="Order-info Order-infoContent-left">
-                                            {% if order.status == 'created' %}
-                                            <span class="label-color created">{{ order.get_status_display }}
-                                            </span>
-                                            {% elif order.status == 'paid' %}
-                                            <span class="label-color paid ">{{ order.get_status_display }}
-                                            </span>
-                                            {% elif order.status == 'is_preparing' %}
-                                            <span class="label-color is_preparing">{{ order.get_status_display }}
-                                            </span>
-                                            {% elif order.status == 'on_the_way' %}
-                                            <span class="label-color on_the_way">{{ order.get_status_display }}
-                                            </span>
-                                            {% elif order.status == 'is_ready' %}
-                                            <span class="label-color is_ready">{{ order.get_status_display }}
-                                            </span>
-                                            {% elif order.status == 'completed' %}
-                                            <span class="label-color completed">{{ order.get_status_display }}
-                                            </span>
-                                            {% elif order.status == 'deactivated' %}
-                                            <span class="label-color deactivated">{{ order.get_status_display }}
-                                            </span>
-                                            {% endif %}
+                                    <div class="row-block ">
+                                        <div class="Order-info">
+                                            <div class="Order-info Order-infoContent-left">
+                                              {% include 'app_order/order/status_list.html' %}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row-block">
-                                    <div class="Order-info">
-                                        <div class="Order-infoType"></div>
-                                    </div>
-                                    <div class="Order-info">
-                                        <div class="Order-infoType ">
-                                            {% if order.is_paid %}
-                                            <span > &#9989;&emsp;оплачен
-                                            </span>
-                                            {% else %}
-                                            <span >&#9888;&emsp;не ополачен
-                                            </span>
-                                            {% endif %}
+                                    <div class="row-block">
+                                        <div class="Order-info">
+                                            <div class="Order-infoType"></div>
+                                        </div>
+                                        <div class="Order-info">
+                                            <div class="Order-infoType ">
+                                                {% if order.is_paid %}
+                                                <span class="Order-price success-text">оплачен</span>
+                                                {% else %}
+                                                <span class="Order-price danger-text">не оплачен</span>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row-block">
-                                    <div class="Order-info">
-                                        <div class="Order-infoType "></div>
-                                    </div>
-                                    <div class="Order-info">
-                                        <div class="Order-infoType">
-                                            <span>$</span>
-                                            <span class="Order-price">{{ order.total_sum|floatformat:"2" }}</span>
+                                    <div class="row-block">
+                                        <div class="Order-info">
+                                            <div class="Order-infoType "></div>
+                                        </div>
+                                        <div class="Order-info">
+                                            <div class="Order-infoType">
+                                                <span>$</span>
+                                                <span class="Order-price">{{ order.total_sum|floatformat:"2" }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {% empty %}
-                       <div class="Order-personal">
-                         <img src="/media/default_images/not_orders.png" width="100%">
-                       </div>
-                        {% endfor %}
                     </div>
+                    {% empty %}
+                    <div class="Order-personal">
+                        <img src="/media/default_images/not_orders.png" width="100%">
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+

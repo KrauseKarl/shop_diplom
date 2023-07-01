@@ -68,28 +68,7 @@
                                         <span class="Order-dateOrder">{{ order.created|date:"j M o" }}</span>
                                     </a>
                                     <div class="Account-editLink">
-                                        {% if order.status == 'created' %}
-                                        <span class="label-color created">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'paid' %}
-                                        <span class="label-color paid ">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'is_preparing' %}
-                                        <span class="label-color is_preparing">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'on_the_way' %}
-                                        <span class="label-color on_the_way">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'is_ready' %}
-                                        <span class="label-color is_ready">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'completed' %}
-                                        <span class="label-color completed">{{ order.get_status_display }}
-                                            </span>
-                                        {% elif order.status == 'deactivated' %}
-                                        <span class="label-color deactivated">{{ order.get_status_display }}
-                                            </span>
-                                        {% endif %}
+                                    {% include 'app_order/order/status_list.html' %}
                                     </div>
                                 </div>
                                 <div class="row-block">

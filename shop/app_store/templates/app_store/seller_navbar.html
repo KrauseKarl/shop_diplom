@@ -11,7 +11,7 @@
                 </a>
             </li>
             <li class="menu-item">
-                <a class="menu-link" href="{% url 'app_store:delivery_list' %}">Доставка
+                <a class="menu-link" href="{% url 'app_store:delivery_list' %}?status=paid">Заказы
                     {% if all_new_order_amount %}
                     <span class="CartBlock-amount">{{ all_new_order_amount }}</span>
                     {% endif %}

@@ -75,10 +75,15 @@
                       <div class="Order-infoType">Адрес:</div>
                       <div class="Order-infoContent">{{ order.address }}</div>
                     </div>
+                    <div class="Order-info Order-info_status">
+                          <div class="Order-infoType">Статус доставки:</div>
+                          <div class="Order-infoContent">
+                              {% include 'app_order/order/status_list.html' %}
+                          </div>
+                      </div>
                     <div class="Order-info Order-info_pay">
                       <div class="Order-infoType">Оплата:</div>
                       <div class="Order-infoContent">{{ order.get_pay_display }}
-
                       </div>
                     </div>
                     <div class="Order-info Order-info_status">
@@ -94,34 +99,6 @@
                           {% endif %}
                         </div>
                       </div>
-                    <div class="Order-info Order-info_status">
-                          <div class="Order-infoType">Статус доставки:</div>
-                          <div class="Order-infoContent">
-                            {% if order.status == 'created' %}
-                            <span class="label-color created">{{ order.get_status_display }}
-                                            </span>
-                            {% elif order.status == 'paid' %}
-                            <span class="label-color paid ">{{ order.get_status_display }}
-                                            </span>
-                            {% elif order.status == 'is_preparing' %}
-                            <span class="label-color is_preparing">{{ order.get_status_display }}
-                                            </span>
-                            {% elif order.status == 'on_the_way' %}
-                            <span class="label-color on_the_way">{{ order.get_status_display }}
-                                            </span>
-                            {% elif order.status == 'is_ready' %}
-                            <span class="label-color is_ready">{{ order.get_status_display }}
-                                            </span>
-                            {% elif order.status == 'completed' %}
-                            <span class="label-color completed">{{ order.get_status_display }}
-                                            </span>
-                            {% elif order.status == 'deactivated' %}
-                            <span class="label-color deactivated">{{ order.get_status_display }}
-                                            </span>
-                            {% endif %}
-
-                          </div>
-                      </div>
                     {% if  order.error %}
                       <div class="Order-info Order-info_error">
                         <div class="Order-infoType">Оплата не прошла:
@@ -130,28 +107,11 @@
                         </div>
                       </div>
                     {% endif %}
-                    {% if not order.is_paid and order.status != 'deactivated' %}
-                    <div class="Order-info Order-info_error">
-                      <div class="Order-infoType">
-                      </div>
-                      <div class="Order-infoContent">
-                        <a href="{% url 'app_order:order_cancel' order.pk  %}"
-                           class="btn btn_danger btn_sm">отменить заказ</a>
-                      </div>
-                    </div>
-                    {% endif %}
                 </div>
               </div>
+                <br>
               <div class="Cart Cart_order">
                 {% for item in order_items %}
-                {% ifchanged %}
-                <h3>{{ item.item.store }}</h3>
-                  {% for invoice in item.item.store.all_store_invoices.all %}
-                    {% if order == invoice.order  %}
-                      <a href="{% url 'app_order:invoices_detail'  invoice.id%}">{{ invoice }}</a>
-                    {% endif %}
-                  {% endfor %}
-                {% endifchanged %}
                 <div class="Cart-product">
                   <div class="Cart-block Cart-block_row">
                     <div class="Cart-block Cart-block_pict">
@@ -170,28 +130,13 @@
                     </div>
                     <div class="Cart-block Cart-block_info">
                       <div class="Cart-title">
-                        {% if item.status == 'created' %}
-                        <span class="label-color created">{{ item.get_status_display }}
-                        </span>
-                        {% elif item.status == 'paid' %}
-                        <span class="label-color paid ">{{ order.get_status_display }}
-                        </span>
-                        {% elif item.status == 'is_preparing' %}
-                        <span class="label-color is_preparing">{{ item.get_status_display }}
-                        </span>
-                        {% elif item.status == 'on_the_way' %}
-                        <span class="label-color on_the_way">{{ item.get_status_display }}
-                        </span>
-                        {% elif item.status == 'is_ready' %}
-                        <span class="label-color is_ready">{{ item.get_status_display }}
-                        </span>
-                        {% elif item.status == 'completed' %}
-                        <span class="label-color completed">{{ item.get_status_display }}
-                        </span>
-                        {% elif item.status == 'deactivated' %}
-                        <span class="label-color deactivated">{{ item.get_status_display }}
-                        </span>
-                        {% endif %}
+                        {% for status in status_list_item %}
+                            {% if item.status == status.0 %}
+                                <span class="label-color {{ status.0 }}">
+                                    {{ item.get_status_display }}
+                                </span>
+                            {% endif %}
+                        {% endfor %}
                       </div>
                     </div>
                   </div>
@@ -215,18 +160,25 @@
                 <div class="Cart-block Cart-block_total">
                   <div class="Cart-total-order">
                     {% if order.status == 'is_ready' %}
-                    <form method="post" action="{% url 'app_order:order_confirm' pk=order.pk %}">
+                    <form method="post"
+                          action="{% url 'app_order:order_confirm' pk=order.pk %}">
                       {% csrf_token %}
                       <input type="hidden" name="status" value="completed">
-                      <button class="btn btn_primary btn_sm">подтвердить получение</button>
+                      <button class="btn btn_primary btn_lg"
+                              title="Нажмите, чтобы подтвердить получение заказа">подтвердить получение
+                      </button>
                     </form>
                     {% endif %}
-                    {% if not order.is_paid  and order.status != 'deactivated' %}
-                    <a class="btn btn_primary btn_lg" style="margin-right:20px"
-                       href="{% url 'app_order:progress_payment' order.id %}">
-                      оплатить
-                    </a>
 
+                    {% if not order.is_paid and order.status != 'deactivated' %}
+                    <a class="btn btn_primary btn_lg" style="margin-right:20px"
+                       href="{% url 'app_order:progress_payment' order.id %}">оплатить
+                    </a>
+                    {% endif %}
+                    {% if not order.is_paid %}
+                    <a  class="btn btn_danger btn_lg"
+                        href="{% url 'app_order:order_cancel' order.pk  %}">отменить
+                    </a>
                     {% endif %}
                   </div>
                 </div>

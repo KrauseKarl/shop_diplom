@@ -105,8 +105,8 @@ class Cart(models.Model):
     @property
     def total_cost_with_delivery(self):
         settings = SiteSettings.objects.get(id=1)
-        min_free_delivery = settings .min_free_delivery
-        delivery_fees = settings .delivery_fees
+        min_free_delivery = settings.min_free_delivery
+        delivery_fees = settings.delivery_fees
         if self.get_total_price_with_discount < min_free_delivery:
             return self.get_total_price_with_discount + float(delivery_fees)
         return self.get_total_price_with_discount

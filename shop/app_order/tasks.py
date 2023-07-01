@@ -32,16 +32,16 @@ def paying(order_id, number, pay):
     else:
         with transaction.atomic():
             order = order_models.Order.objects.get(id=order_id)
-            order.status = 'paid'
-            order.is_paid = True
-
             if pay and pay != order.pay:
                 order.pay = pay
+            order.status = 'paid'
+            order.is_paid = True
+            order.order_items.update(is_paid=True)
             order.order_items.update(status='paid')
 
             if order.error:
                 order.error = ''
-            order.save()
+            order.save(update_fields=['pay', 'status', 'error'])
 
             with transaction.atomic():
                 invoice_models.Invoice.objects.create(
@@ -58,3 +58,30 @@ def paying(order_id, number, pay):
                 item.save(update_fields=['stock'])
 
         return True
+
+
+@app.task
+def check_order_status(order_id):
+    sleep(3)
+    try:
+        order = order_models.Order.objects.get(id=order_id)
+
+        has_sent = 0
+
+        for order_item in order.order_items.all():
+            if order_item.status == 'on_the_way':
+                has_sent += 1
+
+        if has_sent == order.order_items.count():
+            order.status = 'on_the_way'
+            order.save(update_fields=['status'])
+            sleep(5)
+            order.status = 'is_ready'
+            order.order_items.update(status='is_ready')
+            order.save(update_fields=['status'])
+        else:
+            order.status = 'is_preparing'
+            order.save(update_fields=['status'])
+        return True
+    except ObjectDoesNotExist:
+        return False
