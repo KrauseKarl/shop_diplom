@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 # models
 from app_item import models as item_models
@@ -22,7 +23,7 @@ class Comparison:
         item = get_object_or_404(item_models.Item, pk=item_pk)
 
         if self.compare_items.__len__() > 0:
-            first_item = self.all()[0]
+            first_item = self.all().first()
             if first_item.category == item.category:
                 if self.compare_items.__len__() < 3:
                     if item_pk not in self.compare_items:
@@ -81,8 +82,8 @@ class Comparison:
         del self.session[settings.COMPARE_SESSION_ID]
         self.session.modified = True
 
-    def all(self):
-        """  Функция возвращает все товары из списка. """
+    def all(self) -> QuerySet:
+        """  Функция возвращает queryset всех товаров из списка. """
         item_id_list = [i for i in self.compare_items.values()]
         items = item_models.Item.objects.filter(id__in=item_id_list).values_list('feature_value', flat=True)
         return items

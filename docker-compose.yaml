@@ -39,7 +39,7 @@ services:
 
   # DJANGO APP
   shop_app:
-    container_name: app
+    container_name: shop_app
     build:
       context: ./shop
       dockerfile: Dockerfile
@@ -57,7 +57,7 @@ services:
       - static_volume:/usr/src/app/assets
       - media_volume:/usr/src/app/media
     ports:
-      - "127.0.0.1:8000:8000"
+      - "8000:8000"
     expose:
       - 8000
     env_file:
@@ -88,10 +88,11 @@ services:
           memory: '128M'
     container_name: nginx
     ports:
-      - "1337:80"
+      - "80:80"
     volumes:
       - ./nginx:/etc/nginx/conf.d/
       - static_volume:/usr/src/app/assets
+      - media_volume:/usr/src/app/media
   # REDIS
   redis:
     image: redis:7.0.5-alpine

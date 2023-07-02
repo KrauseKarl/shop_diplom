@@ -10,9 +10,9 @@ SECRET_KEY = os.getenv(
     "django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d"
 )
 
-DEBUG = True #os.getenv("DEBUG", "0") == "1"
+DEBUG = os.getenv("DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 if os.environ.get("ALLOWED_HOSTS") is not None:
     try:
         ALLOWED_HOSTS += os.getenv("ALLOWED_HOSTS").split(",")
@@ -167,8 +167,8 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = '/assets/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'), ]
-#STATIC_ROOT = BASE_DIR / "assets"
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'), ]
+STATIC_ROOT = BASE_DIR / "assets"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media/"
@@ -232,9 +232,9 @@ COMPARE_SESSION_ID = 'compares'
 if DEBUG:
     CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
     CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
-# else:
-#     CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
-#     CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
+else:
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
 
 
 CELERY_TIMEZONE = 'Europe/Moscow'
