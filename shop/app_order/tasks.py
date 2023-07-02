@@ -41,7 +41,7 @@ def paying(order_id, number, pay):
 
             if order.error:
                 order.error = ''
-            order.save(update_fields=['pay', 'status', 'error'])
+            order.save(update_fields=['pay', 'status', 'error', 'is_paid'])
 
             with transaction.atomic():
                 invoice_models.Invoice.objects.create(

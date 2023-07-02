@@ -51,7 +51,7 @@
                         </a>
                     </div>
                 </div>
-                {% include 'pagination.html' %}
+                {% include "pagination/pagination.html" %}
                 <div class="Orders">
                     {{ paginator }}
                     {% for invoice in object_list %}
