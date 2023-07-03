@@ -150,7 +150,7 @@ class SellerOrderHAndler:
 
         # все заказанные товары из магазинов
         items_in_cart = cart_models.CartItem.objects.select_related('item').filter(item_id__in=items)
-        order_items = order_models.Order.objects.filter(store__in=stores)
+        order_items = order_models.Order.objects.filter(store__in=stores).order_by('-created')
         return order_items
 
     @staticmethod
@@ -189,7 +189,6 @@ class SellerOrderHAndler:
         order_list = SellerOrderHAndler.get_seller_order_list(owner=request.user.id)
         # кол-во всех заказов со статусами ('new')
         order_total_amount = order_list.values_list('status').filter(status=paid_order).count()
-        print('___________________', paid_order, order_list.values_list('status').filter(status=paid_order))
         return order_total_amount
 
     @staticmethod

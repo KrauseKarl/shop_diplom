@@ -1,12 +1,10 @@
 import random
-import os
 from io import BytesIO
 from PIL import Image as PilImage
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from typing import List, Dict, Union, Any
 from functools import reduce
-from operator import and_, or_
+from operator import or_
 from urllib.parse import parse_qs
 from datetime import date, timedelta
 from django.core.cache import cache
@@ -18,7 +16,7 @@ from django.http import Http404
 from app_item import models as item_models
 from app_item import forms as item_forms
 from app_item.services import comment_services
-from utils.my_utils import query_counter, MixinPaginator
+from utils.my_utils import MixinPaginator
 
 
 def get_colors(queryset: QuerySet) -> List[str]:

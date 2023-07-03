@@ -1,4 +1,4 @@
-{% extends 'seller_index.html' %}
+{% extends 'app_store/seller_index.html' %}
 {% load static %}
 {% load cache %}
 
@@ -24,11 +24,11 @@
         </div>
     </div>
 </div>
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
 <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
-                {% include 'app_user/seller/sidebar_seller.html' %}
+                {% include 'app_store/sidebar_seller.html' %}
             </div>
             <div class="Section-content">
                 <div class="Profile">
@@ -171,14 +171,6 @@
                                     {% endif %}
                                 </div>
                                 <!-- CATEGORY -->
-
-                                <div class="form-group">
-                                    <label class="form-label">Характеристики</label>
-                                    <a class="btn btn_narrow btn_square btn_primary btn_sm" style="margin-top: 10px;"
-                                       href="{% url 'app_store:feature_list' pk=item.category.pk  %}">
-                                        + добавить характеристику
-                                    </a>
-                                </div>
                                 <!-- FEATURES -->
 
                                 <div class="form-group">
@@ -281,7 +273,7 @@
                             <a href="." title="Close"
                                class="btn  btn_square btn_default  btn_narrow btn_small">отмена</a>
                         </div>
-                    </form>
+                    </div>
                 </div>
                 <div class="modal-footer-my">
 

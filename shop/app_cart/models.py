@@ -24,7 +24,7 @@ class Cart(models.Model):
         verbose_name='корзина анонимного пользователя'
     )
     session_key = models.CharField(
-        max_length=250,
+        max_length=255,
         null=True,
         blank=True,
         verbose_name='ключ сессии'

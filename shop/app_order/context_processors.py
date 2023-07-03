@@ -12,7 +12,7 @@ def customer_order_list(request) -> dict:
         orders = order_services.CustomerOrderHandler.get_customer_order_list(request)
         new_order = orders.filter(status='created')
         ready_order = orders.filter(status='is_ready')
-        return {'order': orders, 'new_order': new_order, 'ready_order':ready_order}
+        return {'order': orders, 'new_order': new_order, 'ready_order': ready_order}
     else:
         return {'order': None}
 

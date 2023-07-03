@@ -56,7 +56,7 @@ class CreateProfileOrder(SuccessMessageMixin, generic.CreateView):
     """Класс-представление для создания профиля пользователя."""
     model = User
     second_model = user_modals.Profile
-    template_name = 'app_order/create_order_anon.html'
+    template_name = 'app_order/order/create_order_anon.html'
     form_class = user_form.RegisterUserForm
 
     def get_success_url(self):

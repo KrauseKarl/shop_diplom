@@ -141,6 +141,7 @@ class SellerDeleteView(AdminOnlyMixin, generic.UpdateView):
         except ObjectDoesNotExist:
             raise Http404("Такого продавец не существует не существует")
 
+
 class StoreListView(AdminOnlyMixin, generic.ListView):
     model = store_modals.Store
     template_name = 'app_settings/store/store_list.html'
@@ -368,7 +369,6 @@ class FeatureUpdateView(AdminOnlyMixin, generic.UpdateView):
 
     def form_invalid(self, form):
         form = store_forms.CreateCategoryForm(self.request.POST)
-        print(form.errors)
         return super(FeatureUpdateView, self).form_invalid(form)
 
 
@@ -510,15 +510,14 @@ class OrderListView(generic.ListView):
 class OrderDetailView(AdminOnlyMixin, generic.DetailView):
     """Класс-представление для отображения одного заказа в магазине продавца."""
     model = order_models.Order
-    template_name = 'app_settings/order/admin_order_detail.html'
+    template_name = 'app_settings/order/order_detail.html'
     context_object_name = 'order'
 
     def get(self, request, *args, category=None, **kwargs):
         super().get(request, *args, **kwargs)
         context = self.get_context_data(object=self.object)
-        stores = request.user.store.all()
         order = self.get_object()
-        context['items'] = order.order_items.filter(item__item__store__in=stores)
+        context['items'] = order.order_items.all()
         context['total'] = context['items'].aggregate(total_cost=Sum('total')).get('total_cost')
         return self.render_to_response(context)
 

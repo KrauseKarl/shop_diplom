@@ -16,10 +16,12 @@
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="index.html">home</a>
+                        <a href="{% url 'app_settings:dashboard' %}">главная
+                        </a>
                     </li>
                     <li class="breadcrumbs-item">
-                        История заказов
+                         <a href="{% url 'app_settings:admin_order_list' %}">История заказов
+                        </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>{{ order }}</span>

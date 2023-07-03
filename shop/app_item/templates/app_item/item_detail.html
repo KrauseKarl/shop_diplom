@@ -94,7 +94,7 @@
                             </div>
                         </div>
 
-                        {% if item.is_available  and  request.user.profile.is_customer %}
+                        {% if item.is_available  and request.user.profile.is_customer or not request.user.is_authenticated %}
                             <div class="ProductCard-cart">
 
                                 {% if item in already_in_cart %}

@@ -37,6 +37,7 @@ urlpatterns = [
     path('feature/value/<int:pk>/create/', views.ValueCreateView.as_view(), name='value_create'),
     path('feature/delete/<int:category_id>/value/<int:pk>/', views.ValueDeleteView.as_view(), name='value_delete'),
     path('order/list/', views.OrderListView.as_view(), name='admin_order_list'),
+    path('order/<int:pk>/detail/', views.OrderDetailView.as_view(), name='admin_order_detail'),
 
 
 ]

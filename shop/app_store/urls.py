@@ -38,10 +38,10 @@ urlpatterns = [
     # path('feature/value/<int:pk>/create/', CreateFeatureValueView.as_view(), name='feature_value_create'),
     # path('feature/<slug:slug>/item/<int:pk>/remove/', RemoveFeatureValueView.as_view(), name='value_remove'),
     #
-    # path('tag/list/', TagListView.as_view(), name='tag_list'),
-    # path('tag/create/', CreateTagView.as_view(), name='create_tag'),
-    # path('tag/add/<int:pk>/', AddTagToItem.as_view(), name='add_tag'),
-    # path('tag/delete/<int:item_id>/tag/<int:tag_id>/', RemoveTagFromItem.as_view(), name='delete_tag'),
+    # path('tag/list/', views.TagListView.as_view(), name='tag_list'),
+    # path('tag/create/', views.CreateTagView.as_view(), name='create_tag'),
+    path('tag/add/<int:pk>/', views.AddTagToItem.as_view(), name='add_tag'),
+    path('tag/delete/<int:item_id>/tag/<int:tag_id>/', views.RemoveTagFromItem.as_view(), name='delete_tag'),
 
     path('image/delete/<int:pk>/image/', views.DeleteImage.as_view(), name='delete_image'),
     path('image/update/<int:pk>/image/', views.MakeImageAsMain.as_view(), name='make_image_main'),

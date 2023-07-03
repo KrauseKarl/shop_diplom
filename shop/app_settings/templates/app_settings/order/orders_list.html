@@ -26,7 +26,7 @@
         </div>
     </div>
     <!--    MESSAGE STRING  -->
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <!--    MESSAGE STRING  -->
     <div class="Section">
         <div class="wrap">
@@ -94,7 +94,7 @@
                         <div class="Order-personal">
                             <div class="row">
                                 <div class="row-block ">
-                                    <a class="Order-info" href="{% url 'app_store:delivery_detail' order.id %}">
+                                    <a class="Order-info" href="{% url 'app_settings:admin_order_detail' pk=order.id %}">
                                         <span class="Order-numberOrder">{{ order }}
                                         </span>
                                     </a>

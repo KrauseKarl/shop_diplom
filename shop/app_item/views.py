@@ -74,9 +74,7 @@ class ItemDetail(generic.DetailView, generic.CreateView):
     context_object_name = 'item'
     template_name = 'app_item/item_detail.html'
     form_class = item_forms.CommentForm
-    success_url = '/'
 
-    @query_counter
     def get(self, request, *args, **kwargs):
         """
         Get-функция для отображения одного товара.
@@ -93,11 +91,14 @@ class ItemDetail(generic.DetailView, generic.CreateView):
             cart_item = cart_services.get_cart_item(request, item)
 
             context = item_services.ItemHandler.item_detail_view(request, item)
+
             # количество всех добавленных в корзину товаров (CartItem)
             try:
+
                 cart_item_quantity = cart_item.quantity
             except (AttributeError, ObjectDoesNotExist):
                 cart_item_quantity = 0
+
             context['already_in_cart'] = item_in_cart
             context['cart_item_in_cart'] = cart_item
             context['already_in_cart_count'] = cart_item_quantity
@@ -114,7 +115,7 @@ class ItemDetail(generic.DetailView, generic.CreateView):
         user = self.request.user
         data = self.request.POST
         comment_services.CommentHandler.add_comment(user=user, item_id=item_id, data=data)
-        # cache.delete(item_id)
+        cache.delete(item_id)
         messages.add_message(
             self.request,
             messages.SUCCESS,

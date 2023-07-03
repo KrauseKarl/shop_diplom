@@ -57,11 +57,11 @@ def get_current_cart(request) -> dict:
     cart = get_customer_cart(request)
 
     try:
-
-        cart_dict = get_cart_cache(request)
-        if cart_dict is None:
-            cart_dict = create_or_update_cart_book(cart)
-            set_cart_cache(request, cart_dict)
+        cart_dict = create_or_update_cart_book(cart)
+        # cart_dict = get_cart_cache(request)
+        # if cart_dict is None:
+        #     cart_dict = create_or_update_cart_book(cart)
+        #     set_cart_cache(request, cart_dict)
         return cart_dict
     except (KeyError, AttributeError):
         return {'cart': cart}
@@ -292,11 +292,15 @@ def enough_checker(cart) -> dict:
     - 'items' - спискок диффицитных товаров,
     """
     enough_dict = {'enough': False, 'items': []}
-    for cart_item in cart.all_items.filter(is_paid=False):
-        if cart_item.quantity > cart_item.item.stock:
-            enough_dict['enough'] = True
-            enough_dict['items'].append(cart_item.item)
-    return enough_dict
+    try:
+        for cart_item in cart.all_items.filter(is_paid=False):
+            if cart_item.quantity > cart_item.item.stock:
+                enough_dict['enough'] = True
+                enough_dict['items'].append(cart_item.item)
+    except AttributeError:
+        pass
+    finally:
+        return enough_dict
 
 
 def calculate_discount(ordered_cart_by_store):

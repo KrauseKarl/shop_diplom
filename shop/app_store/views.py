@@ -398,43 +398,43 @@ class ItemDeleteView(UserPassesTestMixin, generic.DeleteView):
 #         return super(CreateTagView, self).form_invalid(form)
 #
 #
-# class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
-#     """Класс-представление для  добавления тега в карточку товара."""
-#     model = item_models.Item
-#     context_object_name = 'item'
-#     template_name = 'app_store/add_tag.html'
-#     form_class = store_forms.AddTagForm
-#     MESSAGE = "Новый тег(и) успешно добавлен(ы)"
-#
-#     def form_valid(self, form):
-#         tag_list = form.cleaned_data.get('tag')
-#         item = item_models.Item.objects.get(id=self.kwargs['pk'])
-#         for t in tag_list:
-#             tag = item_models.Tag.objects.get(id=t.id)
-#             item.tag.add(tag)
-#             item.save()
-#         messages.add_message(self.request, messages.INFO, self.MESSAGE)
-#         return redirect('app_store:edit_item', item.pk)
-#
-#     def form_invalid(self, form):
-#         messages.add_message(self.request, messages.ERROR, f"{form.errors}")
-#         return self.render_to_response(self.get_context_data(form=form))
-#
-#
-# class RemoveTagFromItem(generic.DeleteView):
-#     """Класс-представление для удаления тега из карточки товара"""
-#     model = item_models.Tag
-#
-#     def get(self, request, *args, **kwargs):
-#         item_id = kwargs['item_id']
-#         item = item_models.Item.objects.get(id=item_id)
-#         tag_id = kwargs['tag_id']
-#         tag = item_models.Tag.objects.get(id=tag_id)
-#         if tag in item.tag.all():
-#             item.tag.remove(tag)
-#         item.save()
-#         messages.add_message(self.request, messages.WARNING, f"Тег {tag} успешно удален")
-#         return redirect('app_store:edit_item', item.pk)
+class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
+    """Класс-представление для  добавления тега в карточку товара."""
+    model = item_models.Item
+    context_object_name = 'item'
+    template_name = 'app_store/tag/add_tag.html'
+    form_class = store_forms.AddTagForm
+    MESSAGE = "Новый тег(и) успешно добавлен(ы)"
+
+    def form_valid(self, form):
+        tag_list = form.cleaned_data.get('tag')
+        item = item_models.Item.objects.get(id=self.kwargs['pk'])
+        for t in tag_list:
+            tag = item_models.Tag.objects.get(id=t.id)
+            item.tag.add(tag)
+            item.save()
+        messages.add_message(self.request, messages.INFO, self.MESSAGE)
+        return redirect('app_store:edit_item', item.pk)
+
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.ERROR, f"{form.errors}")
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+class RemoveTagFromItem(generic.DeleteView):
+    """Класс-представление для удаления тега из карточки товара"""
+    model = item_models.Tag
+
+    def get(self, request, *args, **kwargs):
+        item_id = kwargs['item_id']
+        item = item_models.Item.objects.get(id=item_id)
+        tag_id = kwargs['tag_id']
+        tag = item_models.Tag.objects.get(id=tag_id)
+        if tag in item.tag.all():
+            item.tag.remove(tag)
+        item.save()
+        messages.add_message(self.request, messages.WARNING, f"Тег {tag} успешно удален")
+        return redirect('app_store:edit_item', item.pk)
 
 
 # IMAGE VIEWS #
@@ -595,10 +595,10 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
     template_name = 'app_store/delivery/delivery_list.html'
     context_object_name = 'orders'
     STATUS_LIST = order_models.Order().STATUS
+    paginate_by = 4
 
     def get_queryset(self):
-        stores = self.request.user.store.all()
-        queryset = order_models.Order.objects.filter(store__in=stores).distinct().order_by('-created')
+        queryset = order_services.SellerOrderHAndler.get_seller_order_list(owner=self.request.user)
         return queryset
 
     def get(self, request, status=None, **kwargs):
@@ -617,7 +617,11 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
             if self.request.GET.get('search'):
                 search = self.request.GET.get('search')
                 object_list = object_list.filter(id=search)
-
+        object_list = MixinPaginator(
+            request=request,
+            object_list=object_list, 
+            per_page=self.paginate_by
+        ).my_paginator()
         context = {
             'orders': object_list,
             'stores': request.user.store.all(),
@@ -701,7 +705,6 @@ class SentPurchase(generic.UpdateView):
         super().form_invalid(form)
         form.save()
         status = form.cleaned_data['status']
-        print('****************', status)
         order_item_id = self.kwargs['pk']
         order_item = order_services.SellerOrderHAndler.sent_item(order_item_id, status)
         tasks.check_order_status.delay(order_item.order.id)
