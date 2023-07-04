@@ -11,7 +11,7 @@
     <div class="Middle-top">
         <div class="wrap">
             <div class="Middle-header">
-                <h1 class="Middle-title">новый тег </h1>
+                <h1 class="Middle-title">Редактировать тег <b>{{ object.title }}</b></h1>
                  {% block breadcrumbs %}
 
                 <ul class="breadcrumbs Middle-breadcrumbs">
@@ -19,14 +19,14 @@
                         <a href="{% url 'app_settings:tag_list' %}">список тегов </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span>новый тег</span>
+                        <span>редактировать тег</span>
                     </li>
                 </ul>
                 {% endblock %}
             </div>
         </div>
     </div>
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <div class="Section">
         <div class="wrap">
             <div class="form Payment">

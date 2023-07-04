@@ -113,14 +113,7 @@
                                 <div class="row-block ">
                                     <div class="Order-info">
                                         <div class="Order-info Order-infoContent-left">
-                                            <span class="{% if  order.status == 'created' %}secondary_label
-                                                     {% elif order.status == 'paid' %}danger_label
-                                                     {% elif order.status == 'is_preparing' %}warning_label
-                                                     {% elif order.status == 'on_the_way' %}info_label
-                                                     {% elif order.status == 'is_ready' %}success_label
-                                                     {% elif order.status == 'completed' %}primary_label
-                                                     {% elif order.status == 'deactivated' %}danger-text
-                                                     {% endif %}">{{ order.get_status_display|upper }}</span>
+                                     {% include 'app_order/order/status_list.html' %}
                                         </div>
                                     </div>
                                 </div>

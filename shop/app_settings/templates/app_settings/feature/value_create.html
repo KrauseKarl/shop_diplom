@@ -14,7 +14,7 @@
                 <h1 class="Middle-title">Добавить новое значение</h1>
                  <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'app_store:feature_list' pk=category_id %}">список характеристик</a>
+                        <a href="{% url 'app_settings:feature_list' pk=category_id %}">список характеристик</a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>новое значение</span>
@@ -31,8 +31,8 @@
                     <div class="form-group">
                         <form class="form" action="#" method="post">
                             {% csrf_token %}
-                            {% if form.errors.title %}
-                                <div class="form-error">{{ form.errors.title }}
+                            {% if form.errors.value %}
+                                <div class="form-error">{{ form.errors.value }}
                                 </div>
                             {% endif %}
                             <div class="form-group">

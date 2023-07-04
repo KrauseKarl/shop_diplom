@@ -1,4 +1,5 @@
 from django.core.cache import cache
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.timezone import now
 
@@ -55,19 +56,28 @@ class SiteSettings(SingletonModel):
         decimal_places=2,
         max_digits=9,
         default=100,
-        verbose_name='стоимость экспресс доставки'
+        verbose_name='стоимость экспресс доставки',
+        validators=[
+            MinValueValidator(0)
+        ]
     )
     min_free_delivery = models.DecimalField(
         decimal_places=2,
         max_digits=9,
         default=2000,
-        verbose_name='минимальная сумма для бесплатной доставки'
+        verbose_name='минимальная сумма для бесплатной доставки',
+        validators=[
+            MinValueValidator(0)
+        ]
     )
     delivery_fees = models.DecimalField(
         decimal_places=2,
         max_digits=9,
         default=15,
-        verbose_name='стоимость доставки'
+        verbose_name='стоимость доставки',
+        validators=[
+            MinValueValidator(0)
+        ]
     )
     cache_detail_view = models.IntegerField(
         verbose_name='время кэширования страницы товара',

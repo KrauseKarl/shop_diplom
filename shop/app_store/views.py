@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db import transaction
 from django.db.models import Sum, Q
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
@@ -219,8 +219,6 @@ class ItemUpdateView(UserPassesTestMixin, generic.UpdateView):
     template_name = 'app_store/item/edit_item.html'
     form_class = store_forms.UpdateItemForm
     second_form_class = store_forms.UpdateItemImageForm
-    # extra_context = {'colors': item_services.get_colors(item_models.Item.available_items.all()),
-    #                  'image_formset': store_forms.ImageFormSet(queryset=item_models.Image.objects.none())}
 
     def test_func(self):
         user = self.request.user
@@ -246,14 +244,6 @@ class ItemUpdateView(UserPassesTestMixin, generic.UpdateView):
             instance=self.get_object(),
         )
         form.save()
-        # if form.has_changed():
-        #     fields_for_update = []
-        #     for field in form.changed_data:
-        #         if form.data[field] != '' and form.data[field]:
-        #             fields_for_update.append(field)
-        #             instance.field = form.data[field]
-        #             instance.__setattr__(field, form.data[field])
-        # instance.save(update_fields=[*fields_for_update])
 
         for new_value in self.request.POST.getlist('value'):
             if new_value:
@@ -308,96 +298,26 @@ class ItemDeleteView(UserPassesTestMixin, generic.DeleteView):
             raise Http404("Такой товар не существует")
 
 
-# CATEGORY VIEW #
-
-
-# class CategoryListView(SellerOnlyMixin, generic.DetailView, MixinPaginator):
-#     """Класс-представление для отображения списка всех категорий товаров."""
-#     model = item_models.Store
-#     template_name = 'app_store/category/category_list.html'
-#     paginate_by = 5
-#
-#     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-#         """
-#         GET-функция возвращает все категории товаров
-#         или определенную категорию товаров, если передан параметр ['sort_by_letter'],
-#         так же возвращает отфильтрованный(по существующим категориям) список всех букв алфавита
-#         для быстрого поиска категорий по алфавиту.
-#         :param request: HttpRequest
-#         :param kwargs:  ['sort_by_letter'] параметр фильтрации категорий
-#         :return: HttpResponse
-#         """
-#         alphabet_list = sorted(set([category.title[0] for category in item_models.Category.objects.order_by('title')]))
-#         sort_by_letter = request.GET.get('sort_by_letter')
-#         store = self.get_object()
-#         if sort_by_letter:
-#             categories = item_models.Category.objects.filter(title__istartswith=sort_by_letter)
-#         else:
-#             categories = item_models.Category.objects.all()
-#         categories = MixinPaginator(categories, self.request, self.paginate_by).my_paginator()
-#         context = {'object_list': categories, 'alphabet': alphabet_list, 'store': store}
-#         return render(request, self.template_name, context)
-#
-#
-# class CategoryCreateView(SellerOnlyMixin, generic.CreateView):
-#     """Класс-представление для создания категории товаров."""
-#     model = item_models.Category
-#     template_name = 'app_store/category/category_list.html'
-#     form_class = store_forms.CreateCategoryForm
-#
-#     def get(self, request, *args, **kwargs):
-#         super().get(request, *args, **kwargs)
-#         context = {'store': self.kwargs['pk']}
-#         return render(self.request, self.template_name, context)
-#
-#     def form_valid(self, form):
-#         form.save()
-#         category_title = form.cleaned_data.get('title')
-#         messages.add_message(self.request, messages.SUCCESS, f'Категория - "{category_title}" создана')
-#         return redirect('app_store:category_list', self.kwargs['pk'])
-#
-#     def form_invalid(self, form):
-#         form = store_forms.CreateCategoryForm(self.request.POST)
-#         return super(CategoryCreateView, self).form_invalid(form)
-
-
 # TAG VIEWS #
-# class TagListView(SellerOnlyMixin, generic.ListView, MixinPaginator):
-#     """Класс-представление для отображения списка всех тегов товаров."""
-#     model = item_models.Tag
-#     template_name = 'app_store/tag_list.html'
-#     paginate_by = 20
-#
-#     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-#
-#         alphabet_list = sorted(set([tag.title[0] for tag in item_models.Tag.objects.order_by('title')]))
-#         sort_by_letter = request.GET.get('sort_by_letter')
-#         if sort_by_letter:
-#             tag_set = item_models.Tag.objects.filter(title__istartswith=sort_by_letter)
-#         else:
-#             tag_set = item_models.Tag.objects.all()
-#         object_list = MixinPaginator(tag_set, self.request, self.paginate_by).my_paginator()
-#         context = {'object_list': object_list, 'alphabet': alphabet_list}
-#         return render(request, self.template_name, context)
-#
-#
-# class CreateTagView(SellerOnlyMixin, generic.CreateView):
-#     """Класс-представление для создания категории товаров."""
-#     model = item_models.Category
-#     template_name = 'app_store/tag_list.html'
-#     form_class = store_forms.CreateTagForm
-#
-#     def form_valid(self, form):
-#         form.save()
-#         tag_title = form.cleaned_data.get('title').upper()
-#         messages.add_message(self.request, messages.SUCCESS, f'Тег - "{tag_title}" создан')
-#         return redirect('app_store:tag_list')
-#
-#     def form_invalid(self, form):
-#         form = store_forms.CreateTagForm(self.request.POST)
-#         return super(CreateTagView, self).form_invalid(form)
-#
-#
+class TagListView(SellerOnlyMixin, generic.ListView, MixinPaginator):
+    """Класс-представление для отображения списка всех тегов товаров."""
+    model = item_models.Tag
+    template_name = 'app_store/tag/tag_list.html'
+    paginate_by = 20
+
+    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+
+        alphabet_list = sorted(set([tag.title[0] for tag in item_models.Tag.objects.order_by('title')]))
+        sort_by_letter = request.GET.get('sort_by_letter')
+        if sort_by_letter:
+            tag_set = item_models.Tag.objects.filter(title__istartswith=sort_by_letter)
+        else:
+            tag_set = item_models.Tag.objects.all()
+        object_list = MixinPaginator(tag_set, self.request, self.paginate_by).my_paginator()
+        context = {'object_list': object_list, 'alphabet': alphabet_list}
+        return render(request, self.template_name, context)
+
+
 class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
     """Класс-представление для  добавления тега в карточку товара."""
     model = item_models.Item
@@ -486,106 +406,6 @@ class MakeImageAsMain(UserPassesTestMixin, generic.UpdateView):
         item.save()
         messages.add_message(self.request, messages.WARNING, self.MESSAGE)
         return redirect('app_store:edit_item', item.pk)
-
-
-# FEATURE VIEWS #
-# class FeatureListView(SellerOnlyMixin, generic.DetailView):
-#     model = item_models.Category
-#     template_name = 'app_store/features/feature_list.html'
-#
-#     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-#         super(FeatureListView, self).get(request, *args, **kwargs)
-#         category = self.get_object()
-#         features = item_models.Feature.objects.prefetch_related('categories').filter(categories=category)
-#         values = item_models.FeatureValue.objects.select_related('feature').filter(feature__in=features)
-#         context = {'features': features, 'category': category, 'values': values}
-#         return render(request, self.template_name, context)
-#
-#
-# class CreateFeatureView(SellerOnlyMixin, generic.CreateView):
-#     """Класс-представление для создания характеристики  товаров."""
-#     model = item_models.Feature
-#     template_name = 'app_store/features/feature_create.html'
-#     form_class = store_forms.CreateFeatureForm
-#
-#     def get(self, request, *args, **kwargs):
-#         super().get(request, *args, **kwargs)
-#         context = {'category': self.kwargs['pk']}
-#         return render(self.request, self.template_name, context)
-#
-#     def form_valid(self, form):
-#         feature = form.save()
-#         category_id = self.kwargs.get('pk')
-#         category = item_models.Category.objects.get(id=category_id)
-#         feature.categories.add(category.id)
-#         messages.add_message(self.request, messages.SUCCESS, f'Характеристика - "{feature}" добавлено')
-#         return redirect('app_store:feature_list', category.slug)
-#
-#     def form_invalid(self, form):
-#         form = store_forms.CreateFeatureForm(self.request.POST)
-#         messages.add_message(self.request, messages.ERROR, f'Произошла ошибка - {form.errors}')
-#         category_slug = self.kwargs.get('slug')
-#         category = item_models.Category.objects.get(slug=category_slug)
-#         return redirect('app_store:feature_create', category.slug)
-#
-#
-# class CreateFeatureValueView(SellerOnlyMixin, generic.CreateView):
-#     """Класс-представление для создания значения характеристики  товаров."""
-#     model = item_models.FeatureValue
-#     template_name = 'app_store/features/value_create.html'
-#     form_class = store_forms.CreateValueForm
-#
-#     def get(self, request, *args, **kwargs):
-#         super().get(request, *args, **kwargs)
-#         category_id = item_models.Category.objects.get(feature=self.kwargs['pk']).id
-#         context = {'category_id': category_id}
-#         return render(self.request, self.template_name, context)
-#
-#     def form_valid(self, form):
-#         value = form.save(commit=False)
-#         feature_id = self.kwargs.get('feature_pk')
-#         feature = item_models.Feature.objects.get(id=feature_id)
-#         value.feature = feature
-#         value.save()
-#         category = item_models.Category.objects.get(feature=feature)
-#         messages.add_message(self.request, messages.SUCCESS, f'Значение - "{value}" добавлено')
-#         return redirect('app_store:feature_list', category.slug)
-#
-#     def form_invalid(self, form):
-#         super(CreateFeatureValueView, self).form_invalid(form)
-#         form = store_forms.CreateValueForm(self.request.POST)
-#         feature_id = self.kwargs.get('feature_pk')
-#         feature = item_models.Feature.objects.get(id=feature_id)
-#         category = item_models.Category.objects.get(feature=feature)
-#         messages.add_message(self.request, messages.ERROR, f'{form.errors}')
-#         return redirect('app_store:feature_list', category.slug)
-#
-#
-# class RemoveFeatureValueView(generic.DeleteView):
-#     """Класс-представление для удаления изображения из карточки товара"""
-#     model = item_models.Feature
-#
-#     # def test_func(self):UserPassesTestMixin
-#     #     user = self.request.user
-#     #     feature = self.get_object()
-#     #     owner = feature.item_images.first().store.owner
-#     #     return True if user == owner else False
-#
-#     def get(self, request, *args, **kwargs):
-#
-#         feature = item_models.Feature.objects.get(slug=self.kwargs.get('slug'))
-#         values = feature.values.all()
-#
-#         # todo IN THE SERVICE start
-#         item = item_models.Item.objects.get(id=self.kwargs.get('pk'))
-#         for value in values:
-#             if value in item.feature_value.all():
-#                 item.feature_value.remove(value)
-#                 item.save()
-#         # IN THE SERVICE end (return ITEM)
-#
-#         messages.add_message(self.request, messages.INFO, f"Характеристика удалена")
-#         return redirect('app_store:edit_item', item.pk)
 
 
 # DELIVERY VIEWS #
@@ -737,47 +557,6 @@ class CommentDetail(generic.DetailView):
     context_object_name = 'comment'
 
 
-# class CommentDelete(generic.DeleteView):
-#     """Класс-представление для удаления комментария."""
-#     model = item_models.Comment
-#     template_name = 'app_store/comment/comment_delete.html'
-#
-#     def form_valid(self, form):
-#         self.object.archived = True
-#         self.object.save()
-#         return HttpResponseRedirect(self.object.get_absolute_url())
-#
-#
-# class CommentModerate(generic.UpdateView):
-#     """Класс-представление для изменения статуса комментария(прохождение модерации)."""
-#     model = item_models.Comment
-#     template_name = 'app_store/comment/comment_update.html'
-#     fields = ['is_published']
-
-
-class CommentList(generic.ListView):
-    model = item_models.Comment
-    template_name = 'app_store/comment/comment_list.html'
-
-    def get(self, request, *args, **kwargs):
-        comment_id = kwargs['pk']
-        action = kwargs['slug']
-        if action == 'approve':
-            comment_services.CommentHandler.set_comment_approved(comment_id)
-            messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
-        elif action == 'delete':
-            comment_services.CommentHandler.delete_comment_by_seller(comment_id)
-            messages.add_message(self.request, messages.SUCCESS, f"Комментарий опубликован")
-        else:
-            comment_services.CommentHandler.set_comment_reject(comment_id)
-            messages.add_message(self.request, messages.WARNING, f"Комментарий снят с публикации")
-
-        query_string = request.META.get('HTTP_REFERER').split('?')[1]
-        url = redirect('app_store:comment_list').url
-        path = '?'.join([url, query_string])
-        return redirect(path)
-
-
 # EXPORT & IMPORT DATA-STORE FUNCTION #
 def export_data_to_csv(*args, **kwargs):
     """Функция для экспорта данных из магазина продавца в формате CSV."""
@@ -813,7 +592,7 @@ def import_data_from_cvs(request, **kwargs):
             upload_file = form.cleaned_data.get('file')
             file_name = upload_file.name.split('.')[0]
             handle_uploaded_file(upload_file, file_name)
-            with open(f'fixtures/{file_name}.htm', 'r', encoding='utf-8') as file:
+            with open(f'fixtures/{file_name}.txt', 'r', encoding='utf-8') as file:
                 reader = csv.reader(file)
                 for row in reader:
                     _, created = item_models.Item.objects.update_or_create(
@@ -829,6 +608,6 @@ def import_data_from_cvs(request, **kwargs):
 
 def handle_uploaded_file(f, name):
     """Функция создания файла с фикстурами."""
-    with open(f'fixtures/{name}.htm', 'wb+') as destination:
+    with open(f'fixtures/{name}.txt', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)

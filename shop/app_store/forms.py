@@ -200,9 +200,10 @@ class CreateValueForm(forms.ModelForm):
         """Функция валидирует сущетвование значене характеристики в базе данных"""
 
         value = self.cleaned_data.get('value').lower()
-        if FeatureValue.objects.get(title=value).exist():
+        if FeatureValue.objects.filter(value=value).first():
             raise ValidationError('Такое значение  уже существует')
-        return value
+        else:
+            return value
 
 
 class ImportDataFromCVS(forms.Form):

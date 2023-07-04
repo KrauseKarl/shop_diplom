@@ -30,13 +30,11 @@
             </div>
         </div>
     </div>
-
-
+    {% include 'messages/message.html' %}
     <div class="Section">
         <div class="wrap">
             <div class="Section-content">
-                <div class="Orders">
-                </div>
+                <div class="Orders"></div>
                 <div class="Order">
                     <div class="Order-infoBlock">
                         <div class="Order-personal">
@@ -81,8 +79,11 @@
                                     <div class="Order-info Order-info_delivery">
                                         <div class="Order-infoType">Тип доставки:
                                         </div>
-                                        <div class="Order-infoContent {% if order.delivery == 'express' %} warning-text {% endif %}">
-                                            {{ order.get_delivery_display }}
+                                        <div class="Order-infoContent
+                                                    {% if order.delivery == 'express' %}
+                                                    warning-text
+                                                    {% endif %}">
+                                                    {{ order.get_delivery_display }}
                                         </div>
                                     </div>
                                     <div class="Order-info">
@@ -113,8 +114,6 @@
                                         </div>
                                     </div>
                                     {% endif %}
-
-
                                     {% if order.error %}
                                     <div class="Order-info Order-info_error">
                                         <div class="Order-infoType">Оплата не прошла:
@@ -129,7 +128,6 @@
 
                         <div class="Cart Cart_order">
                             {% for order_item in items %}
-
                             <div class="Cart-product">
                                 <div class="Cart-block Cart-block_row">
                                     <div class="Cart-block Cart-block_pict">
@@ -160,11 +158,11 @@
                                     </div>
                                     <div class="Cart-block Cart-block_price">
                                         {% if order.status == 'created' %}
-                                     <a class="btn btn_square btn_dark btn_narrow btn_sm" style="margin-left:10px"
-                                        href="{% url 'app_store:order_item_edit' order_item.id %}">
-                                         редактировать
-                                     </a>
-                                     {% endif %}
+                                        <a class="btn btn_square btn_dark btn_narrow btn_sm" style="margin-left:10px"
+                                           href="{% url 'app_store:order_item_edit' order_item.id %}">
+                                            редактировать
+                                        </a>
+                                        {% endif %}
                                         {% if order.status == 'paid' %}
                                         <form method="post"
                                               action="{% url 'app_store:sent_purchase' order_id=order.pk %}">
@@ -178,41 +176,39 @@
                                     </div>
                                     <div class="Cart-block Cart-block_price">
                                         {% if order.status == 'created' %}
-                                     <a class="btn btn_square btn_danger btn_narrow btn_sm" style="margin-left:10px"
-                                        href="#deliveryDeleteModal_{{ order_item.id }}">
-                                         x
-                                     </a>
-                                     {% endif %}
-                                          <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
-                                                <div id="deliveryDeleteModal_{{ order_item.id }}" class="modal-my">
-                                                    <div class="modal-dialog-my">
-                                                        <div class="modal-content-my">
-                                                            <div class="modal-header-my">
-                                                                <a href="#close" title="Close" class="close-my">×</a>
+                                        <a class="btn btn_square btn_danger btn_narrow btn_sm" style="margin-left:10px"
+                                           href="#deliveryDeleteModal_{{ order_item.id }}">
+                                            x
+                                        </a>
+                                        {% endif %}
+                                        <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
+                                        <div id="deliveryDeleteModal_{{ order_item.id }}" class="modal-my">
+                                            <div class="modal-dialog-my">
+                                                <div class="modal-content-my">
+                                                    <div class="modal-header-my">
+                                                        <a href="#close" title="Close" class="close-my">×</a>
+                                                    </div>
+                                                    <div class="modal-body-my">
+                                                        <div class="form Payment">
+                                                            <div class="form-group">
+                                                                <h3>Удалить </h3>{{ order_item }}
                                                             </div>
-                                                            <div class="modal-body-my">
-                                                                <div class="form Payment">
-                                                                    <div class="form-group">
-                                                                        <h3>Удалить </h3>{{ order_item }}
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <a href="{% url 'app_store:delivery_edit' order_item.id %}"
-                                                                           class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
-                                                                        <a href="." title="Close"
-                                                                           class="btn btn_square btn_dark btn_narrow">отмена</a>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer-my"></div>
+                                                            <div class="form-group">
+                                                                <a href="{% url 'app_store:delivery_edit' order_item.id %}"
+                                                                   class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                                <a href="." title="Close"
+                                                                   class="btn btn_square btn_dark btn_narrow">отмена</a>
                                                             </div>
                                                         </div>
+                                                        <div class="modal-footer-my"></div>
                                                     </div>
                                                 </div>
-                                                <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
-
+                                            </div>
+                                        </div>
+                                        <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
                                     </div>
                                 </div>
                             </div>
-
                             {% endfor %}
                         </div>
                          <div class="Cart-total">
@@ -222,7 +218,6 @@
                                  </strong>
                              </div>
                          </div>
-
                         </div>
                     </div>
                 </div>

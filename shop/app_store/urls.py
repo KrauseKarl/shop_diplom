@@ -27,7 +27,6 @@ urlpatterns = [
     path('comment/list/', views.CommentListView.as_view(), name='comment_list'),
     path('comment/<int:pk>/', views.CommentDetail.as_view(), name='comment_detail'),
     # path('comment/<int:pk>/update/', CommentModerate.as_view(), name='comment_update'),
-    # path('comment/<int:pk>/delete/', CommentDelete.as_view(), name='comment_delete'),
 
     # path('category/store/<int:pk>/list/', CategoryListView.as_view(), name='category_list'),
     # path('category/detail/<slug:slug>/feature/list/', FeatureListView.as_view(), name='feature_list'),
@@ -38,10 +37,10 @@ urlpatterns = [
     # path('feature/value/<int:pk>/create/', CreateFeatureValueView.as_view(), name='feature_value_create'),
     # path('feature/<slug:slug>/item/<int:pk>/remove/', RemoveFeatureValueView.as_view(), name='value_remove'),
     #
-    # path('tag/list/', views.TagListView.as_view(), name='tag_list'),
-    # path('tag/create/', views.CreateTagView.as_view(), name='create_tag'),
+    path('tag/list/', views.TagListView.as_view(), name='tag_list'),
     path('tag/add/<int:pk>/', views.AddTagToItem.as_view(), name='add_tag'),
     path('tag/delete/<int:item_id>/tag/<int:tag_id>/', views.RemoveTagFromItem.as_view(), name='delete_tag'),
+    # path('tag/create/', views.CreateTagView.as_view(), name='create_tag'),
 
     path('image/delete/<int:pk>/image/', views.DeleteImage.as_view(), name='delete_image'),
     path('image/update/<int:pk>/image/', views.MakeImageAsMain.as_view(), name='make_image_main'),

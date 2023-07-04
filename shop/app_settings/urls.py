@@ -18,6 +18,9 @@ urlpatterns = [
     path('product/list/', views.ProductListView.as_view(), name='product_list'),
 
     path('comments/list/', views.CommentListView.as_view(), name='comments_list'),
+    path('comment/<int:pk>/detail/', views.CommentDetail.as_view(), name='comment_detail'),
+    path('comment/<int:pk>/update/', views.CommentModerate.as_view(), name='comment_update'),
+    path('comment/<int:pk>/delete/', views.CommentDelete.as_view(), name='comment_delete'),
 
     path('category/list/', views.CategoryListView.as_view(), name='category_list'),
     path('category/create/', views.CategoryCreateView.as_view(), name='create_category'),
@@ -27,7 +30,7 @@ urlpatterns = [
     path('tag/list/', views.TagListView.as_view(), name='tag_list'),
     path('tag/create/', views.TagCreateView.as_view(), name='tag_create'),
     path('tag/<int:pk>/edit/', views.TagUpdateView.as_view(), name='tag_edit'),
-
+    path('tag/<int:pk>/delete/', views.TagDeleteView.as_view(), name='tag_delete'),
 
     path('feature/list/<int:pk>/', views.FeatureListView.as_view(), name='feature_list'),
     path('feature/create/<int:pk>/', views.FeatureCreateView.as_view(), name='feature_create'),

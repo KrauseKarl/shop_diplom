@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-     {% include 'message.html' %}
+     {% include 'messages/message.html' %}
     <div class="Section">
       <div class="wrap">
         <div class="Section-content">
@@ -69,7 +69,7 @@
                       <div class="Order-info">
                           <div class="Order-infoType">
                               {% if not comment.is_published  and not comment.archived %}
-                              <a href="{% url 'app_store:comment_update' comment.pk %}"
+                              <a href="{% url 'app_settings:comment_update' comment.pk %}"
                                  class="btn  {% if comment.is_published %}btn_warning{% else %} btn_success{% endif %} btn_square btn_sm">
                                   опубликовать
                               </a>
@@ -77,7 +77,7 @@
                           </div>
                           <div class="Order-infoContent secondary-text">
                               {% if not comment.archived %}
-                              <a href="{% url 'app_store:comment_delete' comment.pk %}"
+                              <a href="{% url 'app_settings:comment_delete' comment.pk %}"
                                  class="btn btn_danger btn_square btn_sm">удалить в архив
                               </a>
                               {% endif %}
@@ -91,13 +91,11 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
 

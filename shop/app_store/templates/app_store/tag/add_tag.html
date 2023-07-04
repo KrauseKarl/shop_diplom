@@ -58,12 +58,8 @@
 
                     <div class="Order-footer">
                         <button type="submit" form="add_tag_form"
-                                class="btn btn_success btn_square btn_sm">Добавить тег
+                                class="btn btn_success btn_square btn_sm">Добавить тег и сохранить
                         </button>
-                        <a href="{% url 'app_store:tag_list' %}"
-                           class="btn btn_info btn_square btn_sm"
-                           style="margin-top:10px;" type="button">создать тег
-                        </a>
                     </div>
 
             </div>
@@ -98,7 +94,7 @@
                     </a>
                 </div>
                 <div class="modal-body-my">
-                    <form method="post" action="{% url 'app_store:create_tag' %}" id="tagCreateForm" class="form Payment">
+                    <form method="post" action="#" id="tagCreateForm" class="form Payment">
                         {% csrf_token %}
                         <div class="form-group">
                             <input class="form-input" id="new_tag_title" name="title" type="text" placeholder="название нового тега"/>

@@ -16,7 +16,7 @@
                 </h1>
                 <ul class="breadcrumbs Middle-breadcrumbs">
                    <li class="breadcrumbs-item">
-                        <a href="{% url 'main_page' %}">главная страница
+                        <a href="{% url 'main' %}">главная страница
                         </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
@@ -27,7 +27,7 @@
             </div>
         </div>
     </div>
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <div class="Section Section_column Section_columnLeft">
         <div class="wrap">
             <div class="Section-column">
@@ -92,7 +92,7 @@
                                         {{ form.express_delivery_price.label }}
                                     </label>
                                     <input class="form-input" id="express_delivery_price" name="express_delivery_price"
-                                           value="{{ site_settings.express_delivery_price }}" type="number" min="0"/>
+                                           value="{{ site_settings.express_delivery_price }}" type="text"/>
                                        {% if form.errors.express_delivery_price %}
                                     <div class="form-error">{{ form.errors.express_delivery_price }}
                                     </div>
@@ -102,7 +102,7 @@
                                     <label class="form-label" for="min_free_delivery"> {{ form.min_free_delivery.label }}
                                     </label>
                                     <input class="form-input" id="min_free_delivery" name="min_free_delivery"
-                                           value="{{ site_settings.min_free_delivery }}" type="number" min="0"/>
+                                           value="{{ site_settings.min_free_delivery }}" type="text"/>
                                        {% if form.errors.min_free_delivery %}
                                     <div class="form-error">{{ form.errors.min_free_delivery }}
                                     </div>
@@ -112,7 +112,7 @@
                                     <label class="form-label" for="delivery_fees"> {{ form.delivery_fees.label }}
                                     </label>
                                     <input class="form-input" id="delivery_fees" name="delivery_fees"
-                                           value="{{ site_settings.delivery_fees }}" type="number" min="0"/>
+                                           value="{{ site_settings.delivery_fees }}" type="text"/>
                                     {% if form.errors.delivery_fees %}
                                     <div class="form-error">{{ form.errors.delivery_fees }}
                                     </div>

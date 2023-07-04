@@ -103,7 +103,6 @@ class ItemHandler:
         queryset = queryset.annotate(quantity=F('cart_item__order_item__quantity')).order_by('-quantity')
         return queryset
 
-
     @staticmethod
     def get_new_item_list() -> QuerySet:
         """Функция возвращает список экземпляров товаров новинки."""
@@ -415,6 +414,7 @@ class ItemHandler:
 
     @staticmethod
     def item_detail_view(request, item):
+        """ Функция возвращает зк"""
         user = request.user
         form = item_forms.CommentForm
         # добавляет товар в список просмотренных товаров пользователя
@@ -444,6 +444,7 @@ class ItemHandler:
 
     @staticmethod
     def filter_list_view(request, queryset, paginate_by):
+        """ Функция возвращает отфильтрованный queryset  товаров по передаееым параметров. """
         object_list = queryset
         query_get_param_dict = ItemHandler.make_get_param_dict(request)
         object_list = ItemHandler.smart_filter(request, object_list, query_get_param_dict)
@@ -470,6 +471,7 @@ class ItemHandler:
 
     @staticmethod
     def store_list_view(request, store, paginate_by):
+        """ Функция возвращает все товары одного магазина. """
         object_list = store.items.all()
         related_category_list = CategoryHandler.get_related_category_list(object_list)
         sort_message = f'товары магазина {store}'
@@ -488,6 +490,20 @@ class ItemHandler:
         }
         return context
 
+    @staticmethod
+    def get_alphabet_list():
+        """ Функция возвращает отфильтрованный(по существующим категориям) список всех букв алфавита """
+        return sorted(set([category.title[0] for category in item_models.Category.all_objects.order_by('title')]))
+
+    @staticmethod
+    def create_item():
+        """ Функция по созданию экземпляра класса Item. """
+        pass
+
+    @staticmethod
+    def upsate_item():
+        """ Функция по редактированию экземпляра класса Item. """
+        pass
 
 class TagHandler:
     @staticmethod

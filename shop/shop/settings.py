@@ -1,7 +1,6 @@
 import os
 import logging.config
 from pathlib import Path
-from os import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -9,8 +8,7 @@ SECRET_KEY = os.getenv(
     "SECRET_KEY",
     "django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d"
 )
-
-DEBUG = True #os.getenv("DEBUG", "0") == "1"
+DEBUG = True  # os.getenv("DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 if os.environ.get("ALLOWED_HOSTS") is not None:
@@ -165,10 +163,9 @@ USE_I18N = True
 USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
-
 STATIC_URL = '/assets/'
-#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'), ]
-STATIC_ROOT = BASE_DIR / "assets"
+# STATIC_ROOT = BASE_DIR / "assets"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'), ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media/"
@@ -202,18 +199,21 @@ logging.config.dictConfig({
     },
 })
 
-if DEBUG:
-    MIDDLEWARE += (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
-INSTALLED_APPS += (
-    'debug_toolbar',
-)
-INTERNAL_IPS = ('127.0.0.1',)
+# if DEBUG:
+#     MIDDLEWARE += (
+#         'debug_toolbar.middleware.DebugToolbarMiddleware',
+#     )
+#
+#     INSTALLED_APPS += (
+#         'debug_toolbar',
+#     )
+#
+#     INTERNAL_IPS = ('127.0.0.1',)
+#
+#     DEBUG_TOOLBAR_CONFIG = {
+#         'INTERCEPT_REDIRECTS': False,
+#     }
 
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
-}
 USE_CACHE = True
 
 # Session settings
@@ -229,12 +229,12 @@ FAVORITE_SESSION_ID = 'favorites'
 COMPARE_SESSION_ID = 'compares'
 
 # Celery settings
-if DEBUG:
-    CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-    CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
-else:
-    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
-    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
+
+# CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+# CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
 
 
 CELERY_TIMEZONE = 'Europe/Moscow'

@@ -1,4 +1,5 @@
 from django.db.models import QuerySet, Q
+from django.http import Http404
 
 from app_item.forms import CommentForm
 from app_item import models as item_models
@@ -46,14 +47,19 @@ class CommentHandler:
     @staticmethod
     def get_comment(comment_id):
         """Функция для получения одного комментария."""
-        return item_models.Comment.objects.select_related('item', 'user').filter(id=comment_id)[0]
+        comment = item_models.Comment.objects.\
+            select_related('item', 'user').\
+            filter(id=comment_id).first()
+        if not comment:
+            raise Http404('Комментарий не найден')
+        return comment
 
     @staticmethod
     def set_comment_approved(comment_id):
         """Функция для подтверждения комментария."""
         comment = CommentHandler.get_comment(comment_id)
         comment.is_published = True
-        comment.save()
+        comment.save(update_fields=['is_published', ])
         return comment
 
     @staticmethod
@@ -61,13 +67,8 @@ class CommentHandler:
         """Функция для отклонения  комментария."""
         comment = CommentHandler.get_comment(comment_id)
         comment.is_published = False
-        comment.save()
+        comment.save(update_fields=['is_published', ])
         return comment
-
-    @staticmethod
-    def delete_comment_by_seller(comment_id):
-        comment = CommentHandler.get_comment(comment_id)
-        comment.delete()
 
     @staticmethod
     def get_comment_list_by_user(request) -> QuerySet[item_models.Comment]:
@@ -99,18 +100,16 @@ class CommentHandler:
         return new_comment
 
     @staticmethod
-    def delete_comment(user, comment_id, item_id=None):
+    def delete_comment(user, comment_id) -> dict:
         """
         Функция для удаления комментария.
         Проверят право на удаления комментария.
         :param user: экземпляр пользователя.
-        :param item_id: id-товара.
         :param comment_id: id-комментария.
         :return: удаляет комментарий.
         """
         comment = CommentHandler.get_comment(comment_id)
         permission = CommentHandler.get_permission(user, comment)
         if permission:
-            comment.delete()
-            return True
+            return comment.delete()
         return comment

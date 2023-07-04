@@ -19,6 +19,7 @@ from app_store import forms as store_forms
 # services
 from app_item.services import comment_services
 from app_order.services import order_services
+from app_item.services import item_services
 # other
 from utils.my_utils import AdminOnlyMixin, MixinPaginator
 
@@ -196,13 +197,17 @@ class CategoryListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
         :param kwargs:  ['sort_by_letter'] параметр фильтрации категорий
         :return: HttpResponse
         """
-        alphabet_list = sorted(set([category.title[0] for category in item_models.Category.objects.order_by('title')]))
+        alphabet_list = item_services.ItemHandler.get_alphabet_list()
         sort_by_letter = request.GET.get('sort_by_letter')
         if sort_by_letter:
-            categories = item_models.Category.objects.filter(title__istartswith=sort_by_letter)
+            categories = item_models.Category.all_objects.filter(title__istartswith=sort_by_letter)
         else:
-            categories = item_models.Category.objects.all()
-        categories = MixinPaginator(categories, self.request, self.paginate_by).my_paginator()
+            categories = item_models.Category.all_objects.all()
+        categories = MixinPaginator(
+            categories,
+            self.request,
+            self.paginate_by
+        ).my_paginator()
         context = {
             'object_list': categories,
             'alphabet': alphabet_list
@@ -220,7 +225,7 @@ class CategoryCreateView(AdminOnlyMixin, generic.CreateView):
         form.save()
         category_title = form.cleaned_data.get('title')
         messages.add_message(self.request, messages.SUCCESS, f'Категория - "{category_title}" создана')
-        return redirect('app_store:category_list')
+        return redirect('app_settings:category_list')
 
     def form_invalid(self, form):
         form = store_forms.CreateCategoryForm(self.request.POST)
@@ -269,7 +274,7 @@ class TagListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
     model = item_models.Tag
     template_name = 'app_settings/tag/tag_list.html'
     paginate_by = 5
-    queryset = item_models.Tag.objects.all()
+    queryset = item_models.Tag.all_objects.all()
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         object_list = self.get_queryset()
@@ -283,14 +288,14 @@ class TagListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
 
 
 class TagCreateView(AdminOnlyMixin, generic.CreateView):
-    """Класс-представление для создания категории товаров."""
+    """Класс-представление для создания тега."""
     model = item_models.Category
     template_name = 'app_settings/tag/tag_edit.html'
     form_class = store_forms.CreateTagForm
 
     def form_valid(self, form):
         form.save()
-        tag_title = form.cleaned_data.get('title').upper()
+        tag_title = form.cleaned_data.get('title').lower()
         messages.add_message(self.request, messages.SUCCESS, f'Тег - "{tag_title}" создан')
         return redirect('app_settings:tag_list')
 
@@ -300,7 +305,7 @@ class TagCreateView(AdminOnlyMixin, generic.CreateView):
 
 
 class TagUpdateView(AdminOnlyMixin, generic.UpdateView):
-    model = item_models.Category
+    model = item_models.Tag
     template_name = 'app_settings/tag/tag_edit.html'
     form_class = store_forms.CreateTagForm
 
@@ -314,6 +319,25 @@ class TagUpdateView(AdminOnlyMixin, generic.UpdateView):
         form = store_forms.CreateTagForm(self.request.POST)
         return super(TagUpdateView, self).form_invalid(form)
 
+class TagDeleteView(AdminOnlyMixin, generic.UpdateView):
+    """Класс-представление для удаления тега."""
+    model = item_models.Tag
+
+    def get(self, request, *args, **kwargs):
+        tag_id = kwargs['pk']
+        try:
+            tag = item_models.Tag.all_objects.get(id=tag_id)
+            if tag.is_active:
+                tag.is_active = False
+                message = f"Тег - '{tag}' не активен"
+            else:
+                tag.is_active = True
+                message = f"Характеристика - '{tag}' снова активен"
+            tag.save()
+            messages.add_message(self.request, messages.WARNING, message)
+            return redirect('app_settings:tag_list')
+        except ObjectDoesNotExist:
+            raise Http404("Такой характеристики не существует")
 
 class FeatureListView(AdminOnlyMixin, generic.DetailView):
     model = item_models.Category
@@ -447,7 +471,7 @@ class ValueDeleteView(AdminOnlyMixin, generic.UpdateView):
             raise Http404("Такой характеристики не существует")
 
 
-class CommentListView(generic.ListView, MixinPaginator):
+class CommentListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
     """Класс-представление для отображения списка всех заказов продавца."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_list.html'
@@ -455,14 +479,14 @@ class CommentListView(generic.ListView, MixinPaginator):
     paginate_by = 5
 
 
-class CommentDetail(generic.DetailView):
+class CommentDetail(AdminOnlyMixin, generic.DetailView):
     """Класс-представление для отображения одного комментария."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_detail.html'
     context_object_name = 'comment'
 
 
-class CommentDelete(generic.DeleteView):
+class CommentDelete(AdminOnlyMixin, generic.DeleteView):
     """Класс-представление для удаления комментария."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_delete.html'
@@ -473,7 +497,7 @@ class CommentDelete(generic.DeleteView):
         return HttpResponseRedirect(self.object.get_absolute_url())
 
 
-class CommentModerate(generic.UpdateView):
+class CommentModerate(AdminOnlyMixin, generic.UpdateView):
     """Класс-представление для изменения статуса комментария(прохождение модерации)."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_update.html'
@@ -512,6 +536,7 @@ class OrderDetailView(AdminOnlyMixin, generic.DetailView):
     model = order_models.Order
     template_name = 'app_settings/order/order_detail.html'
     context_object_name = 'order'
+    STATUS_LIST_ORDER = order_models.Order().STATUS
 
     def get(self, request, *args, category=None, **kwargs):
         super().get(request, *args, **kwargs)
@@ -519,6 +544,7 @@ class OrderDetailView(AdminOnlyMixin, generic.DetailView):
         order = self.get_object()
         context['items'] = order.order_items.all()
         context['total'] = context['items'].aggregate(total_cost=Sum('total')).get('total_cost')
+        context['status_list'] = self.STATUS_LIST_ORDER
         return self.render_to_response(context)
 
 

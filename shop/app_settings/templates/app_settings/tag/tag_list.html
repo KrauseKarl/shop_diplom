@@ -31,7 +31,7 @@
     </div>
 
     <!--    MESSAGE STRING  -->
-    {% include 'message.html' %}
+    {% include 'messages/message.html' %}
     <!--    MESSAGE STRING  -->
 
     <div class="Section">
@@ -76,26 +76,34 @@
                             </span>
                             {% endif %}
                         </div>
-                        <div class="Cart-block Cart-block_price">
-                            {% if not object.is_active %}
-                            <div class="Cart-price Cart-title-not_available">в архиве</div>
-                            {% endif %}
-                        </div>
                     </div>
                     <div class="Cart-block Cart-block_row" style="margin:0 20px">
+
+                        <!--  EDIT TAG -->
                         <div class="Cart-block Cart-block_seller">
-                            <a class="Cart-delete" href="#">
+                            {% if  not object.is_active %}
+                            <div class="danger-text">в архиве</div>
+                            {% else %}
+                             <a class="Cart-delete" href="{% url 'app_settings:tag_edit' pk=object.pk %}">
                                 <img src="/assets/img/icons/edit.png" width="32">
                             </a>
+                            {% endif %}
                         </div>
+                        <!-- EDIT TAG -->
 
-                        <!--   REMOVE ITEM FROM CART   -->
+                        <!--   REMOVE TAG    -->
                         <div class="Cart-block Cart-block_delete">
-                            <a class="Cart-delete" href="#">
+                             {% if object.is_active %}
+                            <a class="Cart-delete" href="{% url 'app_settings:tag_delete'  pk=object.pk %}">
                                 <img src="/assets/img/icons/card/delete.svg" alt="delete.svg"/>
                             </a>
+                            {% else %}
+                            <a class="Cart-delete" href="{% url 'app_settings:tag_delete'  pk=object.pk %}">
+                                <img src="/assets/img/icons/update.svg" alt="delete.svg"/>
+                            </a>
+                            {% endif%}
                         </div>
-                        <!--   REMOVE ITEM FROM CART   -->
+                        <!--   REMOVE TAG   -->
                     </div>
                 </div>
                 {% empty %}
@@ -106,7 +114,7 @@
 
             </div>
             <!--       PAGINATION         -->
-            <div>{% include "pagination.html" %}</div>
+            <div>{% include "pagination/pagination.html" %}</div>
             <!--       PAGINATION         -->
         </div>
     </div>

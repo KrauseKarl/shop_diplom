@@ -198,6 +198,8 @@ class Item(models.Model):
         if not self.slug:
             self.slug = slugify_for_cyrillic_text(self.title)
         self.updated = datetime.datetime.now()
+        if int(self.stock) <= 19:
+            self.limited_edition = True
         return super().save(*args, **kwargs)
 
     @property
@@ -282,6 +284,7 @@ class Category(models.Model):
     )
 
     objects = app_item_managers.CategoryWithItemsManager()
+    all_objects = models.Manager()
 
     class Meta:
         db_table = 'app_categories'
@@ -335,7 +338,8 @@ class Tag(models.Model):
         verbose_name='активный'
     )
 
-    objects = models.Manager()
+    objects = app_item_managers.AvailableTagManager()
+    all_objects = models.Manager()
 
     def __str__(self):
         return self.title

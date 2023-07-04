@@ -41,7 +41,7 @@ class CreateCategoryForm(forms.ModelForm):
     def clean_category(self):
         """Функция валидирует сущетвование категории в базе данных"""
         category = self.cleaned_data.get('category').lower()
-        if item_modals.Category.objects.get(title=category).exist():
+        if item_modals.Category.objects.filter(title=category).first().exist():
             raise ValidationError('Такая категория уже существует')
         return category
 
@@ -68,10 +68,9 @@ class CreateTagForm(forms.ModelForm):
     def clean_tag(self):
         """Функция валидирует сущетвование тег в базе данных"""
         tag = self.cleaned_data.get('category').lower()
-        if item_modals.Tag.objects.get(title=tag).exist():
+        if item_modals.Tag.objects.filter(title=tag).first().exist():
             raise ValidationError('Такая категория уже существует')
         return tag
-
 
 
 # FEATURE & VALUE FORMS

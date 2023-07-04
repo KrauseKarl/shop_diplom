@@ -27,9 +27,11 @@
 <!--   ONLY FOR DEBUG    -->
 <div class="row-block seller_label" style="background-color: #F4CA16;  color:black; padding: 0 10px">
    <b>только для тестирования</b>
-   {% if request.user.is_authenticated %}
-    <span class="seller_label">ROLE  - <b style="color:black; font-size:19px;">{{ request.user.profile.get_role_display  }}</b></span>
+
+    {% if request.user.is_authenticated %}
+    <span class="seller_label">ROLE  - <b style="color:black; font-size:15px;">{{ request.user.groups.first|upper  }}</b></span>
     {% endif %}
+    {% if request.COOKIES.cart %}
     <span style="background-color: {% if request.session.session_key %}blue{% else %}red{% endif %};" class="seller_label">
         SESSION_KEY -   {% if request.COOKIES.cart %}
             <b style="color:black; font-size:19px;">{{ request.session.session_key|truncatechars:5 }}</b>
@@ -44,13 +46,12 @@
             <b style="color:black; font-size:19px;">NONE</b>
         {% endif %}
     </span>
+    {% endif %}
+     {% if cart_dict.cart %}
     <span style="background-color: {% if cart_dict.cart %} green {% else %}red{% endif %};" class="seller_label">КОРЗИНА
-        {% if cart_dict.cart %}
-        <b style="color:black; font-size:19px;"> {{ cart_dict.cart }}</b>
-        {% else %}
-        <b style="color:black; font-size:19px;">CART NONE</b>
-        {% endif %}
+        <b style="color:black; font-size:15px;"> {{ cart_dict.cart }}</b>
     </span>
+    {% endif %}
     <span style="background-color: {% if request.user.is_authenticated %} coral {% else %}red{% endif %};" class="seller_label">
         USER   <b style="color:black; font-size:19px;">{{ request.user }}</b>
     </span>

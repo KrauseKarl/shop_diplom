@@ -43,6 +43,14 @@ class ModeratedCommentsManager(models.Manager):
         return super().get_query_set().filter(is_published=True)
 
 
+# TAG MANAGERS #
+class AvailableTagManager(models.Manager):
+    """Менеджер для доступных тегов."""
+
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active=True)
+
+
 # FEATURES #
 class AvailableFeatureManager(models.Manager):
     """Менеджер для доступных характеристик."""

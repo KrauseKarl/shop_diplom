@@ -33,7 +33,6 @@
             <div class="Section-column">{% include "app_store/sidebar_seller.html" %}
             </div>
             <div class="Section-content">
-
                 <div class="Profile">
                     <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
                         {% csrf_token %}
@@ -89,12 +88,6 @@
                                     <div class="form-error">{{ form.errors.category }}
                                     </div>
                                     {% endif %}
-                                    <div style="margin-top:10px">
-                                        <a href="{% url 'app_store:category_list' pk=store.pk %}"
-                                           class="btn btn_square btn_primary btn_narrow btn_sm">
-                                            + создать категорию
-                                        </a>
-                                    </div>
                                 </div>
 
                                 <div class="form-group">
