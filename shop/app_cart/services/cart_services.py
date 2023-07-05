@@ -33,24 +33,24 @@ def get_anon_user_cart(request):
             Q(session_key=session_key)).first()
     else:
         cart = None
-
     return cart
 
 
 def get_customer_cart(request):
-    """Функция возвращает текущую корзину. """
-
-    if request.user.is_authenticated and request.user.profile.is_customer:
-        cart = get_auth_user_cart(request.user)
-    else:
-        cart = get_anon_user_cart(request)
-    return cart
+    """ Функция возвращает текущую корзину."""
+    if not request.user.is_superuser:
+        if request.user.is_authenticated and \
+                request.user.profile.is_customer:
+            cart = get_auth_user_cart(request.user)
+        else:
+            cart = get_anon_user_cart(request)
+        return cart
+    return None
 
 
 def get_current_cart(request) -> dict:
     """
-    Функция берет из кеша словарь "cart_dict" или создает новый кеш
-    возвращает словарь "cart_dict"
+    Функция  возвращает словарь 'cart_dict'"
     :param request:
     :return: словарь
     """
@@ -58,10 +58,6 @@ def get_current_cart(request) -> dict:
 
     try:
         cart_dict = create_or_update_cart_book(cart)
-        # cart_dict = get_cart_cache(request)
-        # if cart_dict is None:
-        #     cart_dict = create_or_update_cart_book(cart)
-        #     set_cart_cache(request, cart_dict)
         return cart_dict
     except (KeyError, AttributeError):
         return {'cart': cart}

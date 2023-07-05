@@ -286,14 +286,19 @@ class ItemDeleteView(UserPassesTestMixin, generic.DeleteView):
         return True if user == item.store.owner else False
 
     def get(self, request, *args, **kwargs):
-        item_id = kwargs['item_id']
-        user = self.request.user
         try:
-            item = item_models.Item.objects.get(id=item_id)
-            item.is_active = True
-            item.save()
-            messages.add_message(self.request, messages.ERROR, f"Товар {item} успешно удален")
-            return redirect('app_user:account', user.pk)
+            item = item_models.Item.objects.get(id=kwargs['pk'])
+            if item.is_active:
+                item.is_active = False
+                item.is_available = True
+                message = f"Товар {item} успешно восстановлен"
+            else:
+                item.is_active = True
+                item.is_available = False
+                message = f"Товар {item} успешно удален"
+            item.save(update_fields=['is_available', 'is_active'])
+            messages.add_message(self.request, messages.WARNING, message)
+            return redirect('app_store:store_detail', item.store.pk)
         except ObjectDoesNotExist:
             raise Http404("Такой товар не существует")
 
@@ -428,7 +433,7 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
             # STORE
             if self.request.GET.get('stores'):
                 stores = self.request.GET.getlist('stores')
-                object_list = self.get_queryset().filter(store__title__in=stores)
+                object_list = object_list.filter(store__title__in=stores)
             # STATUS
             if self.request.GET.get('status'):
                 status = self.request.GET.getlist('status')
@@ -442,8 +447,9 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
             object_list=object_list, 
             per_page=self.paginate_by
         ).my_paginator()
+        print(object_list)
         context = {
-            'orders': object_list,
+            'object_list': object_list,
             'stores': request.user.store.all(),
             'status_list': self.STATUS_LIST
         }
@@ -480,6 +486,8 @@ class DeliveryUpdateView(UserPassesTestMixin, generic.UpdateView):
     template_name = 'app_store/delivery/delivery_edit.html'
     context_object_name = 'order'
     form_class = order_form.OrderItemUpdateForm
+    MESSAGE_SUCCESS = "Данные заказа успешно обновлены"
+    MESSAGE_ERROR = "Ошибка обновления данных заказа"
 
     def test_func(self):
         user = self.request.user
@@ -489,10 +497,11 @@ class DeliveryUpdateView(UserPassesTestMixin, generic.UpdateView):
     def form_valid(self, form):
         form.save()
         order = self.get_object()
-        messages.add_message(self.request, messages.SUCCESS, f"Данные {order} успешно обновлены")
+        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
         return redirect('app_store:delivery_detail', order.pk)
 
     def form_invalid(self, form):
+        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
         return self.render_to_response(self.get_context_data(form=form))
 
 
@@ -502,15 +511,17 @@ class OrderItemUpdateView(generic.UpdateView):
     template_name = 'app_store/delivery/delivery_edit.html'
     form_class = order_form.OrderItemUpdateForm
     context_object_name = 'order_item'
+    MESSAGE_SUCCESS = "Количество товара обновлено."
+    MESSAGE_ERROR = "Произошла ошибка при обновлении количества товара."
 
     def form_valid(self, form):
         order_services.SellerOrderHAndler.update_item_in_order(self.request, form)
-        messages.add_message(self.request, messages.SUCCESS, f"Количество товара({self.get_object()}) обновлено.")
+        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
         return redirect('app_store:order_item_edit', self.get_object().pk)
 
     def form_invalid(self, form):
         order_item = self.get_object()
-        messages.add_message(self.request, messages.ERROR, f"Произошла ошибка при обновлении количества товара.")
+        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
         return redirect('app_store:order_item_edit', order_item.pk)
 
 
@@ -520,6 +531,7 @@ class SentPurchase(generic.UpdateView):
     template_name = 'app_store/delivery/delivery_detail.html'
     context_object_name = 'order'
     form_class = store_forms.UpdateOrderStatusForm
+    MESSAGE_ERROR = "Произошла ошибка при отправки заказа."
 
     def form_valid(self, form):
         super().form_invalid(form)
@@ -532,7 +544,7 @@ class SentPurchase(generic.UpdateView):
         return redirect(self.request.META.get('HTTP_REFERER'))
 
     def form_invalid(self, form):
-        messages.add_message(self.request, messages.ERROR, f"Произошла ошибка при отправки заказа.")
+        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
         return super().form_invalid(form)
 
 

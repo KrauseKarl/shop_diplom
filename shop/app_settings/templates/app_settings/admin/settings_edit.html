@@ -92,7 +92,7 @@
                                         {{ form.express_delivery_price.label }}
                                     </label>
                                     <input class="form-input" id="express_delivery_price" name="express_delivery_price"
-                                           value="{{ site_settings.express_delivery_price }}" type="text"/>
+                                           value="{{ site_settings.express_delivery_price }}" type="number"/>
                                        {% if form.errors.express_delivery_price %}
                                     <div class="form-error">{{ form.errors.express_delivery_price }}
                                     </div>
@@ -102,7 +102,7 @@
                                     <label class="form-label" for="min_free_delivery"> {{ form.min_free_delivery.label }}
                                     </label>
                                     <input class="form-input" id="min_free_delivery" name="min_free_delivery"
-                                           value="{{ site_settings.min_free_delivery }}" type="text"/>
+                                           value="{{ site_settings.min_free_delivery }}" type="number"/>
                                        {% if form.errors.min_free_delivery %}
                                     <div class="form-error">{{ form.errors.min_free_delivery }}
                                     </div>
@@ -112,7 +112,7 @@
                                     <label class="form-label" for="delivery_fees"> {{ form.delivery_fees.label }}
                                     </label>
                                     <input class="form-input" id="delivery_fees" name="delivery_fees"
-                                           value="{{ site_settings.delivery_fees }}" type="text"/>
+                                           value="{{ site_settings.delivery_fees }}" type="number"/>
                                     {% if form.errors.delivery_fees %}
                                     <div class="form-error">{{ form.errors.delivery_fees }}
                                     </div>

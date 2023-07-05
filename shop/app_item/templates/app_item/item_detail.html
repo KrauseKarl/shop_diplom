@@ -225,6 +225,26 @@
                         </div>
                         <div class="Tabs-block" id="addit">
                             <div class="Product-props">
+                                <div class="Product-prop">
+                                    <strong>Отзывы
+                                    </strong>
+                                    <span> {{ item.comments.count }}
+                                    </span>
+                                </div>
+                                 <div class="Product-prop">
+                                    <strong>Смотрели
+                                    </strong>
+                                    <span> {{ item.total_views }}
+                                    </span>
+                                </div>
+                                 <div class="Product-prop">
+                                    <strong>Купили
+                                    </strong>
+                                    <span> {{  item.purchases }}
+                                    </span>
+                                </div>
+
+
                                 {% for value in features %}
                                 <div class="Product-prop">
                                     <strong>{{ value.feature| lower }}
@@ -267,7 +287,8 @@
                                     <div class="Comment-column">
                                         <header class="Comment-header">
                                             <div>
-                                                <strong class="Comment-title">{{ comment.user.get_full_name }}</strong>
+                                                <strong class="Comment-title">{{ comment.user.get_full_name }}
+                                                </strong>
                                                 <span class="Comment-date">
                                                 {{ comment.created|date:'F' }}&#32;&#32;/
                                                 {{ comment.created|date:"j" }}&#32;&#32;/
@@ -276,14 +297,16 @@
                                                 </span>
                                             </div>
                                         </header>
-                                        <div class="Comment-content" >{{ comment.review }}</div>
+                                        <div class="Comment-content" >{{ comment.review }}
+                                        </div>
                                         {% if request.user == comment.user %}
-                                        <a class="CommentHandleButton"
-                                           href="#commentDeleteModal">
-                                            удалить</a>&#160;&#160;
+                                        <a class="CommentHandleButton" href="#commentDeleteModal">
+                                            удалить
+                                        </a>&#160;&#160;
                                         <a class="CommentHandleButton"
                                            href="{% url 'app_item:comment_edit' pk=item.pk comment_id=comment.id %}">
-                                            редактировать</a>
+                                            редактировать
+                                        </a>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -348,49 +371,47 @@
                                 {% endfor %}
 
                                 <div>
-                                    <button type="button" class="btn btn_danger btn_full"  id="hide_comment">Скрыть</button>
-                                    <button type="button" class="btn btn_primary btn_full" id="show_comment"
+                                    <button type="button" class="btn btn_danger"  id="hide_comment">Скрыть</button>
+                                    <button type="button" class="btn btn_primary" id="show_comment"
                                             data-actions-icnt="comments-show">Показать </button>
                                 </div>
                                 <!--COMMENT FORM -->
 
                             </div>
-
                             <header class="Section-header Section-header_product" >
                                 <h3 class="Section-title">Добавить отзыв</h3>
                             </header>
+                            {% if request.user.is_authenticated  and request.user.profile.is_customer %}
+                            <div class="Tabs-addComment">
 
-                                {% if request.user.is_authenticated  and request.user.profile.is_customer %}
-                                <div class="Tabs-addComment">
-
-                                    <form class="form" action="" method="post">
-                                        {% csrf_token %}
-                                        <h3 class="Section-title">{{request.user.get_full_name}}</h3>
-                                        <div class="form-group">
-                                            <textarea class="form-textarea" name="review" id="review" placeholder="Review"></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <button class="btn btn_muted" type="submit">Оставить отзыв</button>
-                                        </div>
-                                    </form>
-                                </div>
-                                {% else %}
-                                    <h3 class="Section-title">
-                                        <a class="btn btn_success"
-                                           href="{% url 'app_user:login' %}?next={{ item.get_absolute_url }}">
-                                            Войдите
-                                        </a>
-                                        или
-                                        <a class="btn btn_success"
-                                               href="{% url 'app_user:register' %}?next={{ item.get_absolute_url }}">
-                                            зарегистрируйтесь
-                                        </a>
-                                        , чтобы добавить отзыв
-                                    </h3>
-                                <div class="Tabs-addComment">
-                                      <h3 class="Section-title">{{ request.user.get_full_name }}</h3>
-                                </div>
-                                {% endif %}
+                                <form class="form" action="" method="post">
+                                    {% csrf_token %}
+                                    <h3 class="Section-title">{{request.user.get_full_name}}</h3>
+                                    <div class="form-group">
+                                        <textarea class="form-textarea" name="review" id="review" placeholder="Review"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn_muted" type="submit">Оставить отзыв</button>
+                                    </div>
+                                </form>
+                            </div>
+                            {% else %}
+                                <h3 class="Section-title">
+                                    <a class="btn btn_success"
+                                       href="{% url 'app_user:login' %}?next={{ item.get_absolute_url }}">
+                                        Войдите
+                                    </a>
+                                    или
+                                    <a class="btn btn_success"
+                                           href="{% url 'app_user:register' %}?next={{ item.get_absolute_url }}">
+                                        зарегистрируйтесь
+                                    </a>
+                                    , чтобы добавить отзыв
+                                </h3>
+                            <div class="Tabs-addComment">
+                                  <h3 class="Section-title">{{ request.user.get_full_name }}</h3>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

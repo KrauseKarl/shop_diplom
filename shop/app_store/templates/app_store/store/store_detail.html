@@ -248,7 +248,7 @@
 
                                 <!--    ITEM IMAGE    -->
                                 <div class="row-block">
-                                    <div class="Order-info">
+                                    <div class="Order-info {% if item.is_active %} non_available{% endif %}">
                                         <div class="Order-infoType">
                                             <img src="{{ item.main_image }}" width="80" >
                                         </div>
@@ -266,27 +266,31 @@
 
                                 <!--  ITEM PRICE -->
                                 <div class="row-block">
+                                   {% if not item.is_active %}
                                     <div class="Order-info">
                                         <div class="Card-icon-view-and-sell">
                                             ${{ item.price|floatformat:2 }}
                                         </div>
                                     </div>
+                                    {% endif %}
                                 </div>
                                 <!--  ITEM PRICE -->
 
                                 <!--    ITEM QUANTITY  -->
                                 <div class="row-block">
+                                    {% if not item.is_active %}
                                     <div class="Order-info">
                                         <div class="Card-icon-view-and-sell">{{ item.stock }} шт.
                                         </div>
                                     </div>
+                                    {% endif %}
                                 </div>
                                 <!--    ITEM QUANTITY  -->
 
                                 <!--    COMMENTS, VIEWS & ORDERS ITEM    -->
 
                                 <!--    COMMENTS, VIEWS & ORDERS ITEM    -->
-
+                                {% if not item.is_active %}
                                 <!--  EDIT ITEM -->
                                 <div class="row-block">
                                     <div class="Order-info Order-info_status">
@@ -301,7 +305,6 @@
                                     </div>
                                 </div>
                                 <!--  EDIT ITEM -->
-
                                 <!--  DELETE ITEM -->
                                 <div class="row-block">
                                     <div class="Order-info Order-info_status">
@@ -314,6 +317,32 @@
                                         </div>
                                     </div>
                                 </div>
+                                {% else %}
+                                 <div class="row-block">
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoContent">
+                                            <div class="Card-icon-view-and-sell">
+                                                <a class=""
+                                                   href="{% url 'app_store:edit_item' item.pk %}">
+                                                    <img src="/assets/img/icons/edit.png" width="32">
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoContent">
+                                            <div class="Card-icon-view-and-sell">
+                                                <span class="danger-text">
+                                                    в архиве
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
                                 <!--     MODAL FOR CONFIRM DELETE COMMENT    -->
                                 <div id="itemDeleteModal" class="modal-my">
                                     <div class="modal-dialog-my">

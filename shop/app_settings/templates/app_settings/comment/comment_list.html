@@ -11,6 +11,10 @@
         <div class="wrap">
             <div class="Middle-header">
                 <h1 class="Middle-title">Комментарии
+                    {% if request.GET.new %}новые
+                    {% elif request.GET.moderated %}опубликованные
+                    {% elif request.GET.archived %}архивные
+                    {% endif %}
                 </h1>
                 {% block breadcrumbs %}
                 <ul class="breadcrumbs Middle-breadcrumbs">
@@ -38,12 +42,19 @@
                 <div class="Sort">
                     <div class="Sort-title">Всего комментариев: </div>
                     <div class="Sort-variants">
-                        <a class="Sort-sortBy" href="{% url 'app_settings:comments_list' %}">все
+                        <a class="Sort-sortBy {% if not request.GET  %}seller_label{% endif %}"
+                           href="{% url 'app_settings:comments_list' %}">все
                         </a>
-                        <a class="Sort-sortBy" href="?is_published=False">новые
+                        <a class="Sort-sortBy{% if request.GET.new  %} seller_label{% endif %}"
+                           href="?new=True">новые
                         </a>
-                        <a class="Sort-sortBy"  href="?is_published=True">опубликованные
+                        <a class="Sort-sortBy{% if request.GET.moderated %} seller_label{% endif %}"
+                           href="?moderated=True">опубликованные
                         </a>
+                         <a class="Sort-sortBy{% if request.GET.archived %} seller_label{% endif %}"
+                            href="?archived=True">архивные
+                        </a>
+
                     </div>
                 </div>
                 <!--    SORT BY END    -->
@@ -58,6 +69,18 @@
                             <div class="Order-personal">
                             <div class="row">
                                 <div class="row-block">
+                                    <div class="Order-info">
+                                        <div class="Order-infoType">модерация:</div>
+                                        <div class="Order-infoContent">
+                                            {% if comment.archived %}
+                                            <span class="danger-text">удален в архиве</span>
+                                            {% elif comment.is_published %}
+                                            <span class="success-text">опубликован</span>
+                                            {% else %}
+                                            <span class="warning-text">на модерации</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                     <div class="Order-info">
                                         <div class="Order-infoType">автор:</div>
                                         <div class="Order-infoContent">
@@ -80,18 +103,6 @@
                                         <div class="Order-infoType">дата:</div>
                                         <div class="Order-infoContent">
                                             {{ comment.created }}
-                                        </div>
-                                    </div>
-                                    <div class="Order-info">
-                                        <div class="Order-infoType">модерация:</div>
-                                        <div class="Order-infoContent">
-                                            {% if  comment.is_published %}
-                                            <span class="success-text">опубликован</span>
-                                            {% elif  comment.archived  %}
-                                             <span class="secondary-text">удален в архиве</span>
-                                            {% else %}
-                                              <span class="warning-text">на модерации</span>
-                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>

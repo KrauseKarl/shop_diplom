@@ -46,13 +46,14 @@
                         <form class="form" action="{% url 'app_settings:create_category'  %}" method="post">
                            {% csrf_token %}
                             <div class="form-group">
-                                <label class="form-label" for="parent_category">Родительская категория</label>
+                                <label class="form-label" for="parent_category">Родительская категория
+                                </label>
                                 <select id="parent_category" name="parent_category" class="form-input">
-                                    <option  selected="selected">{{ request.POST.parent_category }}</option>
+                                    <option  selected="selected">{{ request.POST.parent_category }}
+                                    </option>
                                     {% for category in categories %}
                                         {% if not category.parent_category %}
-                                            <option value="{{ category.id }}">
-                                                {{ category.title }}
+                                            <option value="{{ category.id }}">{{ category.title }}
                                             </option>
                                         {% endif %}
                                     {% endfor %}
@@ -63,8 +64,7 @@
                                 <label class="form-label" for="title">Название категории
                                 </label>
                                 {% if form.errors.title %}
-                                <div class="form-error" >
-                                    {{ form.errors.title }}
+                                <div class="form-error" >{{ form.errors.title }}
                                 </div>
                                 {% endif %}
                                 <input class="form-input form-input_full" id="title" name="title" type="text"

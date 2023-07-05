@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # 'easy_thumbnails',
 
     # my app
     'app_item.apps.AppItemConfig',
@@ -98,11 +97,6 @@ TEMPLATES = [
     },
 ]
 
-# THUMBNAIL_ALIASES = {
-#     'app_user.Profile.avatar': {
-#         'avatar': {'size': (50, 50), 'crop': True},
-#     },
-# }
 
 CACHES = {
     'default': {

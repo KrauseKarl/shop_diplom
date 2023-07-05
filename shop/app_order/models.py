@@ -197,16 +197,18 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        """ Функция для отмены заказа. """
         self.archived = True
         self.status = 'deactivated'
-        self.order_items.update(status='deactivated')
+        self.order_items.update(status=self.STATUS[:-1][0])
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'Заказ №{self.user.id:05}-{self.pk}'
+        return f'Заказ №{self.user.id:04}-{self.pk}'
 
     def created_order_quantity(self):
-        return self.filter(status='created').count()
+        """ Функция возвращает список всех созданных заказов. """
+        return self.filter(status=self.STATUS[0][0]).count()
 
 
 class Address(models.Model):

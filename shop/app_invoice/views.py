@@ -16,7 +16,7 @@ from utils.my_utils import MixinPaginator, CustomerOnlyMixin
 
 # INVOICE
 class InvoicesList(CustomerOnlyMixin, generic.ListView, MixinPaginator):
-    """Класс-представления для получения списка всех квитанций об оплате."""
+    """ Класс-представления для получения списка всех квитанций об оплате."""
     model = invoice_models.Invoice
     template_name = 'app_invoice/invoice/invoices_list.html'
     context_object_name = 'invoices'
@@ -34,6 +34,7 @@ class InvoicesList(CustomerOnlyMixin, generic.ListView, MixinPaginator):
 
 
 class InvoicesDetail(mixins.UserPassesTestMixin, generic.DetailView):
+    """ Класс-представления для отображения квитануии об оплате заказа. """
     model = invoice_models.Invoice
     template_name = 'app_invoice/invoice/invoice_detail.html'
     context_object_name = 'invoice'
@@ -47,7 +48,7 @@ class InvoicesDetail(mixins.UserPassesTestMixin, generic.DetailView):
 
 # ADDRESS
 class AddressList(mixins.LoginRequiredMixin, generic.ListView):
-    """"""  # todo AddressList DOC
+    """ Класс-представления для отображения списка всех адресов доставки покупателя. """
     model = order_models.Address
     template_name = 'app_invoice/address/address_list.html'
     context_object_name = 'addresses'
@@ -61,44 +62,53 @@ class AddressList(mixins.LoginRequiredMixin, generic.ListView):
 
 
 class AddressCreate(AddressList, generic.CreateView):
-    """"""  # todo AddressCreate DOC
+    """ Класс-представления для создания адреса доставки. """
     model = order_models.Address
     form_class = invoice_forms.AddressForm
-    MESSAGE = "Новый адрес доставки сохранен"
+    template_name = 'app_invoice/address/address_list.html'
+    MESSAGE_SUCCESS = "Новый адрес доставки сохранен"
+    MESSAGE_ERROR = "Ошибка сохранения адреса"
 
     def form_valid(self, form):
         address = form.save(commit=False)
         address.city = form.cleaned_data.get('city').title()
+        address.address = form.cleaned_data.get('address')
         address.user = self.request.user
         address.save()
-        messages.add_message(self.request, messages.INFO,  self.MESSAGE)
-        return redirect('app_order:address_list')
+        messages.add_message(self.request, messages.SUCCESS,  self.MESSAGE_SUCCESS)
+        return redirect('app_invoice:address_list')
 
     def form_invalid(self, form):
-        messages.add_message(self.request, messages.INFO, 'Ошибка сохранения адреса')
+        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
         return super().form_invalid(form)
 
 
 class AddressUpdate(CustomerOnlyMixin, AddressList, generic.UpdateView):
-    """"""  # todo AddressUpdate DOC
+    """ Класс-представления для обновления адреса доставки. """
     model = order_models.Address
     form_class = invoice_forms.AddressForm
-    MESSAGE = "Данные адреса доставки изменены"
+    MESSAGE_SUCCESS = "Данные адреса доставки изменены"
+    MESSAGE_ERROR = "Ошибка.Адрес не обновлен."
 
     def test_func(self):
         user = self.request.user
         address = self.get_object()
         return True if user == address.user else False
 
-    def get_success_url(self):
-        messages.add_message(self.request, messages.INFO, self.MESSAGE)
-        return redirect('app_order:address_list')
+    def form_valid(self, form):
+        form.save()
+        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
+        return redirect('app_invoice:address_list')
+
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
+        return super().form_invalid(form)
 
 
 class AddressDelete(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.DeleteView):
-    """"""  # todo AddressDelete DOC
+    """ Класс-представления для удаления адреса доставки. """
     model = order_models.Address
-    MESSAGE = "Адрес успешно удален"
+    MESSAGE_SUCCESS = "Адрес успешно удален"
 
     def test_func(self):
         user = self.request.user
@@ -108,5 +118,5 @@ class AddressDelete(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.Delet
     def get(self, request, *args, **kwargs):
         address_id = kwargs['pk']
         order_services.AddressHandler.delete_address(request, address_id)
-        messages.add_message(self.request, messages.INFO, self.MESSAGE)
-        return redirect('app_order:address_list')
+        messages.add_message(self.request, messages.INFO, self.MESSAGE_SUCCESS)
+        return redirect('app_invoice:address_list')

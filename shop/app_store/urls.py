@@ -15,7 +15,7 @@ urlpatterns = [
 
     path('item/add/<int:pk>/', views.ItemCreateView.as_view(), name='add_item'),
     path('item/edit/<int:pk>/', views.ItemUpdateView.as_view(), name='edit_item'),
-    path('item/delete/<int:item_id>/', views.ItemDeleteView.as_view(), name='delete_item'),
+    path('item/delete/<int:pk>/', views.ItemDeleteView.as_view(), name='delete_item'),
 
     path('delivery/', views.DeliveryListView.as_view(), name='delivery_list'),
     path('delivery/<slug:status>/', views.DeliveryListView.as_view(), name='delivery_progress'),
@@ -26,7 +26,6 @@ urlpatterns = [
 
     path('comment/list/', views.CommentListView.as_view(), name='comment_list'),
     path('comment/<int:pk>/', views.CommentDetail.as_view(), name='comment_detail'),
-    # path('comment/<int:pk>/update/', CommentModerate.as_view(), name='comment_update'),
 
     # path('category/store/<int:pk>/list/', CategoryListView.as_view(), name='category_list'),
     # path('category/detail/<slug:slug>/feature/list/', FeatureListView.as_view(), name='feature_list'),

@@ -154,24 +154,24 @@ class AddTagForm(forms.ModelForm):
         fields = ('tag',)
 
 
-class CreateCategoryForm(forms.ModelForm):
-    """Форма для создания категории товаров."""
-    my_default_errors = {
-        'required': 'Это поле является обязательным',
-        'invalid': 'Категория с таким названием уже существует'
-    }
-    title = forms.CharField(error_messages=my_default_errors)
-
-    class Meta:
-        model = Category
-        fields = ('parent_category', 'title', 'description',)
-
-    def clean_category(self):
-        """Функция валидирует сущетвование категории в базе данных"""
-        category = self.cleaned_data.get('category').lower()
-        if Category.objects.get(title=category).exist():
-            raise ValidationError('Такая категория уже существует')
-        return category
+# class CreateCategoryForm(forms.ModelForm):
+#     """Форма для создания категории товаров."""
+#     my_default_errors = {
+#         'required': 'Это поле является обязательным',
+#         'invalid': 'Категория с таким названием уже существует'
+#     }
+#     title = forms.CharField(error_messages=my_default_errors)
+#
+#     class Meta:
+#         model = Category
+#         fields = ('parent_category', 'title', 'description',)
+#
+#     def clean_category(self):
+#         """Функция валидирует сущетвование категории в базе данных"""
+#         category = self.cleaned_data.get('category').lower()
+#         if Category.objects.get(title=category).exist():
+#             raise ValidationError('Такая категория уже существует')
+#         return category
 
 
 class CreateFeatureForm(forms.ModelForm):

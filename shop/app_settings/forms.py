@@ -28,22 +28,17 @@ class UpdateSettingsForm(forms.ModelForm):
 # CATEGORY FORMS
 class CreateCategoryForm(forms.ModelForm):
     """Форма для создания категории товаров."""
-    my_default_errors = {
-        'required': 'Это поле является обязательным',
-        'invalid': 'Категория с таким названием уже существует'
-    }
-    title = forms.CharField(error_messages=my_default_errors)
 
     class Meta:
         model = item_modals.Category
         fields = ('parent_category', 'title', 'description',)
 
-    def clean_category(self):
-        """Функция валидирует сущетвование категории в базе данных"""
-        category = self.cleaned_data.get('category').lower()
-        if item_modals.Category.objects.filter(title=category).first().exist():
-            raise ValidationError('Такая категория уже существует')
-        return category
+    def clean_title(self):
+        """ Функция валидирует сущетвование категории в базе данных. """
+        title = self.cleaned_data.get('title')
+        if item_modals.Category.all_objects.filter(title=title).exists():
+            raise forms.ValidationError('Такая категория уже существует')
+        return title
 
 
 class UpdateCategoryForm(forms.ModelForm):
@@ -68,8 +63,8 @@ class CreateTagForm(forms.ModelForm):
     def clean_tag(self):
         """Функция валидирует сущетвование тег в базе данных"""
         tag = self.cleaned_data.get('category').lower()
-        if item_modals.Tag.objects.filter(title=tag).first().exist():
-            raise ValidationError('Такая категория уже существует')
+        if item_modals.Tag.objects.filter(title=tag).first().exists():
+            raise forms.ValidationError('Такая категория уже существует')
         return tag
 
 
@@ -84,8 +79,8 @@ class CreateFeatureForm(forms.ModelForm):
     def clean_feature(self):
         """Функция валидирует сущетвование характеристики в базе данных"""
         feature = self.cleaned_data.get('title').lower()
-        if item_modals.Feature.objects.get(title=feature).exist():
-            raise ValidationError('Такая характеристика уже существует')
+        if item_modals.Feature.objects.get(title=feature).exists():
+            raise forms.ValidationError('Такая характеристика уже существует')
         return feature
 
 

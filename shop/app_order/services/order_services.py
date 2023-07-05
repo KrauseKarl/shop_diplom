@@ -233,6 +233,7 @@ class SellerOrderHAndler:
         return order_item
 
 
+
 class Payment:
     """ Класс для работы с оплатойзаказа."""
     ERROR_DICT = {

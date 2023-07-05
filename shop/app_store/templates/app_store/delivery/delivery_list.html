@@ -14,7 +14,7 @@
                     {% if request.GET.stores %}
                     {% for st in user.store.all %}
                     {% if request.GET.stores == st.title %}
-                    заказы - {{ st }} - {{ orders.count }}
+                    заказы - {{ st }} - {{ object_list.count }}
                     {% endif %}
                     {% endfor %}
                     {% else %}
@@ -27,7 +27,7 @@
                         </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
-                        <span id="qwe">История заказов
+                        <span>История заказов
                         </span>
                     </li>
                 </ul>
@@ -82,6 +82,7 @@
                         </div>
                     </form>
                     </div>
+
                     <div class="Order Order_anons">
                     <div class="Order">
                         <div class="Order-personal">
@@ -110,7 +111,7 @@
                         </div>
                     </div>
                 </div>
-                    {% for order in orders %}
+                    {% for order in object_list %}
                     <div class="Order Order_anons">
                         <div class="Order ">
                             <div class="Order-personal">
@@ -168,15 +169,18 @@
                             </div>
                         </div>
                     </div>
+
                     {% empty %}
                     <div class="Order-personal">
                         <img src="/media/default_images/not_orders.png" width="100%">
                     </div>
                     {% endfor %}
                 </div>
-                  <!--       PAGINATION         -->
+
+                <!--       PAGINATION         -->
                 {% include "pagination/pagination.html" %}
                 <!--       PAGINATION         -->
+
             </div>
         </div>
     </div>

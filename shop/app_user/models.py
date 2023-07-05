@@ -1,4 +1,3 @@
-# from PIL import Image
 import os
 
 from django.core.exceptions import ObjectDoesNotExist

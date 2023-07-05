@@ -45,39 +45,35 @@ class SiteSettings(SingletonModel):
     DELIVERY = (
         ('standard', 'обычная доставка'),
         ('express', 'экспресс доставка'),
-        ('oneself', 'самовывоз'),
+        # ('oneself', 'самовывоз'),
     )
     PAY_TYPE = (
         ('online', 'Онлайн картой'),
         ('someone', 'Онлайн со случайного чужого счета'),
-        # ('bonus', 'бонусами'),
     )
     express_delivery_price = models.DecimalField(
         decimal_places=2,
         max_digits=9,
-        default=100,
+        null=True,
+        blank=True,
         verbose_name='стоимость экспресс доставки',
-        validators=[
-            MinValueValidator(0)
-        ]
+        validators=[MinValueValidator(0), ]
     )
     min_free_delivery = models.DecimalField(
         decimal_places=2,
         max_digits=9,
-        default=2000,
+        null=True,
+        blank=True,
         verbose_name='минимальная сумма для бесплатной доставки',
-        validators=[
-            MinValueValidator(0)
-        ]
+        validators=[MinValueValidator(0), ]
     )
     delivery_fees = models.DecimalField(
         decimal_places=2,
         max_digits=9,
-        default=15,
+        null=True,
+        blank=True,
         verbose_name='стоимость доставки',
-        validators=[
-            MinValueValidator(0)
-        ]
+        validators=[MinValueValidator(0), ]
     )
     cache_detail_view = models.IntegerField(
         verbose_name='время кэширования страницы товара',

@@ -35,7 +35,7 @@
                     <form class="form Profile-form" action="." method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
-                            <div class="row-block">
+                            <div class="row-block  {% if item.is_active %} non_available{% endif %}">
                                 <div class="form-group">
                                     {% for img in item.images.all %}
                                     <!--  IMAGE  -->
@@ -90,14 +90,24 @@
                             <div class="row-block">
                                 <div class="form-group">
                                     <div class="form-label">
+                                        {% if not item.is_active %}
                                         <a class="btn  btn_narrow btn_square btn_dark btn_sm"
                                            href="{% url 'app_store:store_detail' pk=item.store.pk %}"><span>назад
                                             </span>
                                         </a>
-                                        <button class="btn btn_narrow btn_square btn_success btn_sm" type="submit">сохранить
+                                        <button class="btn btn_narrow btn_square btn_success btn_sm" type="submit">
+                                            сохранить
                                         </button>
                                         <a class="btn  btn_narrow btn_square btn_danger btn_sm" href="#openModal">удалить
                                         </a>
+                                        {% else %}
+                                        <a class="btn  btn_narrow btn_square btn_dark btn_sm"
+                                           href="{% url 'app_store:store_detail' pk=item.store.pk %}"><span>назад
+                                            </span>
+                                        </a>
+                                        <a class="btn  btn_narrow btn_square btn_success btn_sm" href="#openModal">восстановить
+                                        </a>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -264,19 +274,35 @@
                 <div class="modal-body-my">
 
                     <div class="form Payment">
+                        {% if not item.is_active %}
                         <div class="form-group">
-                            <h3>Удалить</h3>{{ item.title }}
+                            <img src="{{ item.main_image }}" width="200" alt="delete.svg"/>
+                            <h4>Удалить "{{ item.title }}"</h4>
                         </div>
+
                         <div class="form-group">
-                            <a href="{% url 'app_store:delete_item' item.pk %}"
-                               class="btn btn_square btn_danger  btn_narrow btn_small">удалить&#8195;&#215;</a>
+                            <a href="{% url 'app_store:delete_item' pk=item.pk %}"
+                               class="btn btn_square btn_danger  btn_narrow btn_small">удалть</a>
                             <a href="." title="Close"
                                class="btn  btn_square btn_default  btn_narrow btn_small">отмена</a>
                         </div>
+                        {% else %}
+                         <div class="form-group">
+                            <img src="{{ item.main_image }}" width="200" alt="delete.svg"/>
+                            <h4>Восстановить "{{ item.title }}"</h4>
+                        </div>
+
+                        <div class="form-group">
+                            <a href="{% url 'app_store:delete_item' pk=item.pk %}"
+                               class="btn btn_square btn_success  btn_narrow btn_small">восстановить</a>
+                            <a href="." title="Close"
+                               class="btn  btn_square btn_default  btn_narrow btn_small">отмена</a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="modal-footer-my">
-
+                <br>
                 </div>
             </div>
         </div>

@@ -46,18 +46,21 @@ class SettingsUpdatedView(AdminOnlyMixin, generic.UpdateView):
     model = settings_modals.SiteSettings
     template_name = 'app_settings/admin/settings_edit.html'
     form_class = admin_forms.UpdateSettingsForm
-    
+    MESSAGE_SUCCESS = "Настройки обновлены"
+    MESSAGE_ERROR = "Ошибка. Настройки не обновлены."
+
     def form_valid(self, form):
-        super(SettingsUpdatedView, self).form_valid(form)
         form.save()
+        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
         return redirect('app_settings:dashboard')
 
     def form_invalid(self, form):
-        super(SettingsUpdatedView).form_invalid(form)
-        return redirect('app_settings:settings_edit', pk=1)
+        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
+        return super().form_invalid(form)
 
 
 class CustomerListView(AdminOnlyMixin, generic.ListView):
+    """Класс-представление для списка покупателей."""
     model = auth_modals.User
     template_name = 'app_settings/customer/customer_list.html'
     paginate_by = 4
@@ -101,6 +104,7 @@ class CustomerDeleteView(AdminOnlyMixin, generic.UpdateView):
 
 
 class SellerListView(AdminOnlyMixin, generic.ListView):
+    """Класс-представление для списока продавцов."""
     model = auth_modals.User
     template_name = 'app_settings/seller/seller_list.html'
     paginate_by = 4
@@ -123,7 +127,7 @@ class SellerListView(AdminOnlyMixin, generic.ListView):
 
 
 class SellerDeleteView(AdminOnlyMixin, generic.UpdateView):
-    """Класс-представление для блокировки/разблокировки продавец."""
+    """Класс-представление для блокировки/разблокировки продавеца."""
     model = auth_modals.User
 
     def get(self, request, *args, **kwargs):
@@ -144,6 +148,7 @@ class SellerDeleteView(AdminOnlyMixin, generic.UpdateView):
 
 
 class StoreListView(AdminOnlyMixin, generic.ListView):
+    """Класс-представление для списка магазинов."""
     model = store_modals.Store
     template_name = 'app_settings/store/store_list.html'
     paginate_by = 4
@@ -163,6 +168,7 @@ class StoreListView(AdminOnlyMixin, generic.ListView):
 
 
 class ProductListView(AdminOnlyMixin, generic.ListView):
+    """Класс-представление для списка товаров."""
     model = item_models.Item
     template_name = 'app_settings/item/item_list.html'
     paginate_by = 4
@@ -203,20 +209,21 @@ class CategoryListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
             categories = item_models.Category.all_objects.filter(title__istartswith=sort_by_letter)
         else:
             categories = item_models.Category.all_objects.all()
-        categories = MixinPaginator(
+        object_list = MixinPaginator(
             categories,
             self.request,
             self.paginate_by
         ).my_paginator()
         context = {
-            'object_list': categories,
-            'alphabet': alphabet_list
+            'object_list': object_list,
+            'alphabet': alphabet_list,
+            'categories': item_models.Category.all_objects.filter(parent_category=None)
         }
         return render(request, self.template_name, context)
 
 
 class CategoryCreateView(AdminOnlyMixin, generic.CreateView):
-    """Класс-представление для создания категории товаров."""
+    """ Класс-представление для создания категории товаров."""
     model = item_models.Category
     template_name = 'app_settings/category/category_list.html'
     form_class = admin_forms.CreateCategoryForm
@@ -228,11 +235,12 @@ class CategoryCreateView(AdminOnlyMixin, generic.CreateView):
         return redirect('app_settings:category_list')
 
     def form_invalid(self, form):
-        form = store_forms.CreateCategoryForm(self.request.POST)
-        return super(CategoryCreateView, self).form_invalid(form)
+        messages.add_message(self.request, messages.ERROR, f"{form.errors.get('title')}")
+        return redirect('app_settings:category_list')
 
 
 class CategoryUpdateView(AdminOnlyMixin, generic.UpdateView):
+    """ Класс-представление для обновления категории товаров."""
     model = item_models.Category
     template_name = 'app_settings/category/category_edit.html'
     form_class = admin_forms.UpdateCategoryForm
@@ -305,6 +313,7 @@ class TagCreateView(AdminOnlyMixin, generic.CreateView):
 
 
 class TagUpdateView(AdminOnlyMixin, generic.UpdateView):
+    """Класс-представление для обновления тега."""
     model = item_models.Tag
     template_name = 'app_settings/tag/tag_edit.html'
     form_class = store_forms.CreateTagForm
@@ -318,6 +327,7 @@ class TagUpdateView(AdminOnlyMixin, generic.UpdateView):
     def form_invalid(self, form):
         form = store_forms.CreateTagForm(self.request.POST)
         return super(TagUpdateView, self).form_invalid(form)
+
 
 class TagDeleteView(AdminOnlyMixin, generic.UpdateView):
     """Класс-представление для удаления тега."""
@@ -339,7 +349,9 @@ class TagDeleteView(AdminOnlyMixin, generic.UpdateView):
         except ObjectDoesNotExist:
             raise Http404("Такой характеристики не существует")
 
+
 class FeatureListView(AdminOnlyMixin, generic.DetailView):
+    """Класс-представление для отображения списка всех характеристик категории."""
     model = item_models.Category
     template_name = 'app_settings/feature/feature_list.html'
 
@@ -353,7 +365,7 @@ class FeatureListView(AdminOnlyMixin, generic.DetailView):
 
 
 class FeatureCreateView(AdminOnlyMixin, generic.CreateView):
-    """Класс-представление для создания характеристики  товаров."""
+    """Класс-представление для создания характеристики  категории."""
     model = item_models.Feature
     template_name = 'app_settings/feature/feature_create.html'
     form_class = store_forms.CreateFeatureForm
@@ -380,6 +392,7 @@ class FeatureCreateView(AdminOnlyMixin, generic.CreateView):
 
 
 class FeatureUpdateView(AdminOnlyMixin, generic.UpdateView):
+    """Класс-представление для обновления характеристики категории."""
     model = item_models.Feature
     template_name = 'app_settings/feature/feature_edit.html'
     form_class = admin_forms.UpdateFeatureForm
@@ -397,7 +410,7 @@ class FeatureUpdateView(AdminOnlyMixin, generic.UpdateView):
 
 
 class FeatureDeleteView(AdminOnlyMixin, generic.UpdateView):
-    """Класс-представление для удаления характеристики товара."""
+    """ Класс-представление для удаления характеристики категории."""
     model = item_models.Feature
 
     def get(self, request, *args, **kwargs):
@@ -419,7 +432,7 @@ class FeatureDeleteView(AdminOnlyMixin, generic.UpdateView):
 
 
 class ValueCreateView(AdminOnlyMixin, generic.CreateView):
-    """Класс-представление для создания значения характеристики  товаров."""
+    """ Класс-представление для создания значения характеристики."""
     model = item_models.FeatureValue
     template_name = 'app_settings/feature/value_create.html'
     form_class = store_forms.CreateValueForm
@@ -451,6 +464,7 @@ class ValueCreateView(AdminOnlyMixin, generic.CreateView):
 
 
 class ValueDeleteView(AdminOnlyMixin, generic.UpdateView):
+    """ Класс-представление для удаления значение характеристики категории."""
     model = item_models.FeatureValue
 
     def get(self, request, *args, **kwargs):
@@ -472,39 +486,62 @@ class ValueDeleteView(AdminOnlyMixin, generic.UpdateView):
 
 
 class CommentListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
-    """Класс-представление для отображения списка всех заказов продавца."""
+    """ Класс-представление для отображения списка всех комментариев."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_list.html'
-    context_object_name = 'comments'
-    paginate_by = 5
+    paginate_by = 4
+
+    def get(self, request, *args, **kwargs):
+        object_list = item_models.Comment.objects.all()
+        if request.GET:
+            if request.GET.get('new'):
+                print(request.GET.get('new'))
+                object_list = object_list.filter(is_published=False)
+            elif request.GET.get('moderated'):
+                print(request.GET.get('moderated'))
+                object_list = object_list.filter(Q(is_published=True) & Q(archived=False))
+            elif request.GET.get('archived'):
+                print(request.GET.get('archived'))
+                object_list = object_list.filter(archived=True)
+        object_list = MixinPaginator(
+            request=request,
+            object_list=object_list,
+            per_page=self.paginate_by
+        ).my_paginator()
+        context = {'object_list': object_list}
+        return render(request, self.template_name, context=context)
+
 
 
 class CommentDetail(AdminOnlyMixin, generic.DetailView):
-    """Класс-представление для отображения одного комментария."""
+    """ Класс-представление для отображения одного комментария."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_detail.html'
     context_object_name = 'comment'
 
 
 class CommentDelete(AdminOnlyMixin, generic.DeleteView):
-    """Класс-представление для удаления комментария."""
+    """ Класс-представление для удаления комментария."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_delete.html'
+    MESSAGE = 'момментарий удален'
 
     def form_valid(self, form):
         self.object.archived = True
         self.object.save()
+        messages.add_message(self.request, messages.WARNING, self.MESSAGE)
         return HttpResponseRedirect(self.object.get_absolute_url())
 
 
 class CommentModerate(AdminOnlyMixin, generic.UpdateView):
-    """Класс-представление для изменения статуса комментария(прохождение модерации)."""
+    """ Класс-представление для изменения статуса комментария(прохождение модерации)."""
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_update.html'
     fields = ['is_published']
 
 
 class OrderListView(generic.ListView):
+    """ Класс-представление для отображения списка всех заказов."""
     model = order_models.Order
     template_name = 'app_settings/order/orders_list.html'
     context_object_name = 'orders'
@@ -532,7 +569,7 @@ class OrderListView(generic.ListView):
 
 
 class OrderDetailView(AdminOnlyMixin, generic.DetailView):
-    """Класс-представление для отображения одного заказа в магазине продавца."""
+    """ Класс-представление для отображения одного заказа."""
     model = order_models.Order
     template_name = 'app_settings/order/order_detail.html'
     context_object_name = 'order'
