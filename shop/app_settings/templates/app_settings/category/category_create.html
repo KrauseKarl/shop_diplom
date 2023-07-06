@@ -1,0 +1,86 @@
+{% extends 'app_settings/admin/admin_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %} Добавить тег {% endblock %}
+
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">новый тег </h1>
+                 {% block breadcrumbs %}
+
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_settings:tag_list' %}">список тегов </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>новый тег</span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% include 'messages/message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <div class="form Payment">
+                <div class="Payment-card form-shadow">
+                    <div class="form-group">
+                        <form class="form" action="{% url 'app_settings:create_category'  %}" method="post" enctype="multipart/form-data">
+                           {% csrf_token %}
+                            <div class="form-group">
+                                <label class="form-label" for="parent_category">Родительская категория
+                                </label>
+                                <select class="form-select" name="parent_category" id="parent_category" >
+                                     <option value="" disabled selected>--- Выберите значение ---</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.errors.parent_category %}
+                                <div class="form-error" >{{ form.errors.parent_category }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="title">Название категории
+                                </label>
+                                {% if form.errors.title %}
+                                <div class="form-error" >{{ form.errors.title }}
+                                </div>
+                                {% endif %}
+                                <input class="form-input form-input_full" id="title" name="title" type="text"
+                                       placeholder="Название" value="{{ request.POST.title}}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="description">Описание категории
+                                </label>
+                                <textarea class="form-input form-input_full" id="description" name="description"
+                                       placeholder="Описание категории" >{{ request.POST.description }}</textarea>
+                                 {% if form.errors.description %}
+                                <div class="form-error" >
+                                    {{ form.errors.description }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <div class="buttons">
+                                    <button class="btn btn_square btn_primary btn_narrow btn_full" type="submit">
+                                        Создать категорию
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

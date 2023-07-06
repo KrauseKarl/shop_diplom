@@ -34,7 +34,7 @@ urlpatterns = [
     # path('feature/<int:pk>/list/', FeatureListView.as_view(), name='feature_list'),
     # path('feature/create/<int:pk>/', CreateFeatureView.as_view(), name='feature_create'),
     # path('feature/value/<int:pk>/create/', CreateFeatureValueView.as_view(), name='feature_value_create'),
-    # path('feature/<slug:slug>/item/<int:pk>/remove/', RemoveFeatureValueView.as_view(), name='value_remove'),
+    path('feature/<slug:slug>/item/<int:pk>/remove/',  views.RemoveFeatureValueView.as_view(), name='value_remove'),
     #
     path('tag/list/', views.TagListView.as_view(), name='tag_list'),
     path('tag/add/<int:pk>/', views.AddTagToItem.as_view(), name='add_tag'),

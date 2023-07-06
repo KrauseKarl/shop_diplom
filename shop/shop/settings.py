@@ -72,6 +72,7 @@ TEMPLATES = [
                 # app_item
                 'app_item.context_processors.categories',
                 'app_item.context_processors.tags',
+                'app_item.context_processors.menu',
 
                 # app_cart
                 'app_cart.context_processors.get_cart',

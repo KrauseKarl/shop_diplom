@@ -244,6 +244,8 @@ class Item(models.Model):
 
 class Category(models.Model):
     """Модель категории товара."""
+    DEFAULT_IMAGE ='assets/img/icons/category.svg'
+
     title = models.CharField(
         max_length=100,
         verbose_name='название',
@@ -282,9 +284,9 @@ class Category(models.Model):
         default=False,
         verbose_name='в архиве'
     )
-
-    objects = app_item_managers.CategoryWithItemsManager()
-    all_objects = models.Manager()
+    objects = models.Manager()
+    # all_objects = app_item_managers.CategoryWithItemsManager()
+    active = app_item_managers.CategoryActiveManager()
 
     class Meta:
         db_table = 'app_categories'
@@ -306,7 +308,6 @@ class Category(models.Model):
 
     def get_parent_url(self):
         return reverse('app_item:item_category', kwargs={'category': self.parent_category.slug})
-
 
     def item_count(self):
         """Функция по количеству товаров в конкретной категории."""

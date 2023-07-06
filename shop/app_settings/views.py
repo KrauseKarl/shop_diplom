@@ -205,10 +205,16 @@ class CategoryListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
         """
         alphabet_list = item_services.ItemHandler.get_alphabet_list()
         sort_by_letter = request.GET.get('sort_by_letter')
+        category_title = request.GET.get('title')
         if sort_by_letter:
-            categories = item_models.Category.all_objects.filter(title__istartswith=sort_by_letter)
+            categories = item_models.Category.objects.filter(title__istartswith=sort_by_letter)
+        elif category_title:
+            categories = item_models.Category.objects.filter(
+                Q(title__icontains=category_title) |
+                Q(title__istartswith=category_title)
+            )
         else:
-            categories = item_models.Category.all_objects.all()
+            categories = item_models.Category.objects.all()
         object_list = MixinPaginator(
             categories,
             self.request,
@@ -217,7 +223,6 @@ class CategoryListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
         context = {
             'object_list': object_list,
             'alphabet': alphabet_list,
-            'categories': item_models.Category.all_objects.filter(parent_category=None)
         }
         return render(request, self.template_name, context)
 
@@ -225,8 +230,9 @@ class CategoryListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
 class CategoryCreateView(AdminOnlyMixin, generic.CreateView):
     """ Класс-представление для создания категории товаров."""
     model = item_models.Category
-    template_name = 'app_settings/category/category_list.html'
+    template_name = 'app_settings/category/category_create.html'
     form_class = admin_forms.CreateCategoryForm
+    extra_context = {'categories': item_models.Category.objects.filter(parent_category=None)}
 
     def form_valid(self, form):
         form.save()
@@ -234,9 +240,6 @@ class CategoryCreateView(AdminOnlyMixin, generic.CreateView):
         messages.add_message(self.request, messages.SUCCESS, f'Категория - "{category_title}" создана')
         return redirect('app_settings:category_list')
 
-    def form_invalid(self, form):
-        messages.add_message(self.request, messages.ERROR, f"{form.errors.get('title')}")
-        return redirect('app_settings:category_list')
 
 
 class CategoryUpdateView(AdminOnlyMixin, generic.UpdateView):
@@ -252,7 +255,6 @@ class CategoryUpdateView(AdminOnlyMixin, generic.UpdateView):
         return redirect('app_settings:category_list')
 
     def form_invalid(self, form):
-        form = store_forms.CreateCategoryForm(self.request.POST)
         return super(CategoryUpdateView, self).form_invalid(form)
 
 
@@ -495,13 +497,10 @@ class CommentListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
         object_list = item_models.Comment.objects.all()
         if request.GET:
             if request.GET.get('new'):
-                print(request.GET.get('new'))
                 object_list = object_list.filter(is_published=False)
             elif request.GET.get('moderated'):
-                print(request.GET.get('moderated'))
                 object_list = object_list.filter(Q(is_published=True) & Q(archived=False))
             elif request.GET.get('archived'):
-                print(request.GET.get('archived'))
                 object_list = object_list.filter(archived=True)
         object_list = MixinPaginator(
             request=request,
@@ -510,7 +509,6 @@ class CommentListView(AdminOnlyMixin, generic.ListView, MixinPaginator):
         ).my_paginator()
         context = {'object_list': object_list}
         return render(request, self.template_name, context=context)
-
 
 
 class CommentDetail(AdminOnlyMixin, generic.DetailView):

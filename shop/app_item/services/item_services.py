@@ -493,7 +493,7 @@ class ItemHandler:
     @staticmethod
     def get_alphabet_list():
         """ Функция возвращает отфильтрованный(по существующим категориям) список всех букв алфавита """
-        return sorted(set([category.title[0] for category in item_models.Category.all_objects.order_by('title')]))
+        return sorted(set([category.title[0] for category in item_models.Category.objects.order_by('title')]))
 
     @staticmethod
     def create_item():
@@ -501,9 +501,14 @@ class ItemHandler:
         pass
 
     @staticmethod
-    def upsate_item():
+    def update_item():
         """ Функция по редактированию экземпляра класса Item. """
         pass
+
+    @staticmethod
+    def colors():
+        return [color[0] for color in item_models.Item.COLOURS]
+
 
 class TagHandler:
     @staticmethod

@@ -32,7 +32,15 @@ class CategoryWithItemsManager(models.Manager):
     """Менеджер для категорий с товарами."""
 
     def get_queryset(self):
-        return super().get_queryset().exclude(Q(items=None) & Q(sub_categories=None))
+        return super().get_queryset().exclude(
+            Q(items=None) &
+            Q(sub_categories=None)
+        )
+
+
+class CategoryActiveManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_archived=False)
 
 
 # COMMENT MANAGERS #

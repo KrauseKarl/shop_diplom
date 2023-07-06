@@ -37,62 +37,33 @@
             <div class="Section-column">
                 <div class="Section-columnSection">
                     <header class="Section-header">
-                        <strong class="Section-title">Добавить категорию
+                        <strong class="Section-title">
                         </strong>
                     </header>
-
-                    <div class="Section-columnContent">
-                        <!--    FORM    -->
-                        <form class="form" action="{% url 'app_settings:create_category'  %}" method="post">
-                           {% csrf_token %}
-                            <div class="form-group">
-                                <label class="form-label" for="parent_category">Родительская категория
-                                </label>
-                                <select id="parent_category" name="parent_category" class="form-input">
-                                    <option  selected="selected">{{ request.POST.parent_category }}
-                                    </option>
-                                    {% for category in categories %}
-                                        {% if not category.parent_category %}
-                                            <option value="{{ category.id }}">{{ category.title }}
-                                            </option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
+                    <div class="form-group">
+                        <a class="btn btn_primary" href="{% url 'app_settings:create_category' %}">Добавить
+                            категорию</a>
+                    </div>  </div>
+                     <div class="Section-columnSection">
+                    <form method="get" action="">
+                        <div class="form-group">
+                            {% if form.errors.title %}
+                            <div class="form-error">{{ form.errors.title }}
                             </div>
-
-                            <div class="form-group">
-                                <label class="form-label" for="title">Название категории
-                                </label>
-                                {% if form.errors.title %}
-                                <div class="form-error" >{{ form.errors.title }}
-                                </div>
-                                {% endif %}
-                                <input class="form-input form-input_full" id="title" name="title" type="text"
-                                       placeholder="Название" value="{{ request.POST.title}}"/>
+                            {% endif %}
+                            <input class="form-input form-input_full" id="title" name="title" type="text"
+                                   placeholder="Название категории ..." value="{{ request.POST.title}}"/>
+                        </div>
+                        <div class="form-group">
+                            <div class="buttons">
+                                <button class="btn btn_square btn_dark btn_narrow btn_full" type="submit">
+                                   поиск
+                                </button>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="description">Описание категории
-                                </label>
-                                <textarea class="form-input form-input_full" id="description" name="description"
-                                       placeholder="Описание категории" >{{ request.POST.description }}</textarea>
-                                 {% if form.errors.description %}
-                                <div class="form-error" >
-                                    {{ form.errors.description }}
-                                </div>
-                                {% endif %}
-                            </div>
+                        </div>
+                    </form>
 
-                            <div class="form-group">
-                                <div class="buttons">
-                                    <button class="btn btn_square btn_primary btn_narrow btn_full" type="submit">
-                                        Создать категорию
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
 
-                    </div>
-                    <!--    FORM    -->
                 </div>
             </div>
 

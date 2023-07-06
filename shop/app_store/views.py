@@ -176,7 +176,8 @@ class ItemCreateView(SellerOnlyMixin, generic.CreateView):
             'image_formset': formset_image,
             'form': self.form_class,
             'store': self.get_object(),
-            'colors': item_services.get_colors(item_models.Item.available_items.all())
+            'colors': item_services.ItemHandler.colors,
+            'category_set': item_models.Category.objects.all()
         }
         return context
 
@@ -204,7 +205,9 @@ class ItemCreateView(SellerOnlyMixin, generic.CreateView):
             store = store_services.StoreHandler.get_store(store_id)
             store.items.add(item)
             store.save()
-            messages.add_message(self.request, messages.SUCCESS, f"Товаре {item} добавлен")
+            messages.add_message(self.request, messages.SUCCESS, f"Товаре {item} создан")
+            messages.add_message(self.request, messages.INFO,
+                                 "Новый товар еще не активирован. Активируйте товар на странице товара")
         return redirect('app_store:store_detail', store.pk)
 
     def form_invalid(self, form):
@@ -360,6 +363,23 @@ class RemoveTagFromItem(generic.DeleteView):
         item.save()
         messages.add_message(self.request, messages.WARNING, f"Тег {tag} успешно удален")
         return redirect('app_store:edit_item', item.pk)
+
+
+# FEATURE VALUE
+class RemoveFeatureValueView(SellerOnlyMixin, generic.DeleteView):
+    model = item_models.FeatureValue
+
+
+    def get(self, request, *args, **kwargs): # TODO  RemoveFeatureValueView
+        # value = self.get_object()
+        # item = image.item_images.first()
+        # if image in item.images.all():
+        #     item.images.remove(image)
+        #     item_models.Image.objects.filter(id=image.id).delete()
+        # item.save()
+        # messages.add_message(self.request, messages.WARNING, self.MESSAGE)
+        # return redirect('app_store:edit_item', item.pk)
+        pass
 
 
 # IMAGE VIEWS #

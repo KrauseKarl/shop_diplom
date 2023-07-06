@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
 
 from app_item import models as item_modals
 from app_settings import models as settings_models
@@ -28,6 +27,11 @@ class UpdateSettingsForm(forms.ModelForm):
 # CATEGORY FORMS
 class CreateCategoryForm(forms.ModelForm):
     """Форма для создания категории товаров."""
+    parent_category = forms.ModelChoiceField(
+        queryset=item_modals.Category.objects.filter(parent_category=None),
+        empty_label="--- Выберите значение ---",
+        required=False
+    )
 
     class Meta:
         model = item_modals.Category
@@ -36,7 +40,7 @@ class CreateCategoryForm(forms.ModelForm):
     def clean_title(self):
         """ Функция валидирует сущетвование категории в базе данных. """
         title = self.cleaned_data.get('title')
-        if item_modals.Category.all_objects.filter(title=title).exists():
+        if item_modals.Category.objects.filter(title=title).exists():
             raise forms.ValidationError('Такая категория уже существует')
         return title
 

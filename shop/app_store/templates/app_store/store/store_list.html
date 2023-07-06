@@ -80,7 +80,25 @@
                             </div>
                         </a>
                     </div>
-                    {% endfor %}
+                    {% empty %}
+
+                    <div class="Order ">
+                        <div class="Order-personal">
+                            <div class="row">
+                                <div class="Section-title">
+                                    у вас нет магазинов
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <a href="{% url 'app_store:create_store' %}"
+                                   class="btn btn_primary">+ создать новый магазин
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                        {% endfor %}
                 </div>
                 <!--       PAGINATION         -->
                 {% include "pagination/pagination.html" %}

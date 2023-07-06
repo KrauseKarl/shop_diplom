@@ -77,11 +77,11 @@
                         </div>
                             <div class="row-block">
                                 <div class="form-group">
-                                    <label class="form-label" for="title">категория</label>
+                                    <label class="form-label" for="category">категория</label>
                                     <select id="category" name="category" class="form-input">
-                                        <option disabled>Выберите категорию</option>
+                                        <option value="" disabled selected>--- Выберите значение ---</option>
                                         {% for category in categories %}
-                                        <option value="{{ category.id }}">{{category.title}}</option>
+                                        <option value="{{ category.id }}">{{ category.title }}</option>
                                         {% endfor %}
                                     </select>
                                     {% if form.errors.category %}
