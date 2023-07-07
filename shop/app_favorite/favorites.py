@@ -14,7 +14,7 @@ class Favorite:
         self.request = request
         favorites = self.session.get(settings.FAVORITE_SESSION_ID)
         if not favorites:
-            favorites = self.session[settings.FAVORITE_SESSION_ID] = {}
+            favorites = self.session[settings.FAVORITE_SESSION_ID] = []
         self.favorites = favorites
 
     def add(self, item_pk):
@@ -22,7 +22,7 @@ class Favorite:
         item = get_object_or_404(item_models.Item, pk=item_pk)
         if self.favorites.__len__() < 100:
             if item_pk not in self.favorites:
-                self.favorites[str(item)] = item.pk
+                self.favorites.append(int(item_pk))
             self.save()
             messages.add_message(self.request, messages.SUCCESS, 'товар добавлен в избранное')
         else:
@@ -35,18 +35,10 @@ class Favorite:
 
     def remove(self, item_pk):
         """Удаление товара из избранного."""
-        item = get_object_or_404(item_models.Item, pk=item_pk)
-        if item_pk in self.favorites.values():
-            del self.favorites[str(item)]
+        if item_pk in self.favorites:
+            self.favorites.remove(item_pk)
             self.save()
             messages.add_message(self.request, messages.WARNING, 'товар удален из избранного')
-
-    def __iter__(self):
-        """ Перебор элементов в избранном и получение продуктов из базы данных."""
-        item_ids = self.favorites.keys()
-        items = item_models.Item.objects.filter(id__in=item_ids)
-        for item in items:
-            self.favorites[str(item.id)]['favorite_item'] = item
 
     def __len__(self):
         """ Функция для подсчет всех товаров в избранном."""
@@ -58,6 +50,5 @@ class Favorite:
         self.session.modified = True
 
     def all(self):
-        item_id_list = [i for i in self.favorites.values()]
-        items = item_models.Item.objects.filter(id__in=item_id_list)
+        items = item_models.Item.objects.filter(id__in=self.favorites)
         return items

@@ -452,17 +452,17 @@ class ValueCreateView(AdminOnlyMixin, generic.CreateView):
         value.feature = feature
         value.save()
         category = item_models.Category.objects.get(feature=feature)
+        print(category.id)
+
         messages.add_message(self.request, messages.SUCCESS, f'Значение - "{value}" добавлено')
         return redirect('app_settings:feature_list', category.id)
 
     def form_invalid(self, form):
-        super(ValueCreateView, self).form_invalid(form)
         form = store_forms.CreateValueForm(self.request.POST)
         feature_id = self.kwargs.get('pk')
         feature = item_models.Feature.objects.get(id=feature_id)
-        category = item_models.Category.objects.get(feature=feature)
-        messages.add_message(self.request, messages.ERROR, f'{form.errors}')
-        return redirect('app_store:feature_list', category.slug)
+        messages.add_message(self.request, messages.ERROR, f"{form.errors.get('value')}")
+        return redirect('app_settings:value_create', feature.pk )
 
 
 class ValueDeleteView(AdminOnlyMixin, generic.UpdateView):

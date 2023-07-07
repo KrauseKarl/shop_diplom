@@ -14,7 +14,8 @@
                 <h1 class="Middle-title">Добавить новое значение</h1>
                  <ul class="breadcrumbs Middle-breadcrumbs">
                     <li class="breadcrumbs-item">
-                        <a href="{% url 'app_settings:feature_list' pk=category_id %}">список характеристик</a>
+                        <a href="{% url 'app_settings:feature_list' pk=category_id %}">список характеристик
+                        </a>
                     </li>
                     <li class="breadcrumbs-item breadcrumbs-item_current">
                         <span>новое значение</span>
@@ -39,6 +40,10 @@
                                 <input class="form-input" id="value" name="value"
                                        placeholder="Введите название характеристик" value="{{ request.POST.value }}"/>
                             </div>
+                            {% if form.errors.value %}
+                            <div class="form-error">{{ form.errors.value }}
+                            </div>
+                            {% endif %}
                             <div class="form-group">
                                 <button class="btn btn_square btn_success btn_narrow" type="submit">
                                    Добавить новое значение

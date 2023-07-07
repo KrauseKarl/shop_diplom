@@ -58,11 +58,11 @@
                     <div class="Cart-block Cart-block_row" style="margin:0 20px">
                         <!--   REMOVE ITEM FROM CART   -->
                         <div class="Cart-block Cart-block_delete">
-                            {% if object.pk in request.session.favorites.values %}
+
                             <a class="Cart-delete" href="{% url 'app_favorite:remove_item' pk=object.pk %}">
                                 <img src="/assets/img/icons/card/delete.svg" alt="delete.svg"/>
                             </a>
-                            {% endif%}
+
                         </div>
                         <!--   REMOVE ITEM FROM CART   -->
                     </div>

@@ -43,7 +43,7 @@ class ProfileHandler:
     """ Класс для работы с профилем пользователя."""
 
     @staticmethod
-    def create_user(request, form, success_path):
+    def create_user(request, form):
         """ Функция создает пользователя."""
         # создание пользователя
         user = form.save()
@@ -68,7 +68,11 @@ class ProfileHandler:
             password=form.cleaned_data.get('password1')
         )
         login(request, user)
-        path = request.GET.get('next')
+        next_page = request.GET.get('next')
+        if next_page:
+            path = next_page
+        else:
+            path = reverse('app_user:account', kwargs={'pk': user.pk})
         # удаление данных об анонимной корзине из COOKIES  при создании нового пользователя
         response = cart_services.delete_cart_cookies(request, path)
         return response

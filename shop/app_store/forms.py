@@ -33,7 +33,8 @@ class AddItemForm(forms.ModelForm):
     """Форма для создания товара."""
     tag = CustomMMCF(
         queryset=item_models.Tag.objects.all(),
-        widget=forms.CheckboxSelectMultiple
+        widget=forms.CheckboxSelectMultiple,
+        required=False
     )
 
     class Meta:
@@ -114,7 +115,9 @@ class UpdateItemImageForm(forms.ModelForm):
 TagFormSet = modelformset_factory(
     item_models.Tag,
     fields=("title",),
-    extra=1
+    extra=1,
+    error_messages='Укажите тег'
+
 )
 ImageFormSet = modelformset_factory(
     item_models.Image,

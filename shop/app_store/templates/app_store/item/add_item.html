@@ -45,8 +45,9 @@
                                               <div class="Profile-img">
                                                   <img src="/assets/img/default/default_item.png" alt="изображение"/>
                                               </div>
-                                              <label class="Profile-fileLabel" for="image">Выберите изображение
-                                                  товара</label>
+                                              <label class="Profile-fileLabel" for="image">
+                                                  Выберите изображение товара
+                                              </label>
                                               <input class="Profile-file form-input" id="image" multiple name="image"
                                                      type="file"
                                                      data-validate="onlyImgAvatar"/>
@@ -92,7 +93,7 @@
 
                                 <div class="form-group">
                                     <label class="form-label" for="title">название</label>
-                                    <input class="form-input" id="title" name="title" type="text"/>
+                                    <input class="form-input" id="title" name="title" type="text" required/>
                                     {% if form.errors.title %}
                                     <div class="form-error">{{ form.errors.title }}
                                     </div>

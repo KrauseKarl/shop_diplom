@@ -34,15 +34,13 @@ class CreateProfile(SuccessMessageMixin, generic.CreateView):
     template_name = 'registrations/register.html'
     form_class = user_form.RegisterUserForm
 
-    def get_success_url(self):
-        return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
+    # def get_success_url(self):
+    #     return reverse('app_user:account', kwargs={'pk': self.request.user.pk})
 
     def form_valid(self, form):
-        success_url = self.get_success_url
         response = register_services.ProfileHandler.create_user(
             self.request,
-            form,
-            success_url
+            form
         )
 
         return response

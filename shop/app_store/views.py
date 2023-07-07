@@ -211,7 +211,8 @@ class ItemCreateView(SellerOnlyMixin, generic.CreateView):
         return redirect('app_store:store_detail', store.pk)
 
     def form_invalid(self, form):
-        form = store_forms.AddItemImageForm(self.request.POST, self.request.FILES)
+        # form = store_forms.AddItemImageForm(self.request.POST, self.request.FILES)
+        print(form.errors)
         messages.add_message(self.request, messages.ERROR, f"Ошибка. Товар не создан. Повторите попытку.")
         return super().form_invalid(form)
 
@@ -301,7 +302,7 @@ class ItemDeleteView(UserPassesTestMixin, generic.DeleteView):
                 message = f"Товар {item} успешно удален"
             item.save(update_fields=['is_available', 'is_active'])
             messages.add_message(self.request, messages.WARNING, message)
-            return redirect('app_store:store_detail', item.store.pk)
+            return redirect('app_store:edit_item', item.pk)
         except ObjectDoesNotExist:
             raise Http404("Такой товар не существует")
 
@@ -606,8 +607,10 @@ def export_data_to_csv(*args, **kwargs):
         'stock',
         'price',
         'is_available',
-        'category__title',
-        'store__title',
+        'category__id',
+        'store__id',
+        'color',
+
     )
     for item in items_report:
         writer.writerow(item)
@@ -627,15 +630,24 @@ def import_data_from_cvs(request, **kwargs):
             with open(f'fixtures/{file_name}.txt', 'r', encoding='utf-8') as file:
                 reader = csv.reader(file)
                 for row in reader:
+                    category = item_models.Category.objects.filter(id=row[5]).first()
+                    store = store_models.Store.objects.filter(id=row[6]).first()
                     _, created = item_models.Item.objects.update_or_create(
                         id=row[0],
                         title=row[1],
-                        defaults={'price': row[3], 'stock': row[2]},
+                        defaults={
+                            'stock': row[2],
+                            'price': row[3],
+                            'is_available': row[4],
+                            'category': category,
+                            'store': store,
+                            'color': row[7],
+                            },
                     )
-                messages.success(request, "Фикстуры успешно загружены.")
-            return redirect('app_store:store_detail', store)
+                messages.add_message(request, messages.SUCCESS, "Фикстуры успешно загружены.")
+            return redirect('app_store:store_detail', store.id)
         else:
-            return redirect('app_store:store_detail', store)
+            return redirect('app_store:store_detail', store.id)
 
 
 def handle_uploaded_file(f, name):

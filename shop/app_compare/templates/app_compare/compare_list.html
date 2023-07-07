@@ -108,7 +108,8 @@
                             <i class="uil uil-shopping-cart-alt" style="margin-right: 10px"></i>в корзине
                         </div>
                         {% endif %}
-                         {% if item.pk in request.session.compares.values %}
+
+                         {% if item.pk in request.session.compares  %}
                         <div class="Cart-item-compare ">
                              <a href="{% url 'app_compare:remove_item' pk=item.pk %}" title="Убрать из сравнения">
                                    <i class="uil-graph-bar " style="color:#ffca00; font-size:25px"></i>
