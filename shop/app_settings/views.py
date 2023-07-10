@@ -5,6 +5,7 @@ from django.db.models import Sum, Count, Q
 from django.http import HttpResponseRedirect, HttpRequest, HttpResponse, Http404
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.views import generic
 
 # models
@@ -539,6 +540,7 @@ class CommentModerate(AdminOnlyMixin, generic.UpdateView):
     model = item_models.Comment
     template_name = 'app_settings/comment/comment_update.html'
     fields = ['is_published']
+    success_url = reverse_lazy('app_settings:comments_list')
 
 
 class OrderListView(generic.ListView):

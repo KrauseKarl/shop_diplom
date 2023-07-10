@@ -115,18 +115,20 @@
                 <div class="Cart-product">
                   <div class="Cart-block Cart-block_row">
                     <div class="Cart-block Cart-block_pict">
-                      <a class="Cart-pict" href="{% url 'app_item:item_detail' pk=item.item.pk %}">
+                      <a class="Cart-pict" href="{% url 'app_item:item_detail' pk=item.item.item.pk %}">
                         <img class="Cart-img" src="{{ item.item.item.main_image }}"
                              alt="{{ item.item.item.title }}"/>
                       </a>
                     </div>
                     <div class="Cart-block Cart-block_info">
-                      <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.pk %}">{{ item.item.item.title }}
+                      <a class="Cart-title" href="{% url 'app_item:item_detail' pk=item.item.item.pk %}">
+                        {{ item.item.item.title }}
                       </a>
                       <div class="Cart-desc">{{ item.item.item.store }}
                       </div>
-                      <div class="Cart-desc">${{ item.item.price }}
-                      </div>
+                      <a href="{% url 'app_item:item_detail' pk=item.item.item.pk %}#reviews" class="Cart-desc">
+                        Оставить отзыв
+                      </a>
                     </div>
                     <div class="Cart-block Cart-block_info">
                       <div class="Cart-title">
