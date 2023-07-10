@@ -59,7 +59,7 @@ class Cart(models.Model):
         return self.all_items.select_related('item').filter(
             Q(is_paid=False) &
             Q(item__is_available=True) &
-            Q(item__stock__gt=1)
+            Q(item__stock__gt=0)
         )
 
     @property

@@ -40,7 +40,7 @@ done
 
 echo "***** shell (super user created) DONE *****"
 
-while ! python manage.py loaddata  fixtures/data.json 2>&1; do
+while ! python manage.py loaddata  fixtures/new_data.json 2>&1; do
    echo "load data is in progress status"
    sleep 0.1
 done

@@ -35,6 +35,9 @@ class AdminDashBoardView(AdminOnlyMixin, generic.TemplateView):
         context['seller'] = auth_modals.Profile.objects.filter(user__groups__name='seller').count()
         context['stores'] = store_modals.Store.objects.filter(is_active=True).count()
         context['items'] = item_models.Item.objects.filter(is_active=False).count()
+        context['comments'] = item_models.Comment.objects.filter(is_published=False).count()
+        context['categories'] = item_models.Category.objects.count()
+        context['tags'] = item_models.Tag.objects.count()
         return self.render_to_response(context)
 
 

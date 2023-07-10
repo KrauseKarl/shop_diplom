@@ -198,8 +198,15 @@ class Item(models.Model):
         if not self.slug:
             self.slug = slugify_for_cyrillic_text(self.title)
         self.updated = datetime.datetime.now()
-        if int(self.stock) <= 19:
+        if self.stock < 20:
             self.limited_edition = True
+        else:
+            self.limited_edition = False
+        if self.stock < 1:
+            self.is_available = False
+        else:
+            self.is_available = True
+
         return super().save(*args, **kwargs)
 
     @property

@@ -62,6 +62,7 @@
 
                     <div class="ProductCard-desc">
                         <div class="ProductCard-header">
+
                             <h2 class="ProductCard-title">{{ item.title }}
                             </h2>
                             <div class="ProductCard-info" id="maz">
@@ -75,6 +76,10 @@
                                     </div>
                                 </div>
                             </div>
+                            <br>
+                            {% if item.limited_edition and  item.is_available %}
+                            <span class="label-color created">осталось всего {{ item.stock }} шт.</span>
+                            {% endif %}
                         </div>
                         <div class="ProductCard-text">
                             <ul>

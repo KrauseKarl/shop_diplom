@@ -100,7 +100,9 @@ class ItemHandler:
         """
         base = item_models.Item.objects.annotate(quantity=F('cart_item__order_item__quantity'))
         queryset = queryset if queryset else base
-        queryset = queryset.annotate(quantity=F('cart_item__order_item__quantity')).order_by('-quantity')
+        queryset = queryset.annotate(quantity=F('cart_item__order_item__quantity')).filter(quantity__gt=0).\
+            order_by('-quantity').\
+            distinct()
         return queryset
 
     @staticmethod

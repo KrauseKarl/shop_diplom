@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import transaction, IntegrityError
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.shortcuts import redirect
 
 # models
@@ -55,7 +55,7 @@ def paying(order_id, number, pay):
             for order_item in order.order_items.all():
                 item = item_models.Item.objects.get(cart_item=order_item.item)
                 item.stock -= order_item.quantity
-                item.save(update_fields=['stock'])
+                item.save()
 
         return True
 

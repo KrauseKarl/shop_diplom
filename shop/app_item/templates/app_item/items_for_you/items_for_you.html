@@ -50,7 +50,19 @@
                             {% endif %}
                         </strong>
                     </div>
-                    <div class="Card-pin"></div>
+                    {% if item.pk in request.session.favorites %}
+                        <div class="Cart-item-favorites ">
+                             <a href="{% url 'app_favorite:remove_item' item.pk %}" title="Добавить в избранное">
+                                 <img src="/assets/img/icons/star.svg" width="35">
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="Cart-item-favorites">
+                            <a href="{% url 'app_favorite:add_item' item.pk %}" title="Убрать из избранного">
+                                <img src="/assets/img/icons/star_off.svg" width="35">
+                            </a>
+                        </div>
+                        {% endif %}
                     <div class="Card-content">
                         <strong class="Card-title">
                             <a href="{{ item.get_absolute_url }}">{{ item.title }}</a>

@@ -8,7 +8,7 @@ SECRET_KEY = os.getenv(
     "SECRET_KEY",
     "django-insecure-hgtz)@6%!&a)!vn^wi#i-3$uxchie4%f#fz+2lnor*5r$2(q2d"
 )
-DEBUG = True  # os.getenv("DEBUG", "0") == "1"
+DEBUG = True # os.getenv("DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 if os.environ.get("ALLOWED_HOSTS") is not None:
@@ -224,7 +224,7 @@ FAVORITE_SESSION_ID = 'favorites'
 COMPARE_SESSION_ID = 'compares'
 
 # Celery settings
-
+#
 # CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
 # CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
 

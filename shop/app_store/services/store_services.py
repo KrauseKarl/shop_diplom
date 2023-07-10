@@ -50,7 +50,7 @@ class StoreHandler:
             'best_comment': ItemHandler.get_comments_items(queryset),
             'stock': queryset.order_by('stock'),
             '-stock': queryset.order_by('-stock'),
-            'limited_edition': queryset.filter(stock__range=(6, 16)).order_by('-stock'),
+            'limited_edition': queryset.filter(stock__range=(0, 19)).order_by('-stock'),
             'rest': queryset.filter(stock__lt=5).order_by('-stock'),
         }
         return sort_book[order_by]

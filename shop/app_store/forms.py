@@ -99,9 +99,8 @@ class UpdateItemImageForm(forms.ModelForm):
         validators=[file_size],
     )
 
-    class Meta:
-        model = item_models.Image
-        fields = ('image', )
+    class Meta(UpdateItemForm.Meta):
+        fields = UpdateItemForm.Meta.fields + ('image',)
 
     def clean_image_size(self):
         """Функция валидирует размер загружаемого файла."""

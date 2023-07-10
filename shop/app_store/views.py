@@ -222,7 +222,6 @@ class ItemUpdateView(UserPassesTestMixin, generic.UpdateView):
     model = item_models.Item
     template_name = 'app_store/item/edit_item.html'
     form_class = store_forms.UpdateItemForm
-    second_form_class = store_forms.UpdateItemImageForm
 
     def test_func(self):
         user = self.request.user
@@ -248,7 +247,6 @@ class ItemUpdateView(UserPassesTestMixin, generic.UpdateView):
             instance=self.get_object(),
         )
         form.save()
-
         for new_value in self.request.POST.getlist('value'):
             if new_value:
                 feature = item_models.Feature.objects.filter(values=new_value).first()
@@ -267,11 +265,11 @@ class ItemUpdateView(UserPassesTestMixin, generic.UpdateView):
                 instance.save()
 
         messages.add_message(self.request, messages.SUCCESS, f"Данные о товаре {instance} обновлены")
-        return super().form_invalid(form)
+        return super().form_valid(form)
 
     def form_invalid(self, form):
-        form = store_forms.UpdateItemImageForm(self.request.POST, self.request.FILES)
-        # messages.add_message(self.request, messages.ERROR, f"Ошибка.")
+        form = store_forms.UpdateItemForm(self.request.POST, self.request.FILES)
+        messages.add_message(self.request, messages.ERROR, f"Ошибка.Товар не обновлен")
         return super().form_invalid(form)
 
     def get_success_url(self):
