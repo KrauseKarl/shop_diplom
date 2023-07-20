@@ -1,3 +1,4 @@
+"""Модуль содержит классы-предстывления для работы с со списком сравнения."""
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import generic
@@ -7,41 +8,38 @@ from app_item import models as item_models
 
 
 class AddItemComparison(generic.TemplateView):
-    """ Класс-представление для добавления товара в список сравненияю. """
+    """Класс-представление для добавления товара в список сравнения."""
 
     model = item_models.Item
 
     def get(self, request, *args, **kwargs):
-        Comparison(request).add(str(kwargs['pk']))
-        return redirect(request.META.get('HTTP_REFERER'))
+        """GET-функция для добавления товара в список сравнения."""
+        Comparison(request).add(str(kwargs["pk"]))
+        return redirect(request.META.get("HTTP_REFERER"))
 
 
 class RemoveItemComparison(generic.TemplateView):
-    """ Класс-представление для удаления товара из списка сравнения"""
+    """Класс-представление для удаления товара из списка сравнения."""
 
     model = item_models.Item
 
     def get(self, request, *args, **kwargs):
-        Comparison(request).remove(kwargs['pk'])
-        return redirect(request.META.get('HTTP_REFERER'))
+        """GET-функция для удаления товара в список сравнения."""
+        Comparison(request).remove(kwargs["pk"])
+        return redirect(request.META.get("HTTP_REFERER"))
 
 
 class CompareItemView(generic.DetailView):
-    """ Класс-представление для сравнения товаров."""
+    """Класс-представление для сравнения товаров."""
 
     model = item_models.Item
-    template_name = 'app_compare/compare_list.html'
+    template_name = "app_compare/compare_list.html"
 
     def get(self, request, *args, **kwargs):
-        """
-        Функция-get для отображения корзины.
-        возвращает на страницу корзины
-        :return: корзину и id пользователя
-        :rtype: dict
-        """
+        """Функция-get для отображения списка-сравнения."""
         object_list = Comparison(request).all()
-        value_list = object_list.values_list('feature_value', flat=True)
-        compare_mode = bool(request.GET.get('compare'))
+        value_list = object_list.values_list("feature_value", flat=True)
+        compare_mode = bool(request.GET.get("compare"))
         if compare_mode:
             final_list = {}
             unique = []
@@ -56,22 +54,21 @@ class CompareItemView(generic.DetailView):
                     except ValueError:
                         pass
         else:
-            unique = item_models.Feature.objects.filter(values__in=value_list).distinct()
-        context = {
-            'object_list': object_list,
-            'unique': unique
-        }
+            unique = item_models.Feature.objects.filter(
+                values__in=value_list
+            ).distinct()
+        context = {"object_list": object_list, "unique": unique}
         return render(request, self.template_name, context=context)
 
 
 class RemoveAllComparison(generic.TemplateView):
-    """ Класс-представление для удаления товара из корзины"""
+    """Класс-представление для удаления товара из корзины."""
 
     model = item_models.Item
-    template_name = 'app_compare/compare_list.html'
+    template_name = "app_compare/compare_list.html"
 
     def get(self, request, *args, **kwargs):
-        """ Функция-get для очистки списка товаров. """
+        """GET-функция для очистки списка товаров."""
         compares = Comparison(request)
         compares.clear()
-        return redirect(reverse('app_compare:compare'))
+        return redirect(reverse("app_compare:compare"))

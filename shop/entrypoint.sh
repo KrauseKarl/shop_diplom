@@ -40,7 +40,7 @@ done
 
 echo "***** shell (super user created) DONE *****"
 
-while ! python manage.py loaddata  fixtures/new_data.json 2>&1; do
+while ! python manage.py loaddata  fixtures/db.json 2>&1; do
    echo "load data is in progress status"
    sleep 0.1
 done
@@ -48,12 +48,6 @@ done
 echo "***** load fixtures (DATA) DONE *****"
 
 
-#while ! python manage.py loaddata  fixtures/roles.json 2>&1; do
-#   echo "load data is in progress status"
-#   sleep 0.1
-#done
-#
-#echo "***** load fixtures (ROLE) DONE *****"
 
 while ! python manage.py collectstatic  --noinput  2>&1; do
    echo "collectstatic is in progress status"
@@ -67,6 +61,5 @@ echo "***** FULL Django docker is fully configured  *****"
 echo "***** successfully  *****"
 
 gunicorn shop.wsgi:application --bind 0.0.0.0:8000
-#python manage.py runserver 0.0.0.0:8000
 
 exec "$@"

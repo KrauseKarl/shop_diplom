@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('app_order', '0002_initial'),
+        ("app_order", "0002_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='orderitem',
-            name='is_paid',
-            field=models.BooleanField(default=False, verbose_name='оплачен'),
+            model_name="orderitem",
+            name="is_paid",
+            field=models.BooleanField(default=False, verbose_name="оплачен"),
         ),
     ]

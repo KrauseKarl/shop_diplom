@@ -5,15 +5,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('app_store', '0001_initial'),
+        ("app_store", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='store',
-            name='min_for_discount',
-            field=models.IntegerField(default=0, validators=[django.core.validators.MinValueValidator(0)], verbose_name='минимальная сумма для бесплатной доставки'),
+            model_name="store",
+            name="min_for_discount",
+            field=models.IntegerField(
+                default=0,
+                validators=[django.core.validators.MinValueValidator(0)],
+                verbose_name="минимальная сумма для бесплатной доставки",
+            ),
         ),
     ]

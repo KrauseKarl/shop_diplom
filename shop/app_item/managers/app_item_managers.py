@@ -7,10 +7,7 @@ class AvailableItemManager(models.Manager):
     """Менеджер для доступных товаров."""
 
     def get_queryset(self):
-        return super().get_queryset().filter(
-            Q(is_available=True) &
-            Q(stock__gt=0)
-        )
+        return super().get_queryset().filter(Q(is_available=True) & Q(stock__gt=0))
 
 
 class UnavailableItemManager(models.Manager):
@@ -32,10 +29,7 @@ class CategoryWithItemsManager(models.Manager):
     """Менеджер для категорий с товарами."""
 
     def get_queryset(self):
-        return super().get_queryset().exclude(
-            Q(items=None) &
-            Q(sub_categories=None)
-        )
+        return super().get_queryset().exclude(Q(items=None) & Q(sub_categories=None))
 
 
 class CategoryActiveManager(models.Manager):

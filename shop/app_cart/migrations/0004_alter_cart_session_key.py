@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('app_cart', '0003_remove_cart_items_cartitem_cart'),
+        ("app_cart", "0003_remove_cart_items_cartitem_cart"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='cart',
-            name='session_key',
-            field=models.CharField(blank=True, max_length=255, null=True, verbose_name='ключ сессии'),
+            model_name="cart",
+            name="session_key",
+            field=models.CharField(
+                blank=True, max_length=255, null=True, verbose_name="ключ сессии"
+            ),
         ),
     ]

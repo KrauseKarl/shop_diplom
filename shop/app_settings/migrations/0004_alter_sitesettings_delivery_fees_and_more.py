@@ -5,25 +5,45 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('app_settings', '0003_alter_sitesettings_delivery_fees_and_more'),
+        ("app_settings", "0003_alter_sitesettings_delivery_fees_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sitesettings',
-            name='delivery_fees',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=9, null=True, validators=[django.core.validators.MinValueValidator(0)], verbose_name='стоимость доставки'),
+            model_name="sitesettings",
+            name="delivery_fees",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                max_digits=9,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(0)],
+                verbose_name="стоимость доставки",
+            ),
         ),
         migrations.AlterField(
-            model_name='sitesettings',
-            name='express_delivery_price',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=9, null=True, validators=[django.core.validators.MinValueValidator(0)], verbose_name='стоимость экспресс доставки'),
+            model_name="sitesettings",
+            name="express_delivery_price",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                max_digits=9,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(0)],
+                verbose_name="стоимость экспресс доставки",
+            ),
         ),
         migrations.AlterField(
-            model_name='sitesettings',
-            name='min_free_delivery',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=9, null=True, validators=[django.core.validators.MinValueValidator(0)], verbose_name='минимальная сумма для бесплатной доставки'),
+            model_name="sitesettings",
+            name="min_free_delivery",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                max_digits=9,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(0)],
+                verbose_name="минимальная сумма для бесплатной доставки",
+            ),
         ),
     ]

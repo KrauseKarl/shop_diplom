@@ -4,15 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('app_order', '0004_alter_orderitem_status'),
+        ("app_order", "0004_alter_orderitem_status"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='order',
-            name='delivery',
-            field=models.CharField(choices=[('standard', 'обычная доставка'), ('express', 'экспресс доставка')], max_length=20, verbose_name='доставка'),
+            model_name="order",
+            name="delivery",
+            field=models.CharField(
+                choices=[
+                    ("standard", "обычная доставка"),
+                    ("express", "экспресс доставка"),
+                ],
+                max_length=20,
+                verbose_name="доставка",
+            ),
         ),
     ]

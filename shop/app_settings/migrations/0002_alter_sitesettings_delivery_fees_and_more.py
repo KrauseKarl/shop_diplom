@@ -5,25 +5,42 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('app_settings', '0001_initial'),
+        ("app_settings", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sitesettings',
-            name='delivery_fees',
-            field=models.DecimalField(decimal_places=2, default=15, max_digits=9, validators=[django.core.validators.MinValueValidator(0)], verbose_name='стоимость доставки'),
+            model_name="sitesettings",
+            name="delivery_fees",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=15,
+                max_digits=9,
+                validators=[django.core.validators.MinValueValidator(0)],
+                verbose_name="стоимость доставки",
+            ),
         ),
         migrations.AlterField(
-            model_name='sitesettings',
-            name='express_delivery_price',
-            field=models.DecimalField(decimal_places=2, default=100, max_digits=9, validators=[django.core.validators.MinValueValidator(0)], verbose_name='стоимость экспресс доставки'),
+            model_name="sitesettings",
+            name="express_delivery_price",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=100,
+                max_digits=9,
+                validators=[django.core.validators.MinValueValidator(0)],
+                verbose_name="стоимость экспресс доставки",
+            ),
         ),
         migrations.AlterField(
-            model_name='sitesettings',
-            name='min_free_delivery',
-            field=models.DecimalField(decimal_places=2, default=2000, max_digits=9, validators=[django.core.validators.MinValueValidator(0)], verbose_name='минимальная сумма для бесплатной доставки'),
+            model_name="sitesettings",
+            name="min_free_delivery",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=2000,
+                max_digits=9,
+                validators=[django.core.validators.MinValueValidator(0)],
+                verbose_name="минимальная сумма для бесплатной доставки",
+            ),
         ),
     ]

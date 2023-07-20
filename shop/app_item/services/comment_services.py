@@ -8,22 +8,26 @@ from app_store import models as store_models
 
 
 class CommentHandler:
-    @staticmethod
-    def total_comments_amount() -> int:
-        return item_models.Comment.objects.count()
+    """Класс для работы с комментариями."""
 
     @staticmethod
-    def total_comments() -> QuerySet:
-        return item_models.Comment.objects.order_by('-created')[:10]
+    def non_moderate_comments_amount() -> int:
+        """Функция возвращает общее кол-во новых  комментариев для панели администратора."""
+        return item_models.Comment.objects.filter(is_published=False).count()
 
     @staticmethod
-    def seller_stores_comments(request) -> QuerySet:
-        seller = request.user
-        store = store_models.Store.objects.filter(owner=seller)
+    def total_comments() -> QuerySet[item_models.Comment]:
+        """Функция возвращает все комментраии на сайте для панели администратора."""
+        return item_models.Comment.objects.order_by("-created")
+
+    @staticmethod
+    def seller_stores_comments(user) -> QuerySet[item_models.Comment]:
+        """Функция возвращает все комментраии магазина."""
+        store = store_models.Store.objects.filter(owner=user)
         return item_models.Comment.objects.filter(item__store__in=store)
 
     @staticmethod
-    def comment_counter(item_id) -> int:
+    def comment_counter(item_id: int) -> int:
         """
         Функция-счетчик для комментариев одного товрара.
         :param item_id: id товара
@@ -33,25 +37,15 @@ class CommentHandler:
         return item.comments.count()
 
     @staticmethod
-    def get_permission(user, comment) -> bool:
-        """
-        Функция для установления права пользователя на комментарий.
-        :param user: экземпляр пользователя.
-        :param comment: экземпляр комментария.
-        :return: True - если комментарий принадлежит пользователю, False - если нет.
-        """
-        if comment.user.id == user.id:
-            return True
-        return False
-
-    @staticmethod
-    def get_comment(comment_id):
+    def get_comment(comment_id: id):
         """Функция для получения одного комментария."""
-        comment = item_models.Comment.objects.\
-            select_related('item', 'user').\
-            filter(id=comment_id).first()
+        comment = (
+            item_models.Comment.objects.select_related("item", "user")
+            .filter(id=comment_id)
+            .first()
+        )
         if not comment:
-            raise Http404('Комментарий не найден')
+            raise Http404("Комментарий не найден")
         return comment
 
     @staticmethod
@@ -59,7 +53,11 @@ class CommentHandler:
         """Функция для подтверждения комментария."""
         comment = CommentHandler.get_comment(comment_id)
         comment.is_published = True
-        comment.save(update_fields=['is_published', ])
+        comment.save(
+            update_fields=[
+                "is_published",
+            ]
+        )
         return comment
 
     @staticmethod
@@ -67,24 +65,31 @@ class CommentHandler:
         """Функция для отклонения  комментария."""
         comment = CommentHandler.get_comment(comment_id)
         comment.is_published = False
-        comment.save(update_fields=['is_published', ])
+        comment.save(
+            update_fields=[
+                "is_published",
+            ]
+        )
         return comment
 
     @staticmethod
-    def get_comment_list_by_user(request) -> QuerySet[item_models.Comment]:
-        """Функция возвращает список всех комментариев пользователя. """
-        comments = item_models.Comment.objects.select_related('item').filter(user=request.user)
+    def get_comment_list_by_user(user) -> QuerySet[item_models.Comment]:
+        """Функция возвращает список всех комментариев пользователя."""
+        comments = item_models.Comment.objects.select_related("item").filter(user=user)
         return comments
 
     @staticmethod
     def get_comment_cont(item_id):
-        """Функция возвращает общее количество комментариев товара. """
-        return item_models.Comment.objects.filter(Q(item_id=item_id) & Q(is_published=True)).count()
+        """Функция возвращает общее количество комментариев товара."""
+        return item_models.Comment.objects.filter(
+            Q(item_id=item_id) & Q(is_published=True)
+        ).count()
 
     @staticmethod
     def add_comment(user, item_id, data):
         """
         Функция для добавления комментария.
+
         :param user: экземпляр пользователя.
         :param item_id: id-товара.
         :param data: словарь с данными из формы комментария.
@@ -100,16 +105,29 @@ class CommentHandler:
         return new_comment
 
     @staticmethod
+    def get_permission(user_id: int, comment_user_id: int) -> bool:
+        """
+        Функция для установления права пользователя на комментарий.
+        :param user_id: ID пользователя.
+        :param comment_user_id: ID автора комментария.
+        :return: True - если комментарий принадлежит пользователю, False - если нет.
+        """
+        if comment_user_id == user_id:
+            return True
+        return False
+
+    @staticmethod
     def delete_comment(user, comment_id) -> dict:
         """
         Функция для удаления комментария.
+
         Проверят право на удаления комментария.
         :param user: экземпляр пользователя.
         :param comment_id: id-комментария.
         :return: удаляет комментарий.
         """
         comment = CommentHandler.get_comment(comment_id)
-        permission = CommentHandler.get_permission(user, comment)
+        permission = CommentHandler.get_permission(user.id, comment.user.id)
         if permission:
             return comment.delete()
         return comment

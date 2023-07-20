@@ -10,6 +10,7 @@ from app_store.models import Store
 
 class OrderItem(models.Model):
     """Модель оплаченного товара."""
+
     #   STATUS = (
     #     ('has_been_created', 'заказан'),
     #     ('is_paid', 'оплачен'),
@@ -19,68 +20,55 @@ class OrderItem(models.Model):
     #     ('deactivated', 'отменен')
     # )
     STATUS = (
-        ('not_paid', 'заказан'),
-        ('paid', 'оплачен'),
-        ('in_progress', 'собирается'),
-        ('on_the_way', 'доставляется'),
-        ('is_ready', 'готов к выдаче'),
-        ('completed', 'доставлен'),
-        ('deactivated', 'отменен')
+        ("not_paid", "заказан"),
+        ("paid", "оплачен"),
+        ("in_progress", "собирается"),
+        ("on_the_way", "доставляется"),
+        ("is_ready", "готов к выдаче"),
+        ("completed", "доставлен"),
+        ("deactivated", "отменен"),
     )
     item = models.ForeignKey(
         CartItem,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        related_name='order_item'
+        related_name="order_item",
     )
-    quantity = models.PositiveIntegerField(
-        default=1,
-        verbose_name='количество товара'
-    )
+    quantity = models.PositiveIntegerField(default=1, verbose_name="количество товара")
     price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name='цена товара'
+        max_digits=10, decimal_places=2, verbose_name="цена товара"
     )
     total = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name='Общая сумма'
+        max_digits=10, decimal_places=2, verbose_name="Общая сумма"
     )
     status = models.CharField(
         max_length=20,
         choices=STATUS,
-        verbose_name='статус выбранного товара',
-        default=STATUS[0][0]
+        verbose_name="статус выбранного товара",
+        default=STATUS[0][0],
     )
-    is_paid = models.BooleanField(
-        default=False,
-        verbose_name='оплачен'
-    )
+    is_paid = models.BooleanField(default=False, verbose_name="оплачен")
     order = models.ForeignKey(
-        'Order',
+        "Order",
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        related_name='order_items',
-        verbose_name='заказ'
+        related_name="order_items",
+        verbose_name="заказ",
     )
 
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата создания'
-    )
+    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
     objects = models.Manager()
 
     class Meta:
-        db_table = 'app_order_item'
-        ordering = ['-created']
-        verbose_name = 'оплаченный товар'
-        verbose_name_plural = 'оплаченный товары'
+        db_table = "app_order_item"
+        ordering = ["-created"]
+        verbose_name = "оплаченный товар"
+        verbose_name_plural = "оплаченный товары"
 
     def __str__(self):
-        return f'{self.item.item}'
+        return f"{self.item.item}"
 
     def save(self, *args, **kwargs):
         self.total = self.price * self.quantity
@@ -91,156 +79,89 @@ class Order(models.Model):
     """Модель заказа."""
 
     STATUS = (
-        ('created', 'сформирован'),
-        ('paid', 'оплачен'),
-        ('is_preparing', 'собирается'),
-        ('on_the_way', 'доставляется'),
-        ('is_ready', 'готов'),
-        ('completed', 'доставлен'),
-        ('deactivated', 'отменен')
+        ("created", "сформирован"),
+        ("paid", "оплачен"),
+        ("is_preparing", "собирается"),
+        ("on_the_way", "доставляется"),
+        ("is_ready", "готов"),
+        ("completed", "доставлен"),
+        ("deactivated", "отменен"),
     )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='user_order'
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_order")
     store = models.ManyToManyField(
-        Store,
-        related_name='orders',
-        verbose_name='магазины'
+        Store, related_name="orders", verbose_name="магазины"
     )
-    name = models.CharField(
-        max_length=250,
-        verbose_name='имя получателя'
-    )
-    is_paid = models.BooleanField(
-        default=False,
-        verbose_name='оплачен'
-    )
+    name = models.CharField(max_length=250, verbose_name="имя получателя")
+    is_paid = models.BooleanField(default=False, verbose_name="оплачен")
     status = models.CharField(
-        max_length=20,
-        choices=STATUS,
-        verbose_name='статус заказа',
-        default='created'
+        max_length=20, choices=STATUS, verbose_name="статус заказа", default="created"
     )
     total_sum = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name='сумма заказа',
-        default=0
+        max_digits=10, decimal_places=2, verbose_name="сумма заказа", default=0
     )
     delivery = models.CharField(
-        max_length=20,
-        choices=SiteSettings.DELIVERY,
-        verbose_name='доставка'
+        max_length=20, choices=SiteSettings.DELIVERY, verbose_name="доставка"
     )
     delivery_fees = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name='сумма доставки',
-        default=0
+        max_digits=10, decimal_places=2, verbose_name="сумма доставки", default=0
     )
     pay = models.CharField(
-        max_length=20,
-        choices=SiteSettings.PAY_TYPE,
-        verbose_name='оплата'
+        max_length=20, choices=SiteSettings.PAY_TYPE, verbose_name="оплата"
     )
-    email = models.EmailField(
-        max_length=250,
-        verbose_name='электронная почта'
-    )
-    telephone = models.CharField(
-        max_length=20,
-        verbose_name='телефон'
-    )
-    city = models.CharField(
-        max_length=200,
-        verbose_name='город'
-    )
-    address = models.CharField(
-        max_length=200,
-        verbose_name='адрес'
-    )
+    email = models.EmailField(max_length=250, verbose_name="электронная почта")
+    telephone = models.CharField(max_length=20, verbose_name="телефон")
+    city = models.CharField(max_length=200, verbose_name="город")
+    address = models.CharField(max_length=200, verbose_name="адрес")
     comment = models.TextField(
-        verbose_name='Комментарий к заказу',
-        null=True,
-        blank=True
+        verbose_name="Комментарий к заказу", null=True, blank=True
     )
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата создания'
-    )
-    updated = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата обновления'
-    )
-    error = models.CharField(
-        max_length=200,
-        default='',
-        blank=True
-    )
-    archived = models.BooleanField(
-        default=False,
-        verbose_name='в архив'
-    )
+    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
+    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
+    error = models.CharField(max_length=200, default="", blank=True)
+    archived = models.BooleanField(default=False, verbose_name="в архив")
 
     objects = models.Manager()
 
     class Meta:
-        db_table = 'app_order'
-        ordering = ['created']
-        verbose_name = 'заказ'
-        verbose_name_plural = 'заказы'
+        db_table = "app_order"
+        ordering = ["created"]
+        verbose_name = "заказ"
+        verbose_name_plural = "заказы"
 
     def save(self, *args, **kwargs):
         self.updated = now()
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        """ Функция для отмены заказа. """
+        """Функция для отмены заказа."""
         self.archived = True
-        self.status = 'deactivated'
+        self.status = "deactivated"
         self.order_items.update(status=self.STATUS[:-1][0])
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'Заказ №{self.user.id:04}-{self.pk}'
+        return f"Заказ №{self.user.id:04}-{self.pk}"
 
     def created_order_quantity(self):
-        """ Функция возвращает список всех созданных заказов. """
+        """Функция возвращает список всех созданных заказов."""
         return self.filter(status=self.STATUS[0][0]).count()
 
 
 class Address(models.Model):
     """Модель адреса доставки."""
-    city = models.CharField(
-        max_length=200,
-        verbose_name='город'
-    )
-    address = models.CharField(
-        max_length=200,
-        verbose_name='адрес'
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='address'
-    )
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата создания'
-    )
-    updated = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата обновления'
-    )
+
+    city = models.CharField(max_length=200, verbose_name="город")
+    address = models.CharField(max_length=200, verbose_name="адрес")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="address")
+    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
+    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
     objects = models.Manager()
 
     def __str__(self):
-        return f'город: {self.city}, адрес: {self.address}'
+        return f"город: {self.city}, адрес: {self.address}"
 
     class Meta:
-        db_table = 'app_post_address'
-        ordering = ['-created']
-        verbose_name = 'адрес'
-        verbose_name_plural = 'адреса'
+        db_table = "app_post_address"
+        ordering = ["-created"]
+        verbose_name = "адрес"
+        verbose_name_plural = "адреса"

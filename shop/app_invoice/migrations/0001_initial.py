@@ -4,28 +4,68 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Invoice',
+            name="Invoice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('total_purchase_sum', models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='сумма товаров')),
-                ('delivery_cost', models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='стоимость доставки')),
-                ('total_sum', models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='итоговая сумма')),
-                ('number', models.CharField(max_length=20, verbose_name='номер платежного документа')),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "total_purchase_sum",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        max_digits=10,
+                        verbose_name="сумма товаров",
+                    ),
+                ),
+                (
+                    "delivery_cost",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        max_digits=10,
+                        verbose_name="стоимость доставки",
+                    ),
+                ),
+                (
+                    "total_sum",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        max_digits=10,
+                        verbose_name="итоговая сумма",
+                    ),
+                ),
+                (
+                    "number",
+                    models.CharField(
+                        max_length=20, verbose_name="номер платежного документа"
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'квитанция',
-                'verbose_name_plural': 'квитанции',
-                'db_table': 'app_invoices',
-                'ordering': ['-created'],
+                "verbose_name": "квитанция",
+                "verbose_name_plural": "квитанции",
+                "db_table": "app_invoices",
+                "ordering": ["-created"],
             },
         ),
     ]

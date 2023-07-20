@@ -41,8 +41,8 @@
                         </strong>
                     </header>
                     <div class="form-group">
-                        <a class="btn btn_primary" href="{% url 'app_settings:create_category' %}">Добавить
-                            категорию</a>
+                        <a class="btn btn_primary" href="{% url 'app_settings:create_category' %}">Добавить категорию
+                        </a>
                     </div>  </div>
                      <div class="Section-columnSection">
                     <form method="get" action="">
@@ -90,21 +90,19 @@
                             <div class="row">
                                 <!--  ORDER'S TITLE & DATE -->
                                 <div class="row-block">
-
                                     <div class="Order-title ">
                                         <div class="Order-numberOrder">
                                             <a href="{% url 'app_settings:category_edit' pk=cat.pk %}">
-                                                <img src="{{ cat.image.url }}" width="32" alt="редактировать категорию">
+                                                <img src="{{ cat.icon }}" width="32" alt="иконка">
                                             </a>
                                             {{ cat.title|upper }}
                                         </div>
                                     </div>
-
+                                     {% if not cat.is_archived %}
                                     <div class="Order-info">
                                         {% if cat.parent_category %}
                                         <div class="Order-info Order-info_status">
-                                            <ul>
-                                                родительская категория:
+                                            <ul>родительская категория:
                                                 <li class="Order-infoContent">{{ cat.parent_category }}
                                                 </li>
                                             </ul>
@@ -126,12 +124,18 @@
                                         {% endif %}
                                     </div>
                                     <div class="Order-info">
-
                                         <a class="Order-infoContent"
                                            href="{% url 'app_settings:feature_list' pk=cat.pk %}">
                                           редактировать характеристики категории
                                         </a>
                                     </div>
+                                    {% else %}
+                                    <div class="Order-info"></div>
+                                     <div class="Order-info">
+                                        <div class="Order-info Order-info_status ">категория в архиве
+                                        </div>
+                                     </div>
+                                     {% endif %}
                                 </div>
 
                                 <div class="Cart-block Cart-block_row" style="margin:0 20px">

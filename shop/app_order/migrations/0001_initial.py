@@ -5,75 +5,240 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('app_cart', '0002_initial'),
+        ("app_cart", "0002_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Address',
+            name="Address",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('city', models.CharField(max_length=200, verbose_name='город')),
-                ('address', models.CharField(max_length=200, verbose_name='адрес')),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
-                ('updated', models.DateTimeField(auto_now_add=True, verbose_name='дата обновления')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("city", models.CharField(max_length=200, verbose_name="город")),
+                ("address", models.CharField(max_length=200, verbose_name="адрес")),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
+                (
+                    "updated",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата обновления"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'адрес',
-                'verbose_name_plural': 'адреса',
-                'db_table': 'app_post_address',
-                'ordering': ['-created'],
+                "verbose_name": "адрес",
+                "verbose_name_plural": "адреса",
+                "db_table": "app_post_address",
+                "ordering": ["-created"],
             },
         ),
         migrations.CreateModel(
-            name='Order',
+            name="Order",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=250, verbose_name='имя получателя')),
-                ('is_paid', models.BooleanField(default=False, verbose_name='оплачен')),
-                ('status', models.CharField(choices=[('created', 'сформирован'), ('paid', 'оплачен'), ('is_preparing', 'собирается'), ('on_the_way', 'доставляется'), ('is_ready', 'готов'), ('completed', 'доставлен'), ('deactivated', 'отменен')], default='created', max_length=20, verbose_name='статус заказа')),
-                ('total_sum', models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='сумма заказа')),
-                ('delivery', models.CharField(choices=[('standard', 'обычная доставка'), ('express', 'экспресс доставка'), ('oneself', 'самовывоз')], max_length=20, verbose_name='доставка')),
-                ('delivery_fees', models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='сумма доставки')),
-                ('pay', models.CharField(choices=[('online', 'Онлайн картой'), ('someone', 'Онлайн со случайного чужого счета')], max_length=20, verbose_name='оплата')),
-                ('email', models.EmailField(max_length=250, verbose_name='электронная почта')),
-                ('telephone', models.CharField(max_length=20, verbose_name='телефон')),
-                ('city', models.CharField(max_length=200, verbose_name='город')),
-                ('address', models.CharField(max_length=200, verbose_name='адрес')),
-                ('comment', models.TextField(blank=True, null=True, verbose_name='Комментарий к заказу')),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
-                ('updated', models.DateTimeField(auto_now_add=True, verbose_name='дата обновления')),
-                ('error', models.CharField(blank=True, default='', max_length=200)),
-                ('archived', models.BooleanField(default=False, verbose_name='в архив')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=250, verbose_name="имя получателя"),
+                ),
+                ("is_paid", models.BooleanField(default=False, verbose_name="оплачен")),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("created", "сформирован"),
+                            ("paid", "оплачен"),
+                            ("is_preparing", "собирается"),
+                            ("on_the_way", "доставляется"),
+                            ("is_ready", "готов"),
+                            ("completed", "доставлен"),
+                            ("deactivated", "отменен"),
+                        ],
+                        default="created",
+                        max_length=20,
+                        verbose_name="статус заказа",
+                    ),
+                ),
+                (
+                    "total_sum",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        max_digits=10,
+                        verbose_name="сумма заказа",
+                    ),
+                ),
+                (
+                    "delivery",
+                    models.CharField(
+                        choices=[
+                            ("standard", "обычная доставка"),
+                            ("express", "экспресс доставка"),
+                            ("oneself", "самовывоз"),
+                        ],
+                        max_length=20,
+                        verbose_name="доставка",
+                    ),
+                ),
+                (
+                    "delivery_fees",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        max_digits=10,
+                        verbose_name="сумма доставки",
+                    ),
+                ),
+                (
+                    "pay",
+                    models.CharField(
+                        choices=[
+                            ("online", "Онлайн картой"),
+                            ("someone", "Онлайн со случайного чужого счета"),
+                        ],
+                        max_length=20,
+                        verbose_name="оплата",
+                    ),
+                ),
+                (
+                    "email",
+                    models.EmailField(max_length=250, verbose_name="электронная почта"),
+                ),
+                ("telephone", models.CharField(max_length=20, verbose_name="телефон")),
+                ("city", models.CharField(max_length=200, verbose_name="город")),
+                ("address", models.CharField(max_length=200, verbose_name="адрес")),
+                (
+                    "comment",
+                    models.TextField(
+                        blank=True, null=True, verbose_name="Комментарий к заказу"
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
+                (
+                    "updated",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата обновления"
+                    ),
+                ),
+                ("error", models.CharField(blank=True, default="", max_length=200)),
+                (
+                    "archived",
+                    models.BooleanField(default=False, verbose_name="в архив"),
+                ),
             ],
             options={
-                'verbose_name': 'заказ',
-                'verbose_name_plural': 'заказы',
-                'db_table': 'app_order',
-                'ordering': ['created'],
+                "verbose_name": "заказ",
+                "verbose_name_plural": "заказы",
+                "db_table": "app_order",
+                "ordering": ["created"],
             },
         ),
         migrations.CreateModel(
-            name='OrderItem',
+            name="OrderItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.PositiveIntegerField(default=1, verbose_name='количество товара')),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='цена товара')),
-                ('total', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Общая сумма')),
-                ('status', models.CharField(choices=[('not_paid', 'заказан'), ('paid', 'оплачен'), ('in_progress', 'собирается'), ('on_the_way', 'доставляется'), ('is_ready', 'готов к выдаче'), ('completed', 'доставлен'), ('deactivated', 'отменен')], default='in_cart', max_length=20, verbose_name='статус выбранного товара')),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
-                ('item', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='order_item', to='app_cart.cartitem')),
-                ('order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='order_items', to='app_order.order', verbose_name='заказ')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "quantity",
+                    models.PositiveIntegerField(
+                        default=1, verbose_name="количество товара"
+                    ),
+                ),
+                (
+                    "price",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="цена товара"
+                    ),
+                ),
+                (
+                    "total",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="Общая сумма"
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("not_paid", "заказан"),
+                            ("paid", "оплачен"),
+                            ("in_progress", "собирается"),
+                            ("on_the_way", "доставляется"),
+                            ("is_ready", "готов к выдаче"),
+                            ("completed", "доставлен"),
+                            ("deactivated", "отменен"),
+                        ],
+                        default="in_cart",
+                        max_length=20,
+                        verbose_name="статус выбранного товара",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
+                (
+                    "item",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="order_item",
+                        to="app_cart.cartitem",
+                    ),
+                ),
+                (
+                    "order",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="order_items",
+                        to="app_order.order",
+                        verbose_name="заказ",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'оплаченный товар',
-                'verbose_name_plural': 'оплаченный товары',
-                'db_table': 'app_order_item',
-                'ordering': ['-created'],
+                "verbose_name": "оплаченный товар",
+                "verbose_name_plural": "оплаченный товары",
+                "db_table": "app_order_item",
+                "ordering": ["-created"],
             },
         ),
     ]

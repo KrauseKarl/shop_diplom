@@ -5,10 +5,8 @@ from app_store.models import Store
 
 
 class StoreAdmin(admin.ModelAdmin):
-    list_display = ['title', 'owner', 'full_image', 'discount', 'min_for_discount']
-    readonly_fields = ['full_image', 'owner']
-
-    # fields = ('title', 'owner', ('logo', 'full_image'), 'is_active')
+    list_display = ["title", "owner", "full_image", "discount", "min_for_discount"]
+    readonly_fields = ["full_image", "owner"]
 
     def full_image(self, obj):
         return mark_safe(f'<img src="{obj.logo.url}" width=80/>')

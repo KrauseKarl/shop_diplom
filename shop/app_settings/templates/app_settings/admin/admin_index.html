@@ -155,8 +155,8 @@
                         </li>
                         <li class="menu-item">
                             <a class="menu-link" href="{% url 'app_settings:comments_list' %}">Комментарии
-                                {% if comments %}
-                                <span class="CartBlock-amount">{{ comments }}
+                                {% if comments_count %}
+                                <span class="CartBlock-amount">{{ comments_count }}
                                 </span>
                                 {% endif %}
                             </a>

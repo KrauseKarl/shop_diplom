@@ -4,38 +4,156 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='SiteSettings',
+            name="SiteSettings",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('express_delivery_price', models.DecimalField(decimal_places=2, default=100, max_digits=9, verbose_name='стоимость экспресс доставки')),
-                ('min_free_delivery', models.DecimalField(decimal_places=2, default=2000, max_digits=9, verbose_name='минимальная сумма для бесплатной доставки')),
-                ('delivery_fees', models.DecimalField(decimal_places=2, default=15, max_digits=9, verbose_name='стоимость доставки')),
-                ('cache_detail_view', models.IntegerField(default=86400, verbose_name='время кэширования страницы товара')),
-                ('type_of_delivery', models.CharField(choices=[('обычная доставка', 'Standard'), ('экспресс доставка', 'Express'), ('самовывоз', 'Oneself')], default='standard', max_length=256, verbose_name='тип доставки')),
-                ('type_of_payment', models.CharField(choices=[('online', 'Онлайн картой'), ('someone', 'Онлайн со случайного чужого счета')], default='online', max_length=256, verbose_name='тип оплаты')),
-                ('url', models.URLField(max_length=256, verbose_name='Website url')),
-                ('title', models.CharField(default='Megano', max_length=256, verbose_name='название сайта')),
-                ('support_email', models.EmailField(default='Support@ninzio.com', max_length=254, verbose_name='электронный ящик')),
-                ('phone', models.CharField(default='8-800-200-600', max_length=256, verbose_name='телефон')),
-                ('address', models.CharField(default='New York, north Avenue 26/7 0057 ', max_length=256, verbose_name='адрес')),
-                ('skype', models.CharField(default='techno', max_length=256, verbose_name='skype')),
-                ('facebook', models.CharField(default='https://facebook.com/megano', max_length=256, verbose_name='facebook')),
-                ('twitter', models.CharField(default='https://twitter.com/megano', max_length=256, verbose_name='twitter')),
-                ('linkedIn', models.CharField(default='https://linkedin.com/megano', max_length=256, verbose_name='linkedIn')),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
-                ('updated', models.DateTimeField(auto_now_add=True, verbose_name='дата обновления')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "express_delivery_price",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=100,
+                        max_digits=9,
+                        verbose_name="стоимость экспресс доставки",
+                    ),
+                ),
+                (
+                    "min_free_delivery",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=2000,
+                        max_digits=9,
+                        verbose_name="минимальная сумма для бесплатной доставки",
+                    ),
+                ),
+                (
+                    "delivery_fees",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=15,
+                        max_digits=9,
+                        verbose_name="стоимость доставки",
+                    ),
+                ),
+                (
+                    "cache_detail_view",
+                    models.IntegerField(
+                        default=86400, verbose_name="время кэширования страницы товара"
+                    ),
+                ),
+                (
+                    "type_of_delivery",
+                    models.CharField(
+                        choices=[
+                            ("обычная доставка", "Standard"),
+                            ("экспресс доставка", "Express"),
+                            ("самовывоз", "Oneself"),
+                        ],
+                        default="standard",
+                        max_length=256,
+                        verbose_name="тип доставки",
+                    ),
+                ),
+                (
+                    "type_of_payment",
+                    models.CharField(
+                        choices=[
+                            ("online", "Онлайн картой"),
+                            ("someone", "Онлайн со случайного чужого счета"),
+                        ],
+                        default="online",
+                        max_length=256,
+                        verbose_name="тип оплаты",
+                    ),
+                ),
+                ("url", models.URLField(max_length=256, verbose_name="Website url")),
+                (
+                    "title",
+                    models.CharField(
+                        default="Megano", max_length=256, verbose_name="название сайта"
+                    ),
+                ),
+                (
+                    "support_email",
+                    models.EmailField(
+                        default="Support@ninzio.com",
+                        max_length=254,
+                        verbose_name="электронный ящик",
+                    ),
+                ),
+                (
+                    "phone",
+                    models.CharField(
+                        default="8-800-200-600", max_length=256, verbose_name="телефон"
+                    ),
+                ),
+                (
+                    "address",
+                    models.CharField(
+                        default="New York, north Avenue 26/7 0057 ",
+                        max_length=256,
+                        verbose_name="адрес",
+                    ),
+                ),
+                (
+                    "skype",
+                    models.CharField(
+                        default="techno", max_length=256, verbose_name="skype"
+                    ),
+                ),
+                (
+                    "facebook",
+                    models.CharField(
+                        default="https://facebook.com/megano",
+                        max_length=256,
+                        verbose_name="facebook",
+                    ),
+                ),
+                (
+                    "twitter",
+                    models.CharField(
+                        default="https://twitter.com/megano",
+                        max_length=256,
+                        verbose_name="twitter",
+                    ),
+                ),
+                (
+                    "linkedIn",
+                    models.CharField(
+                        default="https://linkedin.com/megano",
+                        max_length=256,
+                        verbose_name="linkedIn",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
+                (
+                    "updated",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата обновления"
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Настройки',
-                'db_table': 'app_site_settings',
+                "verbose_name_plural": "Настройки",
+                "db_table": "app_site_settings",
             },
         ),
     ]

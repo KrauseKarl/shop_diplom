@@ -13,7 +13,16 @@ class CreateStoreForm(forms.ModelForm):
 
     class Meta:
         model = store_models.Store
-        fields = ('title', 'logo', 'discount', 'min_for_discount', 'is_active', 'description', 'is_active', 'owner')
+        fields = (
+            "title",
+            "logo",
+            "discount",
+            "min_for_discount",
+            "is_active",
+            "description",
+            "is_active",
+            "owner",
+        )
 
 
 class UpdateStoreForm(forms.ModelForm):
@@ -21,7 +30,16 @@ class UpdateStoreForm(forms.ModelForm):
 
     class Meta:
         model = store_models.Store
-        fields = ('title', 'logo', 'discount', 'min_for_discount', 'is_active', 'description', 'is_active', 'owner')
+        fields = (
+            "title",
+            "logo",
+            "discount",
+            "min_for_discount",
+            "is_active",
+            "description",
+            "is_active",
+            "owner",
+        )
 
 
 class CustomMMCF(forms.ModelMultipleChoiceField):
@@ -31,24 +49,25 @@ class CustomMMCF(forms.ModelMultipleChoiceField):
 
 class AddItemForm(forms.ModelForm):
     """Форма для создания товара."""
+
     tag = CustomMMCF(
         queryset=item_models.Tag.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        required=False
+        required=False,
     )
 
     class Meta:
         model = item_models.Item
         fields = (
-            'title',
-            'description',
-            'stock',
-            'price',
-            'is_available',
-            'limited_edition',
-            'color',
-            'tag',
-            'category'
+            "title",
+            "description",
+            "stock",
+            "price",
+            "is_available",
+            "limited_edition",
+            "color",
+            "tag",
+            "category",
         )
 
 
@@ -56,124 +75,98 @@ def file_size(value):
     """Функция валидирует размер загружаемого файла."""
     limit = 2 * 1024 * 1024
     if value.size > limit:
-        raise ValidationError('Файл слишком большой. Размер не должен превышать 2 МБ.')
+        raise ValidationError("Файл слишком большой. Размер не должен превышать 2 МБ.")
 
 
 class AddItemImageForm(forms.ModelForm):
     """Форма для создания изображения товара."""
+
     image = forms.ImageField(
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
-        label='Изображения',
+        widget=forms.ClearableFileInput(attrs={"multiple": True}),
+        label="Изображения",
         required=False,
         validators=[file_size],
-        )
+    )
 
     class Meta(AddItemForm.Meta):
-        fields = AddItemForm.Meta.fields + ('image',)
+        fields = AddItemForm.Meta.fields + ("image",)
 
 
 class UpdateItemForm(forms.ModelForm):
     """Форма для редактирования товара."""
-    # category = forms.ModelChoiceField(queryset=item_models.Category.all_objects.all())
 
     class Meta:
         model = item_models.Item
         fields = (
-            'title',
-            'description',
-            'stock',
-            'price',
-            'is_available',
-            'limited_edition',
-            'color',
-            'category',
+            "title",
+            "description",
+            "stock",
+            "price",
+            "is_available",
+            "limited_edition",
+            "color",
+            "category",
         )
 
 
 class UpdateItemImageForm(forms.ModelForm):
     """Форма для редактирования изображения товара."""
+
     image = forms.ImageField(
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
-        label='Изображения',
+        widget=forms.ClearableFileInput(attrs={"multiple": True}),
+        label="Изображения",
         required=False,
         validators=[file_size],
     )
 
     class Meta(UpdateItemForm.Meta):
-        fields = UpdateItemForm.Meta.fields + ('image',)
+        fields = UpdateItemForm.Meta.fields + ("image",)
 
     def clean_image_size(self):
         """Функция валидирует размер загружаемого файла."""
+
         limit = 2 * 1024 * 1024
-        img = self.cleaned_data.get('image')
+        img = self.cleaned_data.get("image")
         if img.size > limit:
-            raise ValidationError('Размер файла не должен превышать 2 МБ')
+            raise ValidationError("Размер файла не должен превышать 2 МБ")
         return img
 
 
 TagFormSet = modelformset_factory(
-    item_models.Tag,
-    fields=("title",),
-    extra=1,
-    error_messages='Укажите тег'
-
+    item_models.Tag, fields=("title",), extra=1, error_messages="Укажите тег"
 )
-ImageFormSet = modelformset_factory(
-    item_models.Image,
-    fields=("image",),
-    extra=1
-)
+ImageFormSet = modelformset_factory(item_models.Image, fields=("image",), extra=1)
 FeatureFormSet = modelformset_factory(
-    item_models.FeatureValue,
-    fields=("value",),
-    extra=1
+    item_models.FeatureValue, fields=("value",), extra=1
 )
 
 
 class CreateTagForm(forms.ModelForm):
     """Форма для создания тега."""
+
     class Meta:
         model = item_models.Tag
-        fields = ('title',)
+        fields = ("title",)
 
     def clean_tag(self):
-        """Функция валидирует сущетвование тег в базе данных"""
-        tag = self.cleaned_data.get('category').lower()
+        """Функция валидирует сущетвование тег в базе данных."""
+
+        tag = self.cleaned_data.get("category").lower()
         if item_models.Tag.objects.get(title=tag).exist():
-            raise ValidationError('Такая категория уже существует')
+            raise ValidationError("Такая категория уже существует")
         return tag
 
 
 class AddTagForm(forms.ModelForm):
     """Форма для добавления тега в карточку товара."""
+
     tag = CustomMMCF(
-        queryset=item_models.Tag.objects.all(),
-        widget=forms.CheckboxSelectMultiple
+        queryset=item_models.Tag.objects.all(), widget=forms.CheckboxSelectMultiple
     )
 
     class Meta:
         model = item_models.Item
-        fields = ('tag',)
-
-
-# class CreateCategoryForm(forms.ModelForm):
-#     """Форма для создания категории товаров."""
-#     my_default_errors = {
-#         'required': 'Это поле является обязательным',
-#         'invalid': 'Категория с таким названием уже существует'
-#     }
-#     title = forms.CharField(error_messages=my_default_errors)
-#
-#     class Meta:
-#         model = Category
-#         fields = ('parent_category', 'title', 'description',)
-#
-#     def clean_category(self):
-#         """Функция валидирует сущетвование категории в базе данных"""
-#         category = self.cleaned_data.get('category').lower()
-#         if Category.objects.get(title=category).exist():
-#             raise ValidationError('Такая категория уже существует')
-#         return category
+        fields = ("tag",)
 
 
 class CreateFeatureForm(forms.ModelForm):
@@ -181,13 +174,14 @@ class CreateFeatureForm(forms.ModelForm):
 
     class Meta:
         model = item_models.Feature
-        fields = ('title', )
+        fields = ("title",)
 
     def clean_feature(self):
-        """Функция валидирует сущетвование характеристики в базе данных"""
-        feature = self.cleaned_data.get('title').lower()
+        """Функция валидирует сущетвование характеристики в базе данных."""
+
+        feature = self.cleaned_data.get("title").lower()
         if item_models.Feature.objects.get(title=feature).exist():
-            raise ValidationError('Такая характеристика уже существует')
+            raise ValidationError("Такая характеристика уже существует")
         return feature
 
 
@@ -196,20 +190,21 @@ class CreateValueForm(forms.ModelForm):
 
     class Meta:
         model = item_models.FeatureValue
-        fields = ('value',)
+        fields = ("value",)
 
     def clean_value(self):
         """Функция валидирует сущетвование значене характеристики в базе данных"""
 
-        value = self.cleaned_data.get('value').lower()
+        value = self.cleaned_data.get("value").lower()
         if item_models.FeatureValue.objects.filter(value=value).first():
-            raise ValidationError('Такое значение  уже существует')
+            raise ValidationError("Такое значение  уже существует")
         else:
             return value
 
 
 class ImportDataFromCVS(forms.Form):
     """Форма для импорта данных."""
+
     file = forms.FileField()
 
 
@@ -218,7 +213,7 @@ class UpdateOrderStatusForm(forms.ModelForm):
 
     class Meta:
         model = order_models.Order
-        fields = ('status',)
+        fields = ("status",)
 
 
 class OrderSearchForm(forms.ModelForm):
@@ -230,4 +225,10 @@ class OrderSearchForm(forms.ModelForm):
 
     class Meta:
         model = order_models.Order
-        fields = ('status', 'search', 'store', 'start', 'finish',)
+        fields = (
+            "status",
+            "search",
+            "store",
+            "start",
+            "finish",
+        )

@@ -5,59 +5,111 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('app_item', '0001_initial'),
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('app_store', '0001_initial'),
+        ("app_item", "0001_initial"),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("app_store", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='item',
-            name='store',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='items', to='app_store.store', verbose_name='магазин'),
+            model_name="item",
+            name="store",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="items",
+                to="app_store.store",
+                verbose_name="магазин",
+            ),
         ),
         migrations.AddField(
-            model_name='item',
-            name='tag',
-            field=models.ManyToManyField(blank=True, max_length=20, related_name='item_tags', to='app_item.Tag', verbose_name='тег'),
+            model_name="item",
+            name="tag",
+            field=models.ManyToManyField(
+                blank=True,
+                max_length=20,
+                related_name="item_tags",
+                to="app_item.Tag",
+                verbose_name="тег",
+            ),
         ),
         migrations.AddField(
-            model_name='item',
-            name='views',
-            field=models.ManyToManyField(blank=True, related_name='item_views', to='app_item.IpAddress', verbose_name='просмотры'),
+            model_name="item",
+            name="views",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="item_views",
+                to="app_item.IpAddress",
+                verbose_name="просмотры",
+            ),
         ),
         migrations.AddField(
-            model_name='ipaddress',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='ip_address', to='auth.user', verbose_name='пользователь'),
+            model_name="ipaddress",
+            name="user",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="ip_address",
+                to="auth.user",
+                verbose_name="пользователь",
+            ),
         ),
         migrations.AddField(
-            model_name='featurevalue',
-            name='feature',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='values', to='app_item.feature', verbose_name='название характеристики'),
+            model_name="featurevalue",
+            name="feature",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="values",
+                to="app_item.feature",
+                verbose_name="название характеристики",
+            ),
         ),
         migrations.AddField(
-            model_name='comment',
-            name='item',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='item_comments', to='app_item.item', verbose_name='товар'),
+            model_name="comment",
+            name="item",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="item_comments",
+                to="app_item.item",
+                verbose_name="товар",
+            ),
         ),
         migrations.AddField(
-            model_name='comment',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_comments', to='auth.user', verbose_name='пользователь'),
+            model_name="comment",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="user_comments",
+                to="auth.user",
+                verbose_name="пользователь",
+            ),
         ),
         migrations.AddField(
-            model_name='category',
-            name='feature',
-            field=models.ManyToManyField(blank=True, max_length=200, related_name='categories', to='app_item.Feature', verbose_name='характеристика'),
+            model_name="category",
+            name="feature",
+            field=models.ManyToManyField(
+                blank=True,
+                max_length=200,
+                related_name="categories",
+                to="app_item.Feature",
+                verbose_name="характеристика",
+            ),
         ),
         migrations.AddField(
-            model_name='category',
-            name='parent_category',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='sub_categories', to='app_item.category', verbose_name='родительская категория'),
+            model_name="category",
+            name="parent_category",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="sub_categories",
+                to="app_item.category",
+                verbose_name="родительская категория",
+            ),
         ),
     ]

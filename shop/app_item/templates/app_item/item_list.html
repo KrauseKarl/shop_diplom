@@ -380,14 +380,14 @@
                         <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}"
                            title="{{ item.title }}">
                             <img class="card-picture-image
-                            {% if not item.is_available %}
+                            {% if not item.is_available or  item.is_active %}
                             not_available
                             {% endif %}"
                              src="{{ item.main_image }}"
                              alt="{{ item.title|truncatechars:'6' }}"/>
                         </a>
 
-                        {% if not item.is_available %}
+                        {% if not item.is_available  or  item.is_active %}
                         <div class="sold_out">
                             <span style="padding-top:20px">РАЗОБРАЛИ
                             </span>
@@ -455,7 +455,7 @@
                             <div class="Card-description">
                                 <div class="Card-cost">
                                     <span class="Card-price" id="price_item">
-                                        {% if  item.is_available  %}
+                                        {% if  item.is_available  or  item.is_active %}
                                             ${{  item.price  }}
                                         {% endif %}
                                     </span>
@@ -470,8 +470,8 @@
                                 </div>
                                 <!--    FOR DEBUG   -->
                                 {% for value in item.feature_value.all %}
-                                <span class="seller_label"
-                                      style="font-weight:700; font-size:12px; display: flex; justify-contents: start">
+                                <span class="secondary_label"
+                                style="font-weight:700; font-size:12px; display: block; text-align: end">
                                     {{ value|truncatechars:19 }}</span>
                                 {% endfor %}
                                 <!--      FOR DEBUG  -->

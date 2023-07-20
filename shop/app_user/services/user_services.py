@@ -1,12 +1,9 @@
 from django.contrib.auth.models import User, Group
-from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 
 def get_user(user):
-    try:
-        return User.objects.get(id=user.id)
-    except ObjectDoesNotExist:
-        return None
+    return get_object_or_404(User, id=user.id)
 
 
 def user_in_group(user, group_name: list) -> bool:
@@ -22,7 +19,7 @@ def is_customer(user):
     Если роль - "покупатель", то возвращает True,
     в остальных случаях - False.
     """
-    customer = Group.objects.get(name='customer')
+    customer = Group.objects.get(name="customer")
     if user.groups.first() == customer:
         return True
     return False

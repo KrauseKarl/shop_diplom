@@ -4,45 +4,113 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Cart',
+            name="Cart",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_anonymous', models.BooleanField(default=False, verbose_name='корзина анонимного пользователя')),
-                ('session_key', models.CharField(blank=True, max_length=250, null=True, verbose_name='ключ сессии')),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
-                ('updated', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
-                ('is_archived', models.BooleanField(default=False, verbose_name='корзина в архиве')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "is_anonymous",
+                    models.BooleanField(
+                        default=False, verbose_name="корзина анонимного пользователя"
+                    ),
+                ),
+                (
+                    "session_key",
+                    models.CharField(
+                        blank=True,
+                        max_length=250,
+                        null=True,
+                        verbose_name="ключ сессии",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
+                (
+                    "updated",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
+                (
+                    "is_archived",
+                    models.BooleanField(default=False, verbose_name="корзина в архиве"),
+                ),
             ],
             options={
-                'verbose_name': 'корзина',
-                'verbose_name_plural': 'корзины',
-                'db_table': 'app_carts',
-                'ordering': ['created'],
+                "verbose_name": "корзина",
+                "verbose_name_plural": "корзины",
+                "db_table": "app_carts",
+                "ordering": ["created"],
             },
         ),
         migrations.CreateModel(
-            name='CartItem',
+            name="CartItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.PositiveIntegerField(default=1, verbose_name='количество товара')),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='цена товара')),
-                ('total', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Общая сумма')),
-                ('is_paid', models.BooleanField(default=False, verbose_name='статус оплаты')),
-                ('created', models.DateTimeField(auto_now_add=True, verbose_name='дата создания')),
-                ('updated', models.DateTimeField(auto_now_add=True, verbose_name='дата обновления')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "quantity",
+                    models.PositiveIntegerField(
+                        default=1, verbose_name="количество товара"
+                    ),
+                ),
+                (
+                    "price",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="цена товара"
+                    ),
+                ),
+                (
+                    "total",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="Общая сумма"
+                    ),
+                ),
+                (
+                    "is_paid",
+                    models.BooleanField(default=False, verbose_name="статус оплаты"),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата создания"
+                    ),
+                ),
+                (
+                    "updated",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="дата обновления"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'выбранный товар',
-                'db_table': 'app_items_in_cart',
-                'ordering': ['item'],
+                "verbose_name": "выбранный товар",
+                "db_table": "app_items_in_cart",
+                "ordering": ["item"],
             },
         ),
     ]

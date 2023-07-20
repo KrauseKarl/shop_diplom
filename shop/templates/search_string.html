@@ -18,11 +18,7 @@
                         <div class="CategoriesButton-link">
                             <a href="{% url 'app_item:item_category' category=category.slug %}">
                                 <div class="CategoriesButton-icon">
-                                    {% if category.image %}
-                                        <img src="{{ category.image.url }}" width="15px"/>
-                                    {% else %}
-                                        <img src="/assets/img/icons/category.svg" width="15px"/>
-                                    {% endif %}
+                                    <img src="{{ category.icon }}" width="15px"/>
                                 </div>
                                 <span class="CategoriesButton-text">{{category.title}}</span>
 
@@ -33,11 +29,7 @@
                                     <a class="CategoriesButton-link"
                                        href="{% url 'app_item:item_category' category=sub_category.slug %}">
                                         <div class="CategoriesButton-icon">
-                                            {% if sub_category.image %}
-                                                <img src="{{ sub_category.image.url }}" width="15px"/>
-                                            {% else %}
-                                                <img src="/media/default_images/default_category.png" width="15px"/>
-                                            {% endif %}
+                                             <img src="{{ sub_category.icon }}" width="15px"/>
                                         </div>
                                         <div class="CategoriesButton-icon">
                                              {{  sub_category.items.count }}

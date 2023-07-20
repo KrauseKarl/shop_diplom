@@ -1,7 +1,10 @@
+import os
+
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from django.urls import reverse
 
 from app_store.managers.app_store_managers import StoreIsActiveManager
@@ -9,106 +12,98 @@ from utils.my_utils import slugify_for_cyrillic_text
 
 
 class Store(models.Model):
-    """  Модель магазина."""
+    """Модель магазина."""
+
+    DEFAULT_IMAGE = "default_images/store.png"
+
     title = models.CharField(
-        max_length=200,
-        db_index=True,
-        verbose_name='название магазина'
+        max_length=200, db_index=True, verbose_name="название магазина"
     )
     slug = models.SlugField(
-        max_length=100,
-        db_index=True,
-        allow_unicode=False,
-        verbose_name='slug'
+        max_length=100, db_index=True, allow_unicode=False, verbose_name="slug"
     )
     owner = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='store',
-        verbose_name='собственник'
+        related_name="store",
+        verbose_name="собственник",
     )
     discount = models.SmallIntegerField(
         default=0,
-        verbose_name='скидка',
-        validators=[
-            MaxValueValidator(99),
-            MinValueValidator(0)
-        ]
+        verbose_name="скидка",
+        validators=[MaxValueValidator(99), MinValueValidator(0)],
     )
     min_for_discount = models.IntegerField(
         default=0,
-        verbose_name='минимальная сумма для бесплатной доставки',
-        validators=[
-            MinValueValidator(0)
-        ]
+        verbose_name="минимальная сумма для бесплатной доставки",
+        validators=[MinValueValidator(0)],
     )
     description = models.TextField(
-        default='',
-        blank=True,
-        verbose_name='Описание магазина'
+        default="", blank=True, verbose_name="Описание магазина"
     )
     logo = models.ImageField(
-        upload_to='store/logo/',
-        default='default_images/default_store.jpg',
-        blank=True
+        upload_to="store/logo/", default="default_images/default_store.jpg", blank=True
     )
-    is_active = models.BooleanField(
-        default=False
-    )
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата создания'
-    )
-    updated = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='дата обновления'
-    )
-
+    is_active = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
+    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
 
     objects = models.Manager()
     active_stores = StoreIsActiveManager()
 
     class Meta:
-        db_table = 'app_store'
-        ordering = ['title', 'created']
-        verbose_name = 'магазин'
-        verbose_name_plural = 'магазины'
+        db_table = "app_store"
+        ordering = ["title", "created"]
+        verbose_name = "магазин"
+        verbose_name_plural = "магазины"
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
-        """Функция по созданию slug."""
         if not self.slug:
             self.slug = slugify_for_cyrillic_text(self.title)
         super(Store, self).save(*args, **kwargs)
 
+    @property
     def get_logo(self):
+        """
+        Функция возвращает URL изображения категории
+        или дефолтное изображение.
+        """
         if self.logo:
-            return f'/media/{self.logo}'
+            return os.path.join(settings.MEDIA_URL, self.logo.url)
         else:
-            return '/media/default_images/store.png'
-
-    def get_active(self):
-        self.is_active = True
-        return self.is_active
+            return os.path.join(settings.MEDIA_URL, self.DEFAULT_IMAGE)
 
     def get_absolute_url(self):
-        return reverse("app_item:store_list", kwargs={'slug': self.slug})
+        return reverse("app_item:store_list", kwargs={"slug": self.slug})
 
     @property
     def store_items(self):
+        """Функция возвращает все товары магазина."""
         return self.items.all()
 
     @property
     def all_orders(self):
+        """Функция возвращает все заказы магазина."""
         return self.orders.count()
 
     @property
     def cash(self):
-        return self.orders.filter(order_items__item__item__store=self.id).aggregate(total=Sum('order_items__item__total')).get('total')
+        """Функция возвращает сумму всех заказов."""
+        return (
+            self.orders.filter(order_items__item__item__store=self.id)
+            .aggregate(total=Sum("order_items__item__total"))
+            .get("total")
+        )
 
     @property
     def paid_item(self):
-        return self.orders.filter(order_items__item__item__store=self.id).aggregate(total=Sum('order_items__quantity')).get('total')
+        """Функция возвращает кол-во всех заказов."""
+        return (
+            self.orders.filter(order_items__item__item__store=self.id)
+            .aggregate(total=Sum("order_items__quantity"))
+            .get("total")
+        )
