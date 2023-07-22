@@ -1,11 +1,18 @@
+"""
+Модуль содержит сервисы работы с заказами, оплатой, и адресами.
+
+#1 AdminOrderHAndler - класс для работы с заказами со стороны администратора.
+#2 CustomerOrderHandler - класс для работы с заказами со стороны покупателя.
+#3 SellerOrderHAndler - класс для работы с заказами со стороны продавца.
+#4 Payment - класс для работы с оплатойзаказа.
+#5 AddressHandler - класс для работы с адресами доставки покупателя.
+"""
 import random
-from typing import Union, Any
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import QuerySet
 from django.http import Http404
-from django.shortcuts import redirect
 
 # models
 from app_cart import models as cart_models
@@ -22,26 +29,18 @@ from app_user.services import register_services
 # other
 from app_cart.context_processors import get_cart
 
-"""
-    Сервисы работы с заказами, оплатой, и адресами
-    
-    #1 AdminOrderHAndler - класс для работы с заказами со стороны администратора.
-    #2 CustomerOrderHandler - класс для работы с заказами со стороны покупателя.
-    #3 SellerOrderHAndler - класс для работы с заказами со стороны продавца.
-    #4 Payment - класс для работы с оплатойзаказа.
-    #5 AddressHandler - класс для работы с адресами доставки покупателя.
-"""
-
 
 class AdminOrderHAndler:
     """Класс для работы с заказами со стороны администратора."""
 
     @staticmethod
     def orders_count() -> int:
+        """Фнкция возвращает кол-во заказов в БД."""
         return order_models.Order.objects.count()
 
     @staticmethod
     def get_all_order():
+        """Фнкция возвращает список заказов из БД."""
         return order_models.Order.objects.all()
 
 
@@ -61,8 +60,10 @@ class CustomerOrderHandler:
                 user=request.user, city=city, address=address
             )
         print(form.cleaned_data.get("delivery"))
-        delivery_express_cost = CustomerOrderHandler.calculate_express_delivery_fees(
-            form.cleaned_data.get("delivery")
+        delivery_express_cost = (
+            CustomerOrderHandler.calculate_express_delivery_fees(
+                form.cleaned_data.get("delivery")
+            )
         )
         delivery_cost = cart.is_free_delivery
         with transaction.atomic():
@@ -106,8 +107,14 @@ class CustomerOrderHandler:
         return order
 
     @staticmethod
-    def get_customer_order_list(user, delivery_status=None):
-        """Функция возвращает СПИСОК заказов пользователя."""
+    def get_customer_order_list(user, delivery_status=None) -> QuerySet:
+        """
+        Функция возвращает список заказов пользователя.
+
+        :param user: пользователь
+        :param delivery_status: статус заказа
+        :return: queryset заказов
+        """
         try:
             if delivery_status:
                 orders = (
@@ -133,7 +140,7 @@ class CustomerOrderHandler:
 
     @staticmethod
     def get_order(order_id):
-        """Функция возвращает самый заказ пользователя по ID."""
+        """Функция возвращает один заказ пользователя по ID."""
         try:
             return order_models.Order.objects.filter(id=order_id).first()
         except ObjectDoesNotExist:
@@ -143,13 +150,14 @@ class CustomerOrderHandler:
     def calculate_express_delivery_fees(delivery):
         """Функция возвращает стоимость ЭКСПРЕСС доставки заказа."""
         if delivery == "express":
-            return settings_models.SiteSettings.objects.get(id=1).express_delivery_price
+            return settings_models.SiteSettings.objects.get(
+                id=1
+            ).express_delivery_price
         return 0
 
     @staticmethod
     def get_order_items(order):
         """Функция возвращает все товары в заказе."""
-
         try:
             return order_models.OrderItem.objects.filter(order=order).order_by(
                 "item__store"
@@ -165,19 +173,21 @@ class SellerOrderHAndler:
     def get_seller_order_list(owner):
         """Функция возвращает список всех заказов продавца."""
         # все магазины собственника
-        stores = store_models.Store.objects.select_related("owner").filter(owner=owner)
+        stores = store_models.Store.objects.select_related("owner").filter(
+            owner=owner
+        )
         # все товары в магазинах собственника
         items = item_models.Item.objects.select_related("store").filter(
             store__in=stores
         )
-
         # все заказанные товары из магазинов
-        items_in_cart = cart_models.CartItem.objects.select_related("item").filter(
-            item_id__in=items
-        )
-        order_items = order_models.Order.objects.filter(store__in=stores).order_by(
-            "-created"
-        )
+        items_in_cart = cart_models.CartItem.objects.select_related(
+            "item"
+        ).filter(item_id__in=items)
+        order_items = order_models.Order.objects.filter(
+            store__in=stores
+        ).order_by("-created")
+
         return order_items
 
     @staticmethod
@@ -185,15 +195,17 @@ class SellerOrderHAndler:
         """Функция возвращает список всех комментариев к товарам продавца."""
         # собственник
         # все магазины собственника
-        stores = store_models.Store.objects.select_related("owner").filter(owner=user)
+        stores = store_models.Store.objects.select_related("owner").filter(
+            owner=user
+        )
         # все товары в магазинах собственника
         items = item_models.Item.objects.select_related("store").filter(
             store__in=stores
         )
         # все комментарии о товарах в магазинах собственника
-        comment_list = item_models.Comment.objects.select_related("item").filter(
-            item__in=items
-        )
+        comment_list = item_models.Comment.objects.select_related(
+            "item"
+        ).filter(item__in=items)
         if param.get("is_published"):
             is_published = param.get("is_published")
             comment_list = comment_list.filter(
@@ -203,7 +215,7 @@ class SellerOrderHAndler:
 
     @staticmethod
     def get_seller_comment_amount(request):
-        """Функция возвращает колчество всех новых комментариев (на модерации) к товарам продавца."""
+        """Функция возвращает колчество всех новых комментариев."""
         comments = SellerOrderHAndler.get_seller_comment_list(
             user=request.user, param=request.GET
         )
@@ -213,8 +225,10 @@ class SellerOrderHAndler:
     @staticmethod
     def get_order_total_amount(user_id: int) -> int:
         """
-        Функция возвращает общее кол-во заказов в магазине продавца
-         со статусами "Новый"
+        Функция возвращает общее кол-во заказов.
+
+        Общее кол-во заказов со статусами "Новый"
+        в магазине продавца
         :param user_id: ID пользователя
         :return: кол-во заказов
         """
@@ -231,12 +245,16 @@ class SellerOrderHAndler:
     @staticmethod
     def update_item_in_order(request, form):
         """
-        Функция редактирует заказ, пересчитывает его общюю стоимсоть,
+        Функция редактирует информацию о заказе.
+
+        Пересчитывает его общюю стоимсоть,
         стоимость доставки в магазине продавца.
         """
         order_item = form.save()
         order_item.quantity = form.cleaned_data.get("quantity")
-        order_item.total = order_item.item.price * form.cleaned_data.get("quantity")
+        order_item.total = order_item.item.price * form.cleaned_data.get(
+            "quantity"
+        )
         order_item.save()
         order_id = order_item.order.id
         order = order_models.Order.objects.get(id=order_id)
@@ -251,7 +269,9 @@ class SellerOrderHAndler:
                 new_total_order += float(order_item.total)
         min_free_delivery = settings_models.SiteSettings().min_free_delivery
         delivery_fees = settings_models.SiteSettings().delivery_fees
-        express_delivery_fees = settings_models.SiteSettings().express_delivery_price
+        express_delivery_fees = (
+            settings_models.SiteSettings().express_delivery_price
+        )
         if new_total_order < min_free_delivery:
             new_delivery_fees = delivery_fees
         else:
@@ -276,11 +296,11 @@ class Payment:
     """Класс для работы с оплатойзаказа."""
 
     ERROR_DICT = {
-        "1": "Оплата не выполнена, т.к. способствует вымиранию юго-восточных туканов",
+        "1": "Оплата не выполнена, т.к. способствует вымиранию туканов",
         "2": "Оплата не выполнена, т.к. способствует глобальному потеплению",
         "3": "Оплата не выполнена, т.к. заблокирована мировым правительством",
         "4": "Оплата не выполнена, т.к. была произведена не по фэншую",
-        "5": "Оплата не выполнена, т.к. ретроградный Меркурий был в созведии Козерога",
+        "5": "Оплата не выполнена, т.к. ретроградный Меркурий был в созведии Рыбы",
     }
 
     @staticmethod

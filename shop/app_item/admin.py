@@ -1,8 +1,18 @@
+"""Модуль содержит все настроики для работы с товарами в админке."""
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+
 from app_item.forms import ItemForm
-from app_store.models import Store
-from app_item.models import Item, Category, Tag, Comment, Image, Feature, FeatureValue
+
+from app_item.models import (
+    Item,
+    Category,
+    Tag,
+    Comment,
+    Image,
+    Feature,
+    FeatureValue,
+)
 
 EMPTY_VALUE = "незаполнен"
 BLANK_CHOICE_DASH = [("", "выберите действие")]
@@ -35,7 +45,14 @@ class ItemAdmin(admin.ModelAdmin):
         ("category", "store"),
         "color",
     )
-    list_display = ["title", "category", "store", "price", "stock", "set_colors"]
+    list_display = [
+        "title",
+        "category",
+        "store",
+        "price",
+        "stock",
+        "set_colors",
+    ]
     prepopulated_fields = {"slug": ("title",)}
     inlines = [ItemImageInline, ItemTagsInline, ItemFeatureInline]
     radio_fields = {"color": admin.VERTICAL}
@@ -46,7 +63,10 @@ class ItemAdmin(admin.ModelAdmin):
     def set_colors(self, obj):
         if obj.color:
             return mark_safe(
-                f'<div style="background-color:{obj.color}; box-shadow: 0 0 2px; padding: 20px"></div>'
+                f"""
+                <div style="background-color:{obj.color}; 
+                box-shadow: 0 0 2px; padding: 20px"></div>
+                """
             )
         return mark_safe(f"<div>не определен </div>")
 

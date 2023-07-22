@@ -1,3 +1,4 @@
+"""Модуль содержит модели Настроек сайта."""
 from django.core.cache import cache
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -5,6 +6,8 @@ from django.utils.timezone import now
 
 
 class SingletonModel(models.Model):
+    """Модель-синглтон."""
+
     objects = models.Manager()
 
     class Meta:
@@ -17,6 +20,7 @@ class SingletonModel(models.Model):
 
     @classmethod
     def load(cls):
+        """Метод возвращает экземпляр модели из кеша или создает его."""
         if cache.get(cls.__name__) is None:
             obj, created = cls.objects.get_or_create(pk=1)
             if not created:
@@ -24,10 +28,13 @@ class SingletonModel(models.Model):
         return cache.get(cls.__name__)
 
     def set_cache(self):
+        """Метод устанавливает кеш экземпляр модели."""
         cache.set(self.__class__.__name__, self)
 
 
 class SiteSettings(SingletonModel):
+    """Модель Натсроек сайта."""
+
     class Delivery(models.TextChoices):
         STANDARD = "обычная доставка"
         EXPRESS = "экспресс доставка"
@@ -124,6 +131,7 @@ class SiteSettings(SingletonModel):
         verbose_name_plural = "Настройки"
 
     def __str__(self):
+        """Метод для отображения информации об объекте класса SiteSettings."""
         return "Настройки"
 
     def save(self, *args, **kwargs):

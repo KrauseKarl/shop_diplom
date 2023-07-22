@@ -1,3 +1,13 @@
+"""
+Модуль содержит формы для работы с настройками сайта.
+
+1. UpdateSettingsForm - форма для обновления настроек сайта,
+2. CreateCategoryForm - форма для создания категории,
+3. UpdateCategoryForm - форма для редактирования категории,
+4. CreateTagForm - форма для создания тегов,
+5. CreateFeatureForm -  форма для создания характеристик товар,
+6. UpdateFeatureForm - форма для редактирования характеристик товар,
+"""
 from django import forms
 
 from app_item import models as item_modals
@@ -5,6 +15,8 @@ from app_settings import models as settings_models
 
 
 class UpdateSettingsForm(forms.ModelForm):
+    """Форма для обновления настроек сайта."""
+
     class Meta:
         model = settings_models.SiteSettings
         fields = (
@@ -51,7 +63,7 @@ class CreateCategoryForm(forms.ModelForm):
 
 
 class UpdateCategoryForm(forms.ModelForm):
-    """Форма для создания категории товаров."""
+    """Форма для редактирования категории товаров."""
 
     my_default_errors = {
         "required": "Это поле является обязательным",
@@ -76,7 +88,7 @@ class CreateTagForm(forms.ModelForm):
         fields = ("title",)
 
     def clean_tag(self):
-        """Функция валидирует сущетвование тег в базе данных"""
+        """Функция валидирует сущетвование тег в базе данных."""
         tag = self.cleaned_data.get("category").lower()
         if item_modals.Tag.objects.filter(title=tag).first().exists():
             raise forms.ValidationError("Такая категория уже существует")
@@ -92,7 +104,7 @@ class CreateFeatureForm(forms.ModelForm):
         fields = ("title",)
 
     def clean_feature(self):
-        """Функция валидирует сущетвование характеристики в базе данных"""
+        """Функция валидирует сущетвование характеристики в базе данных."""
         feature = self.cleaned_data.get("title").lower()
         if item_modals.Feature.objects.get(title=feature).exists():
             raise forms.ValidationError("Такая характеристика уже существует")

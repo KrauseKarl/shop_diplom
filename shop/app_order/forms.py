@@ -1,3 +1,4 @@
+"""Модуль содержит формы для работы с заказами."""
 from django import forms
 from app_order import models as order_models
 

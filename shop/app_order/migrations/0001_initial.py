@@ -24,8 +24,14 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("city", models.CharField(max_length=200, verbose_name="город")),
-                ("address", models.CharField(max_length=200, verbose_name="адрес")),
+                (
+                    "city",
+                    models.CharField(max_length=200, verbose_name="город"),
+                ),
+                (
+                    "address",
+                    models.CharField(max_length=200, verbose_name="адрес"),
+                ),
                 (
                     "created",
                     models.DateTimeField(
@@ -60,9 +66,14 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "name",
-                    models.CharField(max_length=250, verbose_name="имя получателя"),
+                    models.CharField(
+                        max_length=250, verbose_name="имя получателя"
+                    ),
                 ),
-                ("is_paid", models.BooleanField(default=False, verbose_name="оплачен")),
+                (
+                    "is_paid",
+                    models.BooleanField(default=False, verbose_name="оплачен"),
+                ),
                 (
                     "status",
                     models.CharField(
@@ -123,15 +134,28 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "email",
-                    models.EmailField(max_length=250, verbose_name="электронная почта"),
+                    models.EmailField(
+                        max_length=250, verbose_name="электронная почта"
+                    ),
                 ),
-                ("telephone", models.CharField(max_length=20, verbose_name="телефон")),
-                ("city", models.CharField(max_length=200, verbose_name="город")),
-                ("address", models.CharField(max_length=200, verbose_name="адрес")),
+                (
+                    "telephone",
+                    models.CharField(max_length=20, verbose_name="телефон"),
+                ),
+                (
+                    "city",
+                    models.CharField(max_length=200, verbose_name="город"),
+                ),
+                (
+                    "address",
+                    models.CharField(max_length=200, verbose_name="адрес"),
+                ),
                 (
                     "comment",
                     models.TextField(
-                        blank=True, null=True, verbose_name="Комментарий к заказу"
+                        blank=True,
+                        null=True,
+                        verbose_name="Комментарий к заказу",
                     ),
                 ),
                 (
@@ -146,7 +170,10 @@ class Migration(migrations.Migration):
                         auto_now_add=True, verbose_name="дата обновления"
                     ),
                 ),
-                ("error", models.CharField(blank=True, default="", max_length=200)),
+                (
+                    "error",
+                    models.CharField(blank=True, default="", max_length=200),
+                ),
                 (
                     "archived",
                     models.BooleanField(default=False, verbose_name="в архив"),
@@ -180,13 +207,17 @@ class Migration(migrations.Migration):
                 (
                     "price",
                     models.DecimalField(
-                        decimal_places=2, max_digits=10, verbose_name="цена товара"
+                        decimal_places=2,
+                        max_digits=10,
+                        verbose_name="цена товара",
                     ),
                 ),
                 (
                     "total",
                     models.DecimalField(
-                        decimal_places=2, max_digits=10, verbose_name="Общая сумма"
+                        decimal_places=2,
+                        max_digits=10,
+                        verbose_name="Общая сумма",
                     ),
                 ),
                 (

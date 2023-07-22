@@ -1,5 +1,4 @@
-# from django.core.cache import cache
-from django.core.cache import cache
+"""Модуль содержит функции-сервисы для работы с корзиной."""
 from django.db.models import Q
 from django.http.response import HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist

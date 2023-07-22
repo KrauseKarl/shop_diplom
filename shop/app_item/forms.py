@@ -1,3 +1,4 @@
+"""Модуль содержит формы для работы с товарми и комментариями."""
 from django import forms
 from django.utils.safestring import mark_safe
 
@@ -29,7 +30,7 @@ class ItemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ItemForm, self).__init__(*args, **kwargs)
-        """Функция для замены текстового значения выбранного цвет на цвет из палитры."""
+        """Функция для замены текстового значения цвет на цвет из палитры."""
         widget = self.fields["color"].widget
         choices = []
         for key, value in widget.choices:

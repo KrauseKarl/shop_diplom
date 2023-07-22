@@ -1,24 +1,17 @@
+"""Модуль содержит модели Заказ, Заказаный товар и Адрес."""
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Sum, F
 from django.utils.timezone import now
 
+# models
 from app_cart.models import CartItem
 from app_settings.models import SiteSettings
 from app_store.models import Store
 
 
 class OrderItem(models.Model):
-    """Модель оплаченного товара."""
+    """Модель заказанного товара."""
 
-    #   STATUS = (
-    #     ('has_been_created', 'заказан'),
-    #     ('is_paid', 'оплачен'),
-    #     ('has_been_sent', 'отправлен'),
-    #     ('is_ready', 'готов к выдаче'),
-    #     ('completed', 'доставлен'),
-    #     ('deactivated', 'отменен')
-    # )
     STATUS = (
         ("not_paid", "заказан"),
         ("paid", "оплачен"),
@@ -35,7 +28,9 @@ class OrderItem(models.Model):
         null=True,
         related_name="order_item",
     )
-    quantity = models.PositiveIntegerField(default=1, verbose_name="количество товара")
+    quantity = models.PositiveIntegerField(
+        default=1, verbose_name="количество товара"
+    )
     price = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="цена товара"
     )
@@ -58,7 +53,9 @@ class OrderItem(models.Model):
         verbose_name="заказ",
     )
 
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
+    created = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата создания"
+    )
     objects = models.Manager()
 
     class Meta:
@@ -68,6 +65,7 @@ class OrderItem(models.Model):
         verbose_name_plural = "оплаченный товары"
 
     def __str__(self):
+        """Метод для отображения информации об объекте класса OrderItem."""
         return f"{self.item.item}"
 
     def save(self, *args, **kwargs):
@@ -87,14 +85,19 @@ class Order(models.Model):
         ("completed", "доставлен"),
         ("deactivated", "отменен"),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_order")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="user_order"
+    )
     store = models.ManyToManyField(
         Store, related_name="orders", verbose_name="магазины"
     )
     name = models.CharField(max_length=250, verbose_name="имя получателя")
     is_paid = models.BooleanField(default=False, verbose_name="оплачен")
     status = models.CharField(
-        max_length=20, choices=STATUS, verbose_name="статус заказа", default="created"
+        max_length=20,
+        choices=STATUS,
+        verbose_name="статус заказа",
+        default="created",
     )
     total_sum = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="сумма заказа", default=0
@@ -103,7 +106,10 @@ class Order(models.Model):
         max_length=20, choices=SiteSettings.DELIVERY, verbose_name="доставка"
     )
     delivery_fees = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name="сумма доставки", default=0
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="сумма доставки",
+        default=0,
     )
     pay = models.CharField(
         max_length=20, choices=SiteSettings.PAY_TYPE, verbose_name="оплата"
@@ -115,8 +121,12 @@ class Order(models.Model):
     comment = models.TextField(
         verbose_name="Комментарий к заказу", null=True, blank=True
     )
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
-    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
+    created = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата создания"
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата обновления"
+    )
     error = models.CharField(max_length=200, default="", blank=True)
     archived = models.BooleanField(default=False, verbose_name="в архив")
 
@@ -140,6 +150,7 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
+        """Метод для отображения информации об объекте класса OrderItem."""
         return f"Заказ №{self.user.id:04}-{self.pk}"
 
     def created_order_quantity(self):
@@ -152,12 +163,19 @@ class Address(models.Model):
 
     city = models.CharField(max_length=200, verbose_name="город")
     address = models.CharField(max_length=200, verbose_name="адрес")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="address")
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
-    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="address"
+    )
+    created = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата создания"
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата обновления"
+    )
     objects = models.Manager()
 
     def __str__(self):
+        """Метод для отображения информации об объекте класса Address."""
         return f"город: {self.city}, адрес: {self.address}"
 
     class Meta:

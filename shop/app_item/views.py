@@ -1,3 +1,19 @@
+"""
+Модуль содержит классы-предстывления для работы с корзиной.
+
+1. CategoryListView - класс-представление для списка товаров по категории,
+2. TagListView  - класс-представление для списка товаров по тегу,
+3. FilterListView - класс-представление для списка товаров по параметрам,
+4. ItemDetail - класс-представление для страницы одного товара
+5. ItemBestSellerList - класс-представление для списка товаров-бестселлеров,
+6. ItemNewList - класс-представление для списка товаров-новинок,
+7. ItemForYouList - класс-представление для списка персональынх товаров,
+8. StoreItemList - класс-представление для списка товаров одного магазина,
+9. DeleteComment - класс-представление для удаления комментария,
+10. EditComment - класс-представление для редактирования комментария,
+11. remove_param - функция для удаления параметра из GET-запроса.
+
+"""
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -22,26 +38,31 @@ from utils.my_utils import MixinPaginator, query_counter
 
 
 class CategoryListView(generic.ListView, MixinPaginator):
-    """Класс-представление для отображения списка всех товаров по категориям."""
+    """Класс-представление для отображения списка товаров по категориям."""
 
     model = item_models.Item
     paginate_by = 8
-    queryset = item_models.Item.objects.all()
+    template_name = "app_item/item_list.html"
+    queryset = item_services.ItemHandler.get_all_items()
 
     @query_counter
     def get(self, request, category=None, **kwargs):
-        super().get(request, **kwargs)
         """
-        Функция возвращает queryset-товаров, queryset-тегов, словарь с цветами.
-        отсортированный по выбранному параметру или все товары.
-        :param category: категория товаров
-        :return: response.
-        """
+        GET-функция рендерид страницу с каталогом товаров.
 
+        Возвращает context-словарь с  queryset-товаров,
+        queryset-тегов, словарь с цветами.
+        отсортированный по выбранному параметру или
+        все товары.
+        :param request: HttpRequest
+        :param category: категория товаров
+        :return: context.
+        """
+        super().get(request, **kwargs)
         context = item_services.CategoryHandler.category_list_view(
             request, self.queryset, self.paginate_by, category
         )
-        return render(request, "app_item/item_list.html", context=context)
+        return render(request, self.template_name, context=context)
 
 
 class TagListView(generic.ListView, MixinPaginator):
@@ -53,6 +74,17 @@ class TagListView(generic.ListView, MixinPaginator):
     paginate_by = 6
 
     def get(self, request, tag=None, *args, **kwargs):
+        """
+        GET-функция рендерид страницу с каталогом товаров.
+
+        Возвращает context-словарь с queryset-товаров,
+        queryset-тегов, словарь с цветами.
+        отсортированный по тегу или
+        все товары.
+        :param request: HttpRequest
+        :param tag: тег товара
+        :return: context.
+        """
         super(TagListView, self).get(request, *args, **kwargs)
         context = item_services.TagHandler.tag_list_view(
             request=request,
@@ -60,21 +92,32 @@ class TagListView(generic.ListView, MixinPaginator):
             paginate_by=self.paginate_by,
             tag=tag,
         )
-        return render(request, "app_item/item_list.html", context=context)
+        return render(request, self.template_name, context=context)
 
 
 class FilterListView(generic.ListView, MixinPaginator):
     """Класс-представление для отображения отфильтрованных товаров."""
 
     model = item_models.Item
-    paginate_by = 8
     template_name = "app_item/item_list.html"
-    queryset = item_models.Item.objects.all()
+    queryset = item_services.ItemHandler.get_all_items()
+    paginate_by = 8
 
     def get(self, request, *args, **kwargs):
+        """
+        GET-функция рендерид страницу с каталогом товаров.
+
+        Возвращает context-словарь с queryset-товаров,
+        queryset-тегов, словарь с цветами.
+        отсортированный по переданными GET-параметрам.
+        :param request: HttpRequest
+        :return: context.
+        """
         super().get(request, *args, **kwargs)
         context = item_services.ItemHandler.filter_list_view(
-            request=request, queryset=self.queryset, paginate_by=self.paginate_by
+            request=request,
+            queryset=self.queryset,
+            paginate_by=self.paginate_by,
         )
         return render(request, self.template_name, context=context)
 
@@ -90,8 +133,10 @@ class ItemDetail(generic.DetailView, generic.CreateView):
     def get(self, request, *args, **kwargs):
         """
         Get-функция для отображения одного товара.
+
         Добавляет товар к списку просмотренных товаров пользователя
-        и добавляет IP-адрес пользователя к товару.
+        Добавляет IP-адрес пользователя к товару.
+        Создает комментарий к товару.
         """
         item = self.get_object()
         context = cache.get(item.id)
@@ -115,7 +160,8 @@ class ItemDetail(generic.DetailView, generic.CreateView):
 
     def form_valid(self, form):
         """
-        Функция для создания комментария о товаре.
+        Функция валидации формы для создания комментария.
+
         :param form: форма для создания комментария
         :return: на страницу товара
         """
@@ -129,22 +175,29 @@ class ItemDetail(generic.DetailView, generic.CreateView):
         messages.add_message(
             self.request,
             messages.SUCCESS,
-            f"{user.get_full_name()}, спасибо за комментарий. После модерации он будет опубликован.",
+            f"""
+            {user.get_full_name()}, спасибо за комментарий. 
+            После модерации он будет опубликован.
+            """
         )
         return redirect(self.request.get_full_path())
 
     def form_invalid(self, form):
+        """Функция инвалидации формы по созданию комментария."""
         super().form_invalid(form)
         messages.add_message(
             self.request,
             messages.ERROR,
-            "Ошибка.Комментарий не был добавлен.Повторите отправку комментария.",
+            """
+            Ошибка.Комментарий не был добавлен.
+            Повторите отправку комментария.
+            """
         )
         return redirect("app_item:item_detail", args=[self.request.pk])
 
 
 class ItemBestSellerList(generic.ListView):
-    """Класс-представление для отображения списка всех товаров отсортированных по продажам."""
+    """Класс-представление для отображения всех популярных товаров."""
 
     model = item_models.Item
     template_name = "app_item/best_seller/best_seller_list.html"
@@ -153,7 +206,7 @@ class ItemBestSellerList(generic.ListView):
 
 
 class ItemNewList(generic.ListView):
-    """Класс-представление для отображения списка всех новых товаров."""
+    """Класс-представление для отображения новинок."""
 
     model = item_models.Item
     template_name = "app_item/new_items/new_items.html"
@@ -162,13 +215,19 @@ class ItemNewList(generic.ListView):
 
 
 class ItemForYouList(generic.ListView, MixinPaginator):
-    """Класс-представление для отображения  всех товаров, подходящих для покупателя."""
+    """Класс-представление для отображения персональных товаров."""
 
     model = item_models.Item
     template_name = "app_item/items_for_you/items_for_you.html"
     paginate_by = 8
 
     def get(self, request, *args, **kwargs):
+        """
+        GET-функция для отображения персональных предложений.
+
+        :param request: HttpRequest
+        :return: context
+        """
         super().get(request, *args, **kwargs)
         context = item_services.ItemHandler.get_items_for_you(
             request=self.request, paginate_by=self.paginate_by
@@ -177,7 +236,7 @@ class ItemForYouList(generic.ListView, MixinPaginator):
 
 
 class StoreItemList(generic.DetailView, MixinPaginator):
-    """Класс-представление для отображения  всех товаров, подходящих для покупателя."""
+    """Класс-представление для отображения  всех товаров в магазине."""
 
     model = store_models.Store
     template_name = "app_item/item_list.html"
@@ -185,9 +244,17 @@ class StoreItemList(generic.DetailView, MixinPaginator):
     paginate_by = 8
 
     def get(self, request, *args, **kwargs):
+        """
+        GET-функция рендерид страницу с каталогом товаров.
+
+        :param request: HttpRequest
+        :return: context
+        """
         super().get(request, *args, **kwargs)
         context = item_services.ItemHandler.store_list_view(
-            request=request, store=self.get_object(), paginate_by=self.paginate_by
+            request=request,
+            store=self.get_object(),
+            paginate_by=self.paginate_by,
         )
         return render(request, self.template_name, context=context)
 
@@ -203,6 +270,7 @@ class DeleteComment(generic.DetailView):
     def get(self, request, *args, **kwargs):
         """
         Функция удаляет комментарий о товаре.
+
         :return: возвращает на страницу товара
         """
         comment_services.CommentHandler.delete_comment(
@@ -221,14 +289,19 @@ class EditComment(generic.UpdateView):
     form_class = item_forms.CommentForm
 
     def get(self, request, *args, **kwargs):
+        """Get-функция для отображения формы редактирования."""
         comment = comment_services.CommentHandler.get_comment(
             comment_id=kwargs["comment_id"]
         )
         form = item_forms.CommentForm(instance=comment)
-        context = {"form": form, "comments": comment}
+        context = {
+            "form": form,
+            "comments": comment
+        }
         return render(request, self.template_name, context=context)
 
     def post(self, request, *args, **kwargs):
+        """POST-функция для редактирования комментария."""
         comment = comment_services.CommentHandler.get_comment(
             comment_id=kwargs["comment_id"]
         )
@@ -244,12 +317,13 @@ class EditComment(generic.UpdateView):
                 "Комментарий изменен.После модерации он будет опубликован.",
             )
             return redirect("app_item:item_detail", item_id)
-        return render(request, self.template_name, {"form": form, "comments": comment})
+        return render(
+            request, self.template_name, {"form": form, "comments": comment}
+        )
 
 
 def remove_param(request: HttpRequest, param: str):
-    """Функция для удаления параметров фильтра в строке-запроса."""
-
+    """Функция для удаления параметров фильтра в строке GET-запроса."""
     query_string = request.META.get("HTTP_REFERER").split("?")
     result = item_services.QueryStringHandler.remove_param(query_string, param)
     return redirect(result)

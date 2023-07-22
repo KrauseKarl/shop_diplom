@@ -1,3 +1,4 @@
+"""Модуль содержит все настроики для работы с чеками оплаты в админке."""
 from django.contrib import admin
 
 from app_invoice.models import Invoice

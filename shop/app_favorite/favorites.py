@@ -1,6 +1,6 @@
+"""Модуль содержит класс для создания и управления списка избранных товаров."""
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
 
 # models
 from app_item import models as item_models
@@ -19,8 +19,7 @@ class Favorite:
         self.favorites = favorites
 
     def add(self, item_pk):
-        """Функция для добавления продукта в избранного."""
-        item = get_object_or_404(item_models.Item, pk=item_pk)
+        """Функция для добавления продукта в список избранных."""
         if self.favorites.__len__() < 100:
             if item_pk not in self.favorites:
                 self.favorites.append(int(item_pk))
@@ -29,7 +28,9 @@ class Favorite:
                 self.request, messages.SUCCESS, "товар добавлен в избранное"
             )
         else:
-            messages.add_message(self.request, messages.WARNING, "Превышен лимит")
+            messages.add_message(
+                self.request, messages.WARNING, "Превышен лимит"
+            )
 
     def save(self):
         """Функция для обновление сессии избранного."""
@@ -37,7 +38,7 @@ class Favorite:
         self.session.modified = True
 
     def remove(self, item_pk):
-        """Удаление товара из избранного."""
+        """Удаление товара из списка избранного."""
         if item_pk in self.favorites:
             self.favorites.remove(item_pk)
             self.save()
@@ -55,5 +56,6 @@ class Favorite:
         self.session.modified = True
 
     def all(self):
+        """Функция возвращает queryset всех товаров из списка избранных."""
         items = item_models.Item.objects.filter(id__in=self.favorites)
         return items

@@ -1,3 +1,4 @@
+"""Модуль содержит URL-адреса для работы с чека оплаты и адресами."""
 from django.urls import path
 
 from app_invoice import views
@@ -17,9 +18,17 @@ urlpatterns = [
         name="invoices_by_date",
     ),
     path("address/list/", views.AddressList.as_view(), name="address_list"),
-    path("address/create/", views.AddressCreate.as_view(), name="address_create"),
-    path("address/edit/<int:pk>/", views.AddressUpdate.as_view(), name="address_edit"),
     path(
-        "address/remove/<int:pk>/", views.AddressDelete.as_view(), name="address_remove"
+        "address/create/", views.AddressCreate.as_view(), name="address_create"
+    ),
+    path(
+        "address/edit/<int:pk>/",
+        views.AddressUpdate.as_view(),
+        name="address_edit",
+    ),
+    path(
+        "address/remove/<int:pk>/",
+        views.AddressDelete.as_view(),
+        name="address_remove",
     ),
 ]

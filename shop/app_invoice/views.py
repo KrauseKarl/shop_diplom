@@ -1,3 +1,13 @@
+"""
+Модуль содержит классы-предстывления для работы с квитанциями и адресами.
+
+InvoicesList - класс-представление для получения список квитанций об оплате,
+InvoicesDetail -  класс-представление для получения одна квитануия об оплате заказа,
+AddressList - класс-представление для отображения списка адресов доставки,
+AddressCreate - класс-представление для создания адреса доставки
+AddressUpdate - класс-представление для создания адреса доставки
+AddressDelete - класс-представление для обновления адреса доставки
+"""
 from django.contrib import messages
 from django.contrib.auth import mixins
 from django.shortcuts import render, redirect
@@ -19,7 +29,7 @@ from utils.my_utils import MixinPaginator, CustomerOnlyMixin
 
 # INVOICE
 class InvoicesList(CustomerOnlyMixin, generic.ListView, MixinPaginator):
-    """Класс-представления для получения списка всех квитанций об оплате."""
+    """Класс-представление для получения списка всех квитанций об оплате."""
 
     model = invoice_models.Invoice
     template_name = "app_invoice/invoice/invoices_list.html"
@@ -28,17 +38,21 @@ class InvoicesList(CustomerOnlyMixin, generic.ListView, MixinPaginator):
 
     def get(self, request, sort=None, **kwargs):
         super().get(request, **kwargs)
-        orders = order_services.CustomerOrderHandler.get_customer_order_list(request)
+        orders = order_services.CustomerOrderHandler.get_customer_order_list(
+            request
+        )
         queryset = invoice_models.Invoice.objects.filter(order__in=orders)
         if sort:
             queryset = queryset.order_by(f"{sort}")
-        object_list = MixinPaginator(queryset, request, self.paginate_by).my_paginator()
+        object_list = MixinPaginator(
+            queryset, request, self.paginate_by
+        ).my_paginator()
         context = {"object_list": object_list}
         return render(request, self.template_name, context=context)
 
 
 class InvoicesDetail(mixins.UserPassesTestMixin, generic.DetailView):
-    """Класс-представления для отображения одной квитануии об оплате заказа."""
+    """Класс-представление для отображения одной квитануии об оплате заказа."""
 
     model = invoice_models.Invoice
     template_name = "app_invoice/invoice/invoice_detail.html"
@@ -53,7 +67,7 @@ class InvoicesDetail(mixins.UserPassesTestMixin, generic.DetailView):
 
 # ADDRESS
 class AddressList(mixins.LoginRequiredMixin, generic.ListView):
-    """Класс-представления для отображения списка всех адресов доставки покупателя."""
+    """Класс-представление для отображения списка адресов доставки покупателя."""
 
     model = order_models.Address
     template_name = "app_invoice/address/address_list.html"
@@ -61,14 +75,16 @@ class AddressList(mixins.LoginRequiredMixin, generic.ListView):
 
     def get(self, request, *args, **kwargs):
         super(AddressList, self).get(request, *args, **kwargs)
-        object_list = order_services.AddressHandler.get_address_list(self.request.user)
+        object_list = order_services.AddressHandler.get_address_list(
+            self.request.user
+        )
         form = invoice_forms.AddressForm
         context = {"form": form, "object_list": object_list}
         return render(request, self.template_name, context=context)
 
 
 class AddressCreate(AddressList, generic.CreateView):
-    """Класс-представления для создания адреса доставки."""
+    """Класс-представление для создания адреса доставки."""
 
     model = order_models.Address
     form_class = invoice_forms.AddressForm
@@ -82,7 +98,9 @@ class AddressCreate(AddressList, generic.CreateView):
         address.address = form.cleaned_data.get("address")
         address.user = self.request.user
         address.save()
-        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
+        messages.add_message(
+            self.request, messages.SUCCESS, self.MESSAGE_SUCCESS
+        )
         return redirect("app_invoice:address_list")
 
     def form_invalid(self, form):
@@ -91,7 +109,7 @@ class AddressCreate(AddressList, generic.CreateView):
 
 
 class AddressUpdate(CustomerOnlyMixin, AddressList, generic.UpdateView):
-    """Класс-представления для обновления адреса доставки."""
+    """Класс-представление для обновления адреса доставки."""
 
     model = order_models.Address
     form_class = invoice_forms.AddressForm
@@ -105,7 +123,9 @@ class AddressUpdate(CustomerOnlyMixin, AddressList, generic.UpdateView):
 
     def form_valid(self, form):
         form.save()
-        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
+        messages.add_message(
+            self.request, messages.SUCCESS, self.MESSAGE_SUCCESS
+        )
         return redirect("app_invoice:address_list")
 
     def form_invalid(self, form):
@@ -113,7 +133,9 @@ class AddressUpdate(CustomerOnlyMixin, AddressList, generic.UpdateView):
         return super().form_invalid(form)
 
 
-class AddressDelete(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.DeleteView):
+class AddressDelete(
+    CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.DeleteView
+):
     """Класс-представления для удаления адреса доставки."""
 
     model = order_models.Address

@@ -1,3 +1,16 @@
+"""
+Модуль содержит модели для работы с товарами.
+
+1. IpAddress - модель для создания IP-адресса,
+2. Item - модель для создания товара,
+3. Category - модель для создания категории товаров,
+4. Tag - модель для создания тегов,
+5. Comment - модель для создания комментариев,
+6. Image - модель для создания изображений ,
+7. Feature - модель для создания характеристик товаров,
+8. FeatureValue - модель для создания занчений характеристик товаров.
+"""
+
 import datetime
 import os
 
@@ -31,7 +44,9 @@ class IpAddress(models.Model):
         blank=True,
         null=True,
     )
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
+    created = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата создания"
+    )
     objects = models.Manager()
 
     class Meta:
@@ -80,7 +95,9 @@ class Item(models.Model):
     slug = models.SlugField(
         max_length=100, db_index=True, allow_unicode=False, verbose_name="slug"
     )
-    description = models.TextField(default="", blank=True, verbose_name="описание")
+    description = models.TextField(
+        default="", blank=True, verbose_name="описание"
+    )
     stock = models.PositiveIntegerField(verbose_name="количество")
     price = models.DecimalField(
         max_digits=10,
@@ -91,12 +108,18 @@ class Item(models.Model):
         verbose_name="цена",
     )
     is_available = models.BooleanField(default=False, verbose_name="в наличии")
-    is_active = models.BooleanField(default=False, verbose_name="архивный товар")
+    is_active = models.BooleanField(
+        default=False, verbose_name="архивный товар"
+    )
     limited_edition = models.BooleanField(
         default=False, verbose_name="ограниченный тираж"
     )
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
-    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
+    created = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата создания"
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата обновления"
+    )
     color = models.CharField(
         max_length=10,
         choices=COLOURS,
@@ -120,7 +143,10 @@ class Item(models.Model):
         verbose_name="магазин",
     )
     views = models.ManyToManyField(
-        "IpAddress", related_name="item_views", blank=True, verbose_name="просмотры"
+        "IpAddress",
+        related_name="item_views",
+        blank=True,
+        verbose_name="просмотры",
     )
     images = models.ManyToManyField(
         "Image",
@@ -129,7 +155,11 @@ class Item(models.Model):
         verbose_name="изображение",
     )
     tag = models.ManyToManyField(
-        "Tag", max_length=20, blank=True, related_name="item_tags", verbose_name="тег"
+        "Tag",
+        max_length=20,
+        blank=True,
+        related_name="item_tags",
+        verbose_name="тег",
     )
 
     feature_value = models.ManyToManyField(
@@ -226,9 +256,9 @@ class Item(models.Model):
     @property
     def purchases(self):
         """Функция возвращает кол-во всех купленных товаров."""
-        return self.cart_item.aggregate(bestseller=Count("order_item__quantity")).get(
-            "bestseller"
-        )
+        return self.cart_item.aggregate(
+            bestseller=Count("order_item__quantity")
+        ).get("bestseller")
 
 
 class Category(models.Model):
@@ -236,7 +266,9 @@ class Category(models.Model):
 
     DEFAULT_ICON = "img/icons/category.svg"
 
-    title = models.CharField(max_length=100, verbose_name="название", unique=True)
+    title = models.CharField(
+        max_length=100, verbose_name="название", unique=True
+    )
     slug = models.SlugField(max_length=100, db_index=True, allow_unicode=False)
     description = models.TextField(blank=True, verbose_name="описание")
     image = models.ImageField(
@@ -279,11 +311,14 @@ class Category(models.Model):
         super(Category, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("app_item:item_category", kwargs={"category": self.slug})
+        return reverse(
+            "app_item:item_category", kwargs={"category": self.slug}
+        )
 
     def get_parent_url(self):
         return reverse(
-            "app_item:item_category", kwargs={"category": self.parent_category.slug}
+            "app_item:item_category",
+            kwargs={"category": self.parent_category.slug},
         )
 
     def item_count(self):
@@ -346,7 +381,9 @@ class Comment(models.Model):
     """Модель комментария."""
 
     review = models.TextField(verbose_name="комментарий")
-    is_published = models.BooleanField(default=False, verbose_name="опубликовано")
+    is_published = models.BooleanField(
+        default=False, verbose_name="опубликовано"
+    )
     item = models.ForeignKey(
         "Item",
         on_delete=models.CASCADE,
@@ -359,9 +396,15 @@ class Comment(models.Model):
         related_name="user_comments",
         verbose_name="пользователь",
     )
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
-    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
-    archived = models.BooleanField(default=False, verbose_name="удален в архив")
+    created = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата создания"
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата обновления"
+    )
+    archived = models.BooleanField(
+        default=False, verbose_name="удален в архив"
+    )
     objects = models.Manager()
     published_comments = app_item_managers.ModeratedCommentsManager()
 
@@ -389,10 +432,18 @@ class Image(models.Model):
     QUALITY = 75
     WIDTH = 600
 
-    title = models.CharField(max_length=200, null=True, verbose_name="название")
-    main = models.BooleanField(default=False, verbose_name="главное изображение")
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
-    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата изменения")
+    title = models.CharField(
+        max_length=200, null=True, verbose_name="название"
+    )
+    main = models.BooleanField(
+        default=False, verbose_name="главное изображение"
+    )
+    created = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата создания"
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True, verbose_name="дата изменения"
+    )
     image = models.ImageField(
         upload_to="gallery/%Y/%m/%d",
         default="assets/img/default/default_item.png",
@@ -429,7 +480,11 @@ class Image(models.Model):
 class Feature(models.Model):
     """Модель характеристики товара."""
 
-    WIDGET_TYPE = (("CBX", "checkbox"), ("SLC", "select"), ("TXT", "textfield"))
+    WIDGET_TYPE = (
+        ("CBX", "checkbox"),
+        ("SLC", "select"),
+        ("TXT", "textfield"),
+    )
 
     title = models.CharField(max_length=200, verbose_name="характеристика")
     slug = models.SlugField(max_length=100, db_index=True, allow_unicode=False)
@@ -467,7 +522,9 @@ class Feature(models.Model):
 class FeatureValue(models.Model):
     """Модель значения характеристики товара."""
 
-    value = models.CharField(max_length=200, verbose_name="значение характеристик")
+    value = models.CharField(
+        max_length=200, verbose_name="значение характеристик"
+    )
     slug = models.SlugField(
         max_length=100, db_index=True, allow_unicode=False, verbose_name="slug"
     )
@@ -477,7 +534,9 @@ class FeatureValue(models.Model):
         related_name="values",
         verbose_name="название характеристики",
     )
-    is_active = models.BooleanField(default=True, verbose_name="активное значение")
+    is_active = models.BooleanField(
+        default=True, verbose_name="активное значение"
+    )
 
     objects = app_item_managers.AvailableValueManager()
     all_objects = models.Manager()

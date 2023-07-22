@@ -30,7 +30,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("slug", models.SlugField(max_length=100)),
-                ("description", models.TextField(blank=True, verbose_name="описание")),
+                (
+                    "description",
+                    models.TextField(blank=True, verbose_name="описание"),
+                ),
                 (
                     "image",
                     models.ImageField(
@@ -39,7 +42,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "is_archived",
-                    models.BooleanField(default=False, verbose_name="в архиве"),
+                    models.BooleanField(
+                        default=False, verbose_name="в архиве"
+                    ),
                 ),
             ],
             options={
@@ -64,7 +69,9 @@ class Migration(migrations.Migration):
                 ("review", models.TextField(verbose_name="комментарий")),
                 (
                     "is_published",
-                    models.BooleanField(default=False, verbose_name="опубликовано"),
+                    models.BooleanField(
+                        default=False, verbose_name="опубликовано"
+                    ),
                 ),
                 (
                     "created",
@@ -80,7 +87,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "archived",
-                    models.BooleanField(default=False, verbose_name="удален в архив"),
+                    models.BooleanField(
+                        default=False, verbose_name="удален в архив"
+                    ),
                 ),
             ],
             options={
@@ -104,7 +113,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "title",
-                    models.CharField(max_length=200, verbose_name="характеристика"),
+                    models.CharField(
+                        max_length=200, verbose_name="характеристика"
+                    ),
                 ),
                 ("slug", models.SlugField(max_length=100)),
                 (
@@ -154,10 +165,15 @@ class Migration(migrations.Migration):
                         max_length=200, verbose_name="значение характеристик"
                     ),
                 ),
-                ("slug", models.SlugField(max_length=100, verbose_name="slug")),
+                (
+                    "slug",
+                    models.SlugField(max_length=100, verbose_name="slug"),
+                ),
                 (
                     "is_active",
-                    models.BooleanField(default=True, verbose_name="активное значение"),
+                    models.BooleanField(
+                        default=True, verbose_name="активное значение"
+                    ),
                 ),
             ],
             options={
@@ -302,12 +318,20 @@ class Migration(migrations.Migration):
                         verbose_name="название",
                     ),
                 ),
-                ("slug", models.SlugField(max_length=100, verbose_name="slug")),
+                (
+                    "slug",
+                    models.SlugField(max_length=100, verbose_name="slug"),
+                ),
                 (
                     "description",
-                    models.TextField(blank=True, default="", verbose_name="описание"),
+                    models.TextField(
+                        blank=True, default="", verbose_name="описание"
+                    ),
                 ),
-                ("stock", models.PositiveIntegerField(verbose_name="количество")),
+                (
+                    "stock",
+                    models.PositiveIntegerField(verbose_name="количество"),
+                ),
                 (
                     "price",
                     models.DecimalField(
@@ -319,11 +343,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "is_available",
-                    models.BooleanField(default=False, verbose_name="в наличии"),
+                    models.BooleanField(
+                        default=False, verbose_name="в наличии"
+                    ),
                 ),
                 (
                     "is_active",
-                    models.BooleanField(default=False, verbose_name="архивный товар"),
+                    models.BooleanField(
+                        default=False, verbose_name="архивный товар"
+                    ),
                 ),
                 (
                     "limited_edition",

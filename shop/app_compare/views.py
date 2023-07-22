@@ -1,4 +1,4 @@
-"""Модуль содержит классы-предстывления для работы с со списком сравнения."""
+"""Модуль содержит классы-предстывления для работы со списком сравнения."""
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import generic
@@ -36,7 +36,7 @@ class CompareItemView(generic.DetailView):
     template_name = "app_compare/compare_list.html"
 
     def get(self, request, *args, **kwargs):
-        """Функция-get для отображения списка-сравнения."""
+        """Функция-get для сравнения товаров."""
         object_list = Comparison(request).all()
         value_list = object_list.values_list("feature_value", flat=True)
         compare_mode = bool(request.GET.get("compare"))

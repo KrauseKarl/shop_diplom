@@ -1,23 +1,40 @@
+"""Модуль содержит класс-сервис для работы с комментариями."""
 from django.db.models import QuerySet, Q
 from django.http import Http404
 
+# forms
 from app_item.forms import CommentForm
+# models
 from app_item import models as item_models
-from app_item.services import item_services
 from app_store import models as store_models
+# services
+from app_item.services import item_services
 
 
 class CommentHandler:
     """Класс для работы с комментариями."""
 
     @staticmethod
+    def get_all_comments():
+        """
+
+        :return:
+        """
+        return item_models.Comment.objects.all()
+
+    @staticmethod
     def non_moderate_comments_amount() -> int:
-        """Функция возвращает общее кол-во новых  комментариев для панели администратора."""
+        """
+        Функция возвращает общее кол-во новых комментариев.
+
+        Возвращает общее количество комментариев ожидающих модерации
+        для панели админитсратора.
+        """
         return item_models.Comment.objects.filter(is_published=False).count()
 
     @staticmethod
     def total_comments() -> QuerySet[item_models.Comment]:
-        """Функция возвращает все комментраии на сайте для панели администратора."""
+        """Функция возвращает все комментраии на сайте."""
         return item_models.Comment.objects.order_by("-created")
 
     @staticmethod
@@ -30,6 +47,7 @@ class CommentHandler:
     def comment_counter(item_id: int) -> int:
         """
         Функция-счетчик для комментариев одного товрара.
+
         :param item_id: id товара
         :return: кол-во комментариев
         """
@@ -75,7 +93,9 @@ class CommentHandler:
     @staticmethod
     def get_comment_list_by_user(user) -> QuerySet[item_models.Comment]:
         """Функция возвращает список всех комментариев пользователя."""
-        comments = item_models.Comment.objects.select_related("item").filter(user=user)
+        comments = item_models.Comment.objects.select_related("item").filter(
+            user=user
+        )
         return comments
 
     @staticmethod
@@ -108,9 +128,12 @@ class CommentHandler:
     def get_permission(user_id: int, comment_user_id: int) -> bool:
         """
         Функция для установления права пользователя на комментарий.
+
         :param user_id: ID пользователя.
         :param comment_user_id: ID автора комментария.
-        :return: True - если комментарий принадлежит пользователю, False - если нет.
+        :return:
+            True - если комментарий принадлежит пользователю,
+            False - если нет.
         """
         if comment_user_id == user_id:
             return True

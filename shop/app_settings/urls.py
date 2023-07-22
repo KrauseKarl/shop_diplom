@@ -1,3 +1,4 @@
+"""Модуль содержит URL-адреса для работы с настройками сайта."""
 from django.urls import path
 
 from app_settings import views

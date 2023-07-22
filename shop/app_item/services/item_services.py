@@ -1,15 +1,30 @@
+"""
+Модуль содержит класс-сервис для работы с товарам.
+
+1. ItemHandler - класс для работы с товарами,
+2. TagHandler - класс для работы с тегами,
+3. CategoryHandler - класс для работы с категориями,
+4. CountView - класс для работы с количеством просмотров страницы товара,
+5. AddItemToReview - класс для добавления товара в список просматриваемых,
+6. ImageHandler - класс для работы с изображениями,
+7. QueryStringHandler - класс для работы со строкой GET-запроса,
+8. FeatureHandler - класс для работы с характеристиками товара,
+9. ValueHandler - класс для работы со значениями характеристик товара.
+10. get-color - функция для работы с цветами товара.
+"""
+
 import random
 from io import BytesIO
 from PIL import Image as PilImage
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from typing import List, Dict, Union, Any
+from typing import List, Dict, Union
 from functools import reduce
 from operator import or_
 from datetime import date, timedelta
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models.query import QuerySet
-from django.db.models import Min, Max, Q, Count, F
+from django.db.models import Min, Max, Q, Count, F, Model
 from django.http import Http404, HttpRequest
 from urllib.parse import urlencode
 from urllib.parse import parse_qs
@@ -22,28 +37,13 @@ from app_item.services import comment_services
 from utils.my_utils import MixinPaginator
 
 
-def get_colors(queryset: QuerySet) -> List[str]:
-    """
-    Функция возвращает все цвета, которые есть у выбранных товаров.
-
-    :param queryset: queryset товаров,
-    :return: список цветов всех выбранных товаров
-    """
-    try:
-        colors = queryset.exclude(color=None).values("color").distinct()
-        colors = list(colors.values("color"))
-        colors_list = []
-        for color in colors:
-            for key, val in color.items():
-                colors_list.append(val)
-        colors = list(set(colors_list))
-        return colors
-    except ObjectDoesNotExist:
-        return []
-
-
 class ItemHandler:
     """Класс для работы с товарами."""
+
+    @staticmethod
+    def get_all_items():
+        """Функция возвращет все товары и БД."""
+        return item_models.Item.objects.all()
 
     @staticmethod
     def get_item(item_id: int) -> QuerySet:
@@ -53,7 +53,9 @@ class ItemHandler:
         :return: экземпляр товара или None
         """
         try:
-            return item_models.Item.objects.select_related("category").get(id=item_id)
+            return item_models.Item.objects.select_related("category").get(
+                id=item_id
+            )
         except ObjectDoesNotExist:
             raise Http404("Не найден ни один товар, соответствующий запросу")
 
@@ -62,18 +64,22 @@ class ItemHandler:
         """
         Функция возвращает отсортированный queryset товаров
         в заданном диапозоне цен.
-         :param min_price:  минимальная цена
-         :param max_price:  максимальная цена
-         :return: отсортированный queryset товара.
+
+        :param min_price:  минимальная цена
+        :param max_price:  максимальная цена
+        :return: отсортированный queryset товара.
         """
-        items = item_models.Item.objects.filter(price__range=(min_price, max_price))
+        items = item_models.Item.objects.filter(
+            price__range=(min_price, max_price)
+        )
         return items
 
     @staticmethod
     def get_range_price(queryset: QuerySet) -> (tuple, int):
         """
-        Функция возвращает кортеж
-        из максимальной и минимальной цен
+        Функция возвращает кортеж.
+
+        Возвращает кортеж из максимальной и минимальной цен
         переданного queryset.
         """
         if not queryset:
@@ -83,7 +89,6 @@ class ItemHandler:
     @staticmethod
     def get_popular_items(items=None) -> QuerySet[item_models.Item]:
         """Функция возвращает список экземпляров популярных товаров."""
-
         if items:
             popular_items = (
                 items.exclude(item_views=None)
@@ -99,18 +104,17 @@ class ItemHandler:
 
     @staticmethod
     def get_comments_items(items=None) -> QuerySet[item_models.Item]:
-        """Функция возвращает список экземпляров самых комментируемых товаров."""
-
+        """Функция возвращает список самых комментируемых товаров."""
         if not items:
             return item_models.Item.objects.none()
         return items.annotate(comm=Count("item_comments")).order_by("-comm")
 
     @staticmethod
     def get_limited_edition_items() -> QuerySet[item_models.Item]:
-        """Функция возвращает список экземпляров товаров «Ограниченный тираж»."""
-        limited_items = item_models.Item.available_items.prefetch_related("tag").filter(
-            limited_edition=True
-        )
+        """Функция возвращает список товаров «Ограниченный тираж»."""
+        limited_items = item_models.Item.available_items.prefetch_related(
+            "tag"
+        ).filter(limited_edition=True)
 
         return limited_items
 
@@ -118,8 +122,9 @@ class ItemHandler:
     def get_bestseller(queryset=None) -> QuerySet[item_models.Item]:
         """
         Функция возвращает queryset товаров «Лучшие по продажам».
-            :param queryset: queryset товаров
-            :return: отсортированный queryset товара.
+
+        :param queryset: queryset товаров
+        :return: отсортированный queryset товара.
         """
         base = item_models.Item.objects.annotate(
             quantity=F("cart_item__order_item__quantity")
@@ -137,7 +142,6 @@ class ItemHandler:
     @staticmethod
     def get_new_item_list() -> QuerySet[item_models.Item]:
         """Функция возвращает queryset товаров «Новинки»."""
-
         last_four_week = date.today() - timedelta(days=300)
 
         new_items = (
@@ -151,8 +155,7 @@ class ItemHandler:
 
     @staticmethod
     def get_history_views(user) -> QuerySet[item_models.Item]:
-        """Функция возвращает queryset  просматриваемых товаров."""
-
+        """Функция возвращает queryset просматриваемых товаров."""
         items = (
             item_models.Item.objects.filter(views__user=user)
             .annotate(items_for_you=Count("item_views"))
@@ -167,10 +170,12 @@ class ItemHandler:
         Функция возвращает словарь с queryset товаров,
         на основе ранее посещаемых товаров.
 
-        На основе queryset товаров определяется 5 самых популярных категорий,
-        затем в случайном порядке выбирается 12 товаров по три из каждой категории.
+        На основе queryset товаров определяется 5 самых
+        популярных категорий,
+        затем в случайном порядке выбирается 12 товаров
+        по 3 из каждой категории.
         :param paginate_by: кол-во товаров для пагинации
-        :param request: request
+        :param request: HttpRequest
         :return: context-словарь.
         """
         if not request.user.is_authenticated:
@@ -213,27 +218,17 @@ class ItemHandler:
         random_list = random.sample(range(len(query_list)), len(query_list))
         queryset = [query_list[i] for i in random_list]
         context = {
-            "object_list": MixinPaginator(queryset, request, paginate_by).my_paginator()
+            "object_list": MixinPaginator(
+                queryset, request, paginate_by
+            ).my_paginator()
         }
         return context
-
-    @staticmethod
-    def search_item(query: str) -> QuerySet:
-        query = query.title()
-        items = item_models.Item.objects.filter(
-            Q(category__title__icontains=query)
-            | Q(title__icontains=query)
-            | Q(tag__title__icontains=query)
-        ).distinct()
-
-        return items
 
     @staticmethod
     def ordering_items(
         queryset: QuerySet[item_models.Item], order_by: str
     ) -> QuerySet[item_models.Item]:
         """Функция возвращает отсортированный Queryset по переданному параметру."""
-
         if order_by == "cheep_first":
             queryset = queryset.order_by("price")
         elif order_by == "rich_first":
@@ -251,8 +246,7 @@ class ItemHandler:
 
     @staticmethod
     def ordering_message(sort_param: str) -> str:
-        """Функция возвращает сообщение по какому параметру был отсортирован Queryset."""
-
+        """Функция возвращает сообщение сортировки."""
         message_book = {
             "best_seller": "по продажам",
             "-best_seller": "по продажам",
@@ -266,9 +260,16 @@ class ItemHandler:
 
     @staticmethod
     def filter_queryset_by_request_param(
-        queryset: QuerySet[item_models.Item], param, value
+        queryset: QuerySet[item_models.Item], param: str, value: str
     ) -> QuerySet[item_models.Item]:
-        """Функция возращает queryset товаров отфильтрованных по заданным параметром фильтрации и сортировки."""
+        """
+        Функция возращает отфильтрованный queryset товаров.
+
+        :param queryset: queryset-товаров
+        :param param: параметр фильтрации или сортировки
+        :param value: значение фильтрации или сортировки
+        :return: отсортированный queryset товара.
+        """
         request_book = {
             "is_available": ItemHandler.get_available(queryset=queryset),
             "store": queryset.filter(store__slug=value[0]),
@@ -283,8 +284,12 @@ class ItemHandler:
                 | Q(tag__title__icontains=value)
             ).distinct(),
             "color": queryset.exclude(color=None).filter(color__in=value),
-            "order_by": ItemHandler.ordering_items(queryset, order_by=value[0]),
-            "price": ItemHandler.filter_queryset_by_price(queryset, price=value),
+            "order_by": ItemHandler.ordering_items(
+                queryset, order_by=value[0]
+            ),
+            "price": ItemHandler.filter_queryset_by_price(
+                queryset, price=value
+            ),
         }
         if param in request_book.keys():
             return request_book[param]
@@ -295,9 +300,10 @@ class ItemHandler:
     ) -> QuerySet[item_models.Item]:
         """
         Функция возвращает отфильтрованный queryset товаров по одному магазину.
-            :param queryset: queryset товаров
-            :param store: магазин
-            :return: отсортированный queryset товара.
+
+        :param queryset: queryset товаров
+        :param store: магазин
+        :return: отсортированный queryset товара.
         """
         try:
             items = queryset.filter(store__slug=store)
@@ -310,7 +316,9 @@ class ItemHandler:
     def filter_queryset_by_price(
         queryset: QuerySet[item_models.Item], price: str
     ) -> QuerySet[item_models.Item]:
-        """Функция возвращает отфильтрованный queryset товаров по диапазону цен.
+        """
+        Функция возвращает отфильтрованный queryset товаров по диапазону цен.
+
         :param queryset: queryset товаров
         :param price: диапазон цен
         :return: отсортированный queryset товара.
@@ -333,10 +341,11 @@ class ItemHandler:
         return queryset
 
     @staticmethod
-    def make_get_param_dict(request) -> dict:
+    def make_get_param_dict(request: HttpRequest) -> dict:
         """
         Функиця создает словарь из всех параметров GET-запроса.
-        ключ записывает человеко-читаемое название параметра,
+
+        Ключ записывает человеко-читаемое название параметра,
         в значение имя ключа из GET-запросов.
         """
         filter_dict = {
@@ -372,9 +381,11 @@ class ItemHandler:
             if key not in filter_dict.keys() and value:
                 # поиск по дополнительным характеристикам
                 if len(value) > 1:
-                    feature = item_models.FeatureValue.objects.prefetch_related(
-                        "item_features"
-                    ).filter(slug__in=value)
+                    feature = (
+                        item_models.FeatureValue.objects.prefetch_related(
+                            "item_features"
+                        ).filter(slug__in=value)
+                    )
                     for feature_key in feature:
                         get_param_dict[
                             f"{feature_key.feature.title} - {feature_key.value}"
@@ -425,14 +436,14 @@ class ItemHandler:
 
     @staticmethod
     def smart_filter(
-        request, object_list: QuerySet, param_dict: dict
+        request: HttpRequest, object_list: QuerySet, param_dict: dict
     ) -> QuerySet[item_models.Item]:
-        """Функция  фильтрует базу товаров по нескольким параметрам запроса.
+        """
+        Функция  фильтрует товары по нескольким параметрам запроса.
 
         Каждый результат фильтрации добавляется в список.
         Итоговый список через лист-comprehension объединяется в один запрос.
         """
-
         filter_dict = {
             "order_by": "сортировка",
             "price": "цена",
@@ -497,7 +508,9 @@ class ItemHandler:
                     lower = query.lower()
                     queryset = (
                         object_list.select_related("category", "store")
-                        .prefetch_related("tag", "views", "images", "feature_value")
+                        .prefetch_related(
+                            "tag", "views", "images", "feature_value"
+                        )
                         .filter(
                             Q(category__title__icontains=title)
                             | Q(title__icontains=title)
@@ -535,7 +548,13 @@ class ItemHandler:
 
     @staticmethod
     def item_detail_view(request, item) -> dict:
-        """Функция возвращает словарь со всеми данными по одному товару."""
+        """
+        Функция возвращает context-словарь со данными по одному товару.
+
+        Добавляет товар в список просмотренных товаров пользователя.
+        Увеличивает количество просмотров товара.
+        Возвращает теги, комментарии и характеристики товара.
+        """
         user = request.user
         form = item_forms.CommentForm
         # добавляет товар в список просмотренных товаров пользователя
@@ -550,7 +569,9 @@ class ItemHandler:
         tags = TagHandler.get_tags_queryset(item_id=item.id)
 
         # общее кол-во комментариев(прошедших модерацию) к товару
-        comments_count = comment_services.CommentHandler.get_comment_cont(item.id)
+        comments_count = comment_services.CommentHandler.get_comment_cont(
+            item.id
+        )
 
         # все характеристики товара отсортированные по названию характеристик
         features = item.feature_value.order_by("feature__title")
@@ -565,15 +586,19 @@ class ItemHandler:
 
     @staticmethod
     def filter_list_view(
-        request: HttpRequest, queryset: QuerySet[item_models.Item], paginate_by: int
+        request: HttpRequest,
+        queryset: QuerySet[item_models.Item],
+        paginate_by: int,
     ) -> dict:
-        """Функция возвращает context-словарь с отфильтровапнными товарами и сопостствующими данными."""
+        """Функция возвращает context-словарь с отфильтровапнными товарами."""
         object_list = queryset
         query_get_param_dict = ItemHandler.make_get_param_dict(request)
         object_list = ItemHandler.smart_filter(
             request, object_list, query_get_param_dict
         )
-        related_category_list = CategoryHandler.get_related_category_list(object_list)
+        related_category_list = CategoryHandler.get_related_category_list(
+            object_list
+        )
 
         if request.GET.get("order_by"):
             sort_by = request.GET.get("order_by")
@@ -606,7 +631,9 @@ class ItemHandler:
     def store_list_view(request: HttpRequest, store, paginate_by: int) -> dict:
         """Функция возвращает context-словарь со всеми товарами одного магазина."""
         object_list = store.items.all()
-        related_category_list = CategoryHandler.get_related_category_list(object_list)
+        related_category_list = CategoryHandler.get_related_category_list(
+            object_list
+        )
         sort_message = f"товары магазина {store}"
         if request.GET.get("order_by"):
             object_list = ItemHandler.ordering_items(
@@ -615,7 +642,9 @@ class ItemHandler:
             sort_message = ItemHandler.ordering_message(
                 sort_param=request.GET.get("order_by")
             )
-        object_list = MixinPaginator(object_list, request, paginate_by).my_paginator()
+        object_list = MixinPaginator(
+            object_list, request, paginate_by
+        ).my_paginator()
         context = {
             "object_list": object_list,
             "related_category_list": related_category_list,
@@ -626,12 +655,18 @@ class ItemHandler:
 
     @staticmethod
     def get_alphabet_list() -> list:
-        """Функция возвращает отфильтрованный (по существующим категориям) список всех букв алфавита."""
+        """
+        Функция возвращает отфильтрованный список всех букв алфавита.
+
+        Возвращается список всех букв алфавита существующих категорий.
+        """
         return sorted(
             set(
                 [
                     category.title[0]
-                    for category in item_models.Category.objects.order_by("title")
+                    for category in item_models.Category.objects.order_by(
+                        "title"
+                    )
                 ]
             )
         )
@@ -641,7 +676,9 @@ class ItemHandler:
         """Функция по обавлению к товару новых характеристик и изобрпажений."""
         for new_value in values:
             if new_value:
-                feature = item_models.Feature.objects.filter(values=new_value).first()
+                feature = item_models.Feature.objects.filter(
+                    values=new_value
+                ).first()
                 if feature:
                     if instance.feature_value.all():
                         for old_value in instance.feature_value.all():
@@ -651,20 +688,24 @@ class ItemHandler:
                     instance.save()
 
         for i in images:
-            img = item_models.Image.objects.create(image=i, title=instance.title)
+            img = item_models.Image.objects.create(
+                image=i, title=instance.title
+            )
             if img not in instance.images.all():
                 instance.images.add(img)
                 instance.save()
 
     @staticmethod
     def update_item(item, images, tag_list, **kwargs):
-        """Функция по редактированию тегов и изображений экземпляра класса Item."""
+        """Функция по редактированию тегов и изображений товара."""
         for t in tag_list:
             tag = item_models.Tag.objects.get(id=t.id)
             item.tag.add(tag)
             item.save()
         for img in images:
-            image = item_models.Image.objects.create(image=img, title=item.title)
+            image = item_models.Image.objects.create(
+                image=img, title=item.title
+            )
             item.images.add(image.id)
             item.save()
         store_id = kwargs["pk"]
@@ -698,6 +739,7 @@ class TagHandler:
     ) -> QuerySet[item_models.Tag]:
         """
         Функция возвращает queryset-тегов.
+
         При наличии параметра отфильтрованный queryset-тегов.
         :param item_id: id-товара
         :param queryset: queryset-товаров
@@ -712,9 +754,9 @@ class TagHandler:
                     .order_by("-item_count")
                 )
             elif item_id:
-                tags = item_models.Tag.objects.prefetch_related("item_tags").filter(
-                    item_tags=item_id
-                )
+                tags = item_models.Tag.objects.prefetch_related(
+                    "item_tags"
+                ).filter(item_tags=item_id)
             else:
                 tags = item_models.Tag.objects.values_list("id", "title").all()
             return tags
@@ -724,19 +766,23 @@ class TagHandler:
     @staticmethod
     def get_tag(slug: str):
         """
-        Функция возвращает один экземпляр тега или ошибку 404.
+        Функция возвращает один тег или ошибку 404.
+
         :param slug: slug-тега товара
         :return: тег или ошибку 404.
         """
         try:
-            return item_models.Tag.objects.prefetch_related("item_tags").get(slug=slug)
+            return item_models.Tag.objects.prefetch_related("item_tags").get(
+                slug=slug
+            )
         except ObjectDoesNotExist:
             raise Http404("такого тега не существует")
 
     @staticmethod
     def get_a_tag(tag_id):
         """
-        Функция возвращает один экземпляр тега или ошибку 404.
+        Функция возвращает один тег или ошибку 404.
+
         :param tag_id: ID-тега
         :return: тег или ошибку 404.
         """
@@ -748,6 +794,7 @@ class TagHandler:
     ) -> QuerySet[item_models.Item]:
         """
         Функция возвращает queryset-товаров отфильтрованный по тегу.
+
         :param queryset: queryset товаров
         :param tag: тег по которому нужно отфильтровать
         :return: queryset товаров.
@@ -786,11 +833,13 @@ class TagHandler:
         paginate_by: int,
         tag: str,
     ) -> dict:
-        """Функия возвращает context-словарь с товарами отфильтрованными по переданному тегу."""
+        """Функия возвращает context-словарь с товарами отфильтрованными по тегу."""
         #  фильтруем товары по переданному тегу
         object_list = TagHandler.filter_queryset_by_tag(queryset, tag=tag)
         # формируем список из связанных категорий или дочерних категорий
-        related_category_list = CategoryHandler.get_related_category_list(object_list)
+        related_category_list = CategoryHandler.get_related_category_list(
+            object_list
+        )
         #  находим экземпляр класса Tag по slug
         tag = TagHandler.get_tag(tag)
         #   формируем сообщение по типе фильтрации
@@ -806,7 +855,9 @@ class TagHandler:
                 sort_param=request.GET.get("order_by")
             )
         # 10  пагинация результата
-        object_list = MixinPaginator(object_list, request, paginate_by).my_paginator()
+        object_list = MixinPaginator(
+            object_list, request, paginate_by
+        ).my_paginator()
         context = {
             "related_category_list": related_category_list,  # все категории в которых есть тег
             "tag": tag,  # один выбранный тег (при GET-запросе)
@@ -829,6 +880,7 @@ class CategoryHandler:
     def get_categories(slug=None) -> QuerySet:
         """
         Функция возвращает queryset-категорий товаров.
+
         При наличии параметра отфильтрованный queryset-категорий.
         :param slug: slug-товара
         :return: queryset-категорий.
@@ -849,14 +901,15 @@ class CategoryHandler:
             )
 
     @staticmethod
-    def get_related_category_list(queryset: QuerySet) -> QuerySet[item_models.Category]:
+    def get_related_category_list(
+        queryset: QuerySet,
+    ) -> QuerySet[item_models.Category]:
         """
-        Функция возвращает queryset всех категорий,
-         которые относятся к выбранным товарам .
+        Функция возвращает queryset всех категорий.
+
+        Возвращаются категороии относящиеся к выбранным товарам.
         :return: queryset-категорий.
-
         """
-
         related_categories = (
             item_models.Category.objects.values_list(
                 "parent_category__sub_categories", flat=True
@@ -867,12 +920,15 @@ class CategoryHandler:
         related_categories = item_models.Category.objects.filter(
             id__in=related_categories
         )
-        category = item_models.Category.objects.filter(items__in=queryset).distinct()
+        category = item_models.Category.objects.filter(
+            items__in=queryset
+        ).distinct()
 
         return related_categories if related_categories.exists() else category
 
     @staticmethod
     def get_related_items(queryset: QuerySet) -> QuerySet:
+        """Функция возвращает смежные категории."""
         return (
             item_models.Category.objects.select_related("items")
             .filter(items__in=queryset)
@@ -884,6 +940,7 @@ class CategoryHandler:
     def get_a_category(category_id: int):
         """
          Функция возвращает одну категорию.
+
         :param category_id: ID-категории
         :return: экземпляр категории
         """
@@ -911,7 +968,8 @@ class CategoryHandler:
         queryset: QuerySet, category_slug: str
     ) -> QuerySet[item_models.Category]:
         """
-         Функция возвращает queryset товаров отфильтрованной по категории .
+         Функция возвращает queryset товаров отфильтрованной по категории.
+
         :param queryset: queryset товаров
         :param category_slug: slug каткгории
         :return: queryset товаров
@@ -920,17 +978,30 @@ class CategoryHandler:
             slug=category_slug
         )
         queryset = (
-            queryset.select_related("category", "category__parent_category", "store")
+            queryset.select_related(
+                "category", "category__parent_category", "store"
+            )
             .prefetch_related("tag", "views", "images", "feature_value")
             .filter(
-                Q(category=category["id"]) | Q(category__parent_category=category["id"])
+                Q(category=category["id"])
+                | Q(category__parent_category=category["id"])
             )
         )
 
         return queryset
 
     @staticmethod
-    def category_list_view(request, queryset, paginate_by, category):
+    def category_list_view(request: HttpRequest, queryset, paginate_by: int, category: str):
+        """
+        Функция возвращает context-словарь.
+
+        Возращается словарь со всеми данными товаров
+        отфильтрованных по одной категории.
+        :param request - HttpRequest,
+        :param queryset - queryset товаров,
+        :param paginate_by - число элементов на странице
+        :param category - slug-категории
+        """
         color = None
 
         #  создаем словарь всех параметров GET-запроса
@@ -951,13 +1022,15 @@ class CategoryHandler:
 
         #  определяем диапазон цен в выбранной категории товаров
         if not object_list.exists():
-            price_min_in_category, price_max_in_category = ItemHandler.get_range_price(
-                filter_items_by_category
-            )
+            (
+                price_min_in_category,
+                price_max_in_category,
+            ) = ItemHandler.get_range_price(filter_items_by_category)
         else:
-            price_min_in_category, price_max_in_category = ItemHandler.get_range_price(
-                object_list
-            )
+            (
+                price_min_in_category,
+                price_max_in_category,
+            ) = ItemHandler.get_range_price(object_list)
         if request.GET.get("price"):
             price_range = request.GET.get("price", None)
             price_min = int(price_range.split(";")[0])
@@ -969,7 +1042,9 @@ class CategoryHandler:
         sort_message = f"по категории {category}"
 
         # 5  формируем список из связанных категорий или дочерних категорий
-        related_category_list = CategoryHandler.get_related_category_list(object_list)
+        related_category_list = CategoryHandler.get_related_category_list(
+            object_list
+        )
 
         #  формируем список  всех доступных цветов
         set_colors = get_colors(object_list)
@@ -987,7 +1062,9 @@ class CategoryHandler:
             )
 
         #   пагинация результата
-        object_list = MixinPaginator(object_list, request, paginate_by).my_paginator()
+        object_list = MixinPaginator(
+            object_list, request, paginate_by
+        ).my_paginator()
         context = {
             "related_category_list": related_category_list,  # все категории в которых есть искомое слово
             "category": category,  # одна выбранная категория товара  (при GET-запросе)
@@ -1041,7 +1118,10 @@ class CountView:
             )
         else:
             try:
-                ip_address, created = item_models.IpAddress.objects.get_or_create(ip=ip)
+                (
+                    ip_address,
+                    created,
+                ) = item_models.IpAddress.objects.get_or_create(ip=ip)
             except MultipleObjectsReturned:
                 ip_address = CountView.fake_ip()
         if ip_address not in item.views.all():
@@ -1051,6 +1131,7 @@ class CountView:
 class AddItemToReview:
     """
     Класс для добавления товара в список просматриваемых пользователем.
+
     Определяет три самых популярный категории товаров у пользователя.
     """
 
@@ -1076,7 +1157,9 @@ class AddItemToReview:
             .order_by("-rating")
         )
         favorite_category_list = [
-            category_id[0] for category_id in favorite_category if category_id[0]
+            category_id[0]
+            for category_id in favorite_category
+            if category_id[0]
         ]
         return favorite_category_list
 
@@ -1091,16 +1174,18 @@ class AddItemToReview:
 
     @staticmethod
     def _get_favorite_category_and_price_dict(
-        favorite_category_list: List[int], category_list: QuerySet[item_models.Category]
+        favorite_category_list: List[int],
+        category_list: QuerySet[item_models.Category],
     ) -> List[Dict[str, Union[str, float]]]:
         """Функция возвращает список из словарей(категория, цена)."""
-
         favorite_category = []
         for category_id in favorite_category_list:
             favorite_category.append(
                 {
                     "category": category_list.get(id=category_id),
-                    "price": AddItemToReview._get_min_price(category_id=category_id),
+                    "price": AddItemToReview._get_min_price(
+                        category_id=category_id
+                    ),
                 }
             )
         return favorite_category[:3]
@@ -1108,7 +1193,6 @@ class AddItemToReview:
     @staticmethod
     def get_best_price_in_category(user):
         """Функция возвращает самые популярные категории товаров у пользователя."""
-
         all_reviewed_item = AddItemToReview._get_reviews_items(user)
         cache.get_or_set("all_reviewed_item", all_reviewed_item, 60)
         all_category_list = CategoryHandler.get_categories()
@@ -1130,8 +1214,9 @@ class AddItemToReview:
     @staticmethod
     def add_item_to_review(user, item_id: int) -> QuerySet[item_models.Item]:
         """
-        Функция добавляет товар в список просмотренных,
-        обновляет список избранных категорий пользователя.
+        Функция добавляет товар в список просмотренных.
+
+        И обновляет список избранных категорий пользователя.
         :param user: пользователь
         :param item_id: id-товара
         :return: queryset товаров
@@ -1151,11 +1236,14 @@ class ImageHandler:
     """Класс для работы с изображениями товара."""
 
     @staticmethod
-    def resize_uploaded_image(image, title, width, format_image, quality_image):
+    def resize_uploaded_image(
+        image, title, width, format_image, quality_image
+    ):
         """
-        Функция возвращает изображение
-        с изменеными размерами, сжатое,
-        переименнованное  с необходимым расширением
+        Функция изменяет изображение.
+
+        Возвращеся изобраджение с изменеными размерами, сжатое,
+        переименнованное  и с необходимым расширением
         :param image: фаил изображения
         :param title: имя экземплара класса Image
         :param width: необходимай ширина изображения
@@ -1167,14 +1255,18 @@ class ImageHandler:
         exif = None
         if "exif" in img.info:
             exif = img.info["exif"]
-        random_str = "".join([random.choice(list("12345ABCDF")) for x in range(6)])
+        random_str = "".join(
+            [random.choice(list("12345ABCDF")) for x in range(6)]
+        )
         name = "_".join([str(title), str(random_str)])
         width_percent = width / float(img.size[0])
         height_size = int((float(img.size[1]) * float(width_percent)))
         img = img.resize((width, height_size), PilImage.ANTIALIAS)
         output = BytesIO()
         if exif:
-            img.save(output, format=format_image, exif=exif, quality=quality_image)
+            img.save(
+                output, format=format_image, exif=exif, quality=quality_image
+            )
         else:
             img.save(output, format=format_image, quality=quality_image)
         output.seek(0)
@@ -1190,10 +1282,17 @@ class ImageHandler:
 
 
 class QueryStringHandler:
-    """Класс для работы со строкой запроса."""
+    """Класс для работы со строкой GET-запроса."""
 
     @staticmethod
     def remove_param(query_string, param):
+        """
+        Функция по удалению параметра из GET-запросв.
+
+        :param query_string: строка GET-запроса,
+        :param param: параметр для удаления,
+        :return: возвращает новую строку GET-запроса без параметра.
+        """
         query_string_dict = parse_qs(query_string[1])
 
         for key_param, value_param in query_string_dict.items():
@@ -1221,24 +1320,16 @@ class QueryStringHandler:
         return result
 
 
-class CommentHandler:
-    """Класс для работы с комментариямию."""
-
-    @staticmethod
-    def get_all_comments():
-        return item_models.Comment.objects.all()
-
-
 class FeatureHandler:
     """Класс для работы с характеристиками товара."""
 
     @staticmethod
-    def get_active_features():
+    def get_active_features() -> QuerySet[item_models.Feature]:
         """Функция возвращает ТОЛЬКО АКТИВНЫЕ характеристики товаров."""
         return item_models.Feature.objects.all()
 
     @staticmethod
-    def get_all_features():
+    def get_all_features() -> QuerySet[item_models.Feature]:
         """Функция возвращает все характеристики товаров."""
         return item_models.Feature.all_objects.all()
 
@@ -1252,12 +1343,12 @@ class ValueHandler:
     """Класс для работы со значениями характеристик товара."""
 
     @staticmethod
-    def get_all_values():
+    def get_all_values() -> QuerySet[item_models.FeatureValue]:
         """Функция возвращает все значения характеристик товаров."""
         return item_models.FeatureValue.all_objects.all()
 
     @staticmethod
-    def get_active_values():
+    def get_active_values() -> QuerySet[item_models.FeatureValue]:
         """Функция возвращает ТОЛЬКО АКТИВНЫЕ значения характеристик товаров."""
         return item_models.FeatureValue.objects.all()
 
@@ -1265,3 +1356,23 @@ class ValueHandler:
     def get_a_value(value_id):
         """Функция возвращает одну характеристику по ID."""
         return get_object_or_404(item_models.FeatureValue, id=value_id)
+
+
+def get_colors(queryset: QuerySet) -> List[str]:
+    """
+    Функция возвращает все цвета, которые есть у выбранных товаров.
+
+    :param queryset: queryset товаров,
+    :return: список цветов всех выбранных товаров
+    """
+    try:
+        colors = queryset.exclude(color=None).values("color").distinct()
+        colors = list(colors.values("color"))
+        colors_list = []
+        for color in colors:
+            for key, val in color.items():
+                colors_list.append(val)
+        colors = list(set(colors_list))
+        return colors
+    except ObjectDoesNotExist:
+        return []

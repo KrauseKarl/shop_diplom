@@ -1,3 +1,4 @@
+"""Модуль содержит формы для работы с чеками оплаты и адресами."""
 from django import forms
 from app_invoice import models as invoice_models
 from app_order import models as order_models

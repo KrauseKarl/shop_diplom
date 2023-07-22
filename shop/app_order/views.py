@@ -1,7 +1,32 @@
+"""
+Модуль содержит классы-предстывления для работы с заказами.
+
+классы-представления для работы с заказом:
+    1. OrderList - для отображения списка заказов,
+    2. OrderDetail - для отображения одного заказа,
+    3. OrderCreate - для для создания заказа,
+    4. OrderCancel - для удаления заказа,
+    5. OrderUpdatePayWay - изменения способа оплаты,
+классы-представления и функции для оплаты заказа:
+    6. PaymentView - для  оплаты заказа,
+    7. SuccessPaid - для отображения успешной оплаты заказа,
+    8. FailedPaid - для отображения неуспешной оплаты заказа,
+    9. pay_order - функция для добавления в очередь оплаты заказа,
+    10. get_status_payment - функция для проверки статуса оплаты,
+классы-представления для упарвление статусами заказа:
+    11. ConfirmReceiptPurchase - подтверждения получения,
+    12. RejectOrder - для отмены заказа.
+"""
+
 from celery.result import AsyncResult
 from django.contrib import messages
 from django.contrib.auth import mixins
-from django.http import HttpResponseRedirect, JsonResponse, Http404, HttpRequest
+from django.http import (
+    HttpResponseRedirect,
+    JsonResponse,
+    Http404,
+    HttpRequest,
+)
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
@@ -35,11 +60,18 @@ class OrderList(CustomerOnlyMixin, generic.ListView, MixinPaginator):
     redirect_field_name = "login"
 
     def get_queryset(self, delivery_status=None):
+        """Функция возвращает queryset заказов."""
         return order_services.CustomerOrderHandler.get_customer_order_list(
             user=self.request.user, delivery_status=delivery_status
         )
 
     def get(self, request, status=None, **kwargs):
+        """
+        GET-функция для рендеренга списка заказов.
+
+        :param request: HttpRequest
+        :param status: статус заказа
+        """
         super().get(request, **kwargs)
         if self.request.user.is_authenticated:
             delivery_status = self.request.GET.get("status")
@@ -50,7 +82,10 @@ class OrderList(CustomerOnlyMixin, generic.ListView, MixinPaginator):
         else:
             object_list = None
 
-        context = {"object_list": object_list, "status_list": order_models.Order.STATUS}
+        context = {
+            "object_list": object_list,
+            "status_list": order_models.Order.STATUS,
+        }
 
         return render(request, self.template_name, context=context)
 
@@ -64,22 +99,25 @@ class OrderDetail(mixins.UserPassesTestMixin, generic.DetailView):
     STATUS_LIST_ORDER = order_models.Order().STATUS
     STATUS_LIST_ITEM = order_models.OrderItem().STATUS
 
-    def test_func(self):
+    def test_func(self) -> bool:
+        """Функция проверяет прова на просмотр заказа."""
         user = self.request.user
         order = self.get_object().user
         return True if user == order else False
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
+        """Функция возвращает context-словарь с данными заказа."""
         context = super().get_context_data(**kwargs)
+        context["status_list"] = self.STATUS_LIST_ORDER
+        context["status_list_item"] = self.STATUS_LIST_ITEM
+        context[
+            "order_items"
+        ] = order_services.CustomerOrderHandler.get_order_items(
+            order=self.get_object()
+        )
         context["invoice"] = invoice_models.Invoice.objects.filter(
             order=self.get_object()
         ).filter()
-        context["status_list"] = self.STATUS_LIST_ORDER
-        context["status_list_item"] = self.STATUS_LIST_ITEM
-        context["order_items"] = order_services.CustomerOrderHandler.get_order_items(
-            order=self.get_object()
-        )
-
         return context
 
 
@@ -92,9 +130,11 @@ class OrderCreate(generic.CreateView):
         "type_of_delivery": settings_models.SiteSettings.DELIVERY,
         "type_of_payment": settings_models.SiteSettings.PAY_TYPE,
     }
-    MESSAGE = "Заказ успешно сформирован"
+    MESSAGE_SUCCESS = "Заказ успешно сформирован."
+    MESSAGE_ERROR = "Ошибка оформления заказа."
 
     def get_template_names(self):
+        """Функция возращает шаблон в зависимости от статуса покупателя."""
         super(OrderCreate, self).get_template_names()
         templates_dict = {
             True: "app_order/order/create_order_auth.html",
@@ -105,11 +145,16 @@ class OrderCreate(generic.CreateView):
         return name
 
     def form_valid(self, form):
-        order = order_services.CustomerOrderHandler.create_order(self.request, form)
-        messages.add_message(self.request, messages.INFO, self.MESSAGE)
+        """Функция валидации формы для создания заказа."""
+        order = order_services.CustomerOrderHandler.create_order(
+            self.request, form
+        )
+        messages.add_message(self.request, messages.INFO, self.MESSAGE_SUCCESS)
         return redirect("app_order:progress_payment", order.id)
 
     def form_invalid(self, form):
+        """Функция инвалидации формы для создания заказа."""
+        messages.add_message(self.request, messages.INFO, self.MESSAGE_ERROR)
         return render(
             self.request, "app_order/failed_order.html", {"error": form.errors}
         )
@@ -123,12 +168,14 @@ class OrderCancel(mixins.UserPassesTestMixin, generic.DeleteView):
     success_url = reverse_lazy("app_order:order_list")
     message = "Заказ отменен"
 
-    def test_func(self):
+    def test_func(self) -> bool:
+        """Функция проверяет прова на отмену заказа."""
         user = self.request.user
         order = self.get_object()
         return True if user == order.user else False
 
-    def form_valid(self, form):
+    def form_valid(self):
+        """Функция отменяет заказ."""
         self.object.delete()
         messages.add_message(self.request, messages.INFO, self.message)
         return HttpResponseRedirect(self.get_success_url())
@@ -140,15 +187,21 @@ class OrderUpdatePayWay(mixins.UserPassesTestMixin, generic.UpdateView):
     model = order_models.Order
     template_name = "app_order/payment/order_update_pay_way.html"
     fields = ["pay"]
-    extra_context = {"type_of_payment": settings_models.SiteSettings().PAY_TYPE}
+    extra_context = {
+        "type_of_payment": settings_models.SiteSettings().PAY_TYPE
+    }
 
     def test_func(self):
+        """Функция проверяет прова на редактирование заказа."""
         user = self.request.user
         order = self.get_object()
         return True if user == order.user else False
 
     def get_success_url(self):
-        return reverse("app_order:progress_payment", kwargs={"pk": self.object.pk})
+        """Функция возвращает url-адрес успешного выполнения."""
+        return reverse(
+            "app_order:progress_payment", kwargs={"pk": self.object.pk}
+        )
 
 
 # PAYMENT
@@ -160,6 +213,7 @@ class PaymentView(CustomerOnlyMixin, generic.DetailView, generic.CreateView):
     success_url = reverse_lazy("app_order:progress_payment")
 
     def get_template_names(self):
+        """Функция возращает шаблон в зависимости от способа оплаты."""
         super(PaymentView, self).get_template_names()
         templates_dict = {
             "online": "app_order/payment/pay_online.html",
@@ -170,6 +224,7 @@ class PaymentView(CustomerOnlyMixin, generic.DetailView, generic.CreateView):
         return name
 
     def get_context_data(self, **kwargs):
+        """Функция возвращает context-словарь с данными оплаты."""
         context = super().get_context_data(**kwargs)
         order = self.get_object()
         if order.is_paid:
@@ -180,6 +235,7 @@ class PaymentView(CustomerOnlyMixin, generic.DetailView, generic.CreateView):
         return context
 
     def form_valid(self, form):
+        """Функция валидации формы для оплаты заказа."""
         form.save()
         return super().form_valid(form)
 
@@ -190,6 +246,7 @@ class SuccessPaid(mixins.UserPassesTestMixin, generic.TemplateView):
     template_name = "app_order/payment/successful_pay.html"
 
     def test_func(self):
+        """Функция проверяет прова на просмотр страницы."""
         order = order_services.CustomerOrderHandler.get_order(
             order_id=self.kwargs["order_id"]
         )
@@ -198,6 +255,7 @@ class SuccessPaid(mixins.UserPassesTestMixin, generic.TemplateView):
         return False
 
     def get(self, request, *args, **kwargs):
+        """GET-функция для рендеренга страницы успешной оплаты."""
         super().get(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
         order = order_services.CustomerOrderHandler.get_order(
@@ -209,11 +267,12 @@ class SuccessPaid(mixins.UserPassesTestMixin, generic.TemplateView):
 
 
 class FailedPaid(mixins.UserPassesTestMixin, generic.TemplateView):
-    """Класс-предстваления для отображения неуспешной оплаты заказа."""
+    """Класс-предстваления для отображения неудачной оплаты заказа."""
 
     template_name = "app_order/payment/failed_pay.html"
 
     def test_func(self):
+        """Функция проверяет прова на просмотр страницы."""
         order = order_services.CustomerOrderHandler.get_order(
             order_id=self.kwargs["order_id"]
         )
@@ -222,6 +281,7 @@ class FailedPaid(mixins.UserPassesTestMixin, generic.TemplateView):
         return False
 
     def get(self, request, *args, **kwargs):
+        """GET-функция для рендеренгастраницы неудачной оплаты."""
         super().get(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
         order = order_services.CustomerOrderHandler.get_order(
@@ -234,7 +294,6 @@ class FailedPaid(mixins.UserPassesTestMixin, generic.TemplateView):
 
 def pay_order(request: HttpRequest) -> JsonResponse:
     """Функция для добавления в очередь оплаты заказа."""
-
     order_id = request.POST.get("order", None)
     number = int(str(request.POST.get("number", None)).replace(" ", ""))
     pay = request.POST.get("pay", None)
@@ -253,9 +312,14 @@ def pay_order(request: HttpRequest) -> JsonResponse:
     return JsonResponse(response, status=202)
 
 
-def get_status_payment(request, task_id: int, order_id: int) -> JsonResponse:
-    """Функция для проверки статуса оплаты."""
+def get_status_payment(request, task_id: str, order_id: int) -> JsonResponse:
+    """
+    Функция для проверки статуса оплаты.
 
+    :param task_id: ID задачи
+    :param order_id: ID заказа
+    :return: JsonResponse
+    """
     task_result = AsyncResult(task_id)
     response = {
         "task_id": task_id,
@@ -283,11 +347,13 @@ class ConfirmReceiptPurchase(
     form_class = store_forms.UpdateOrderStatusForm
 
     def test_func(self):
+        """Функция проверяет прова на подверждение получения заказа."""
         user = self.request.user
         order = self.get_object()
         return True if user == order.user else False
 
     def post(self, request, *args, **kwargs):
+        """POST-функция для изменения статуса заказа на ПОЛУЧЕН."""
         order = self.get_object()
         form = store_forms.UpdateOrderStatusForm(request.POST)
         if form.is_valid():
@@ -296,14 +362,18 @@ class ConfirmReceiptPurchase(
             order.order_items.update(status=status)
             order.save(update_fields=["status"])
             messages.add_message(
-                self.request, messages.SUCCESS, f"Получение {order} подтверждено"
+                self.request,
+                messages.SUCCESS,
+                f"Получение {order} подтверждено",
             )
 
             path = self.request.META.get("HTTP_REFERER")
             return redirect(path)
 
 
-class RejectOrder(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.UpdateView):
+class RejectOrder(
+    CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.UpdateView
+):
     """Класс-представления для отмены заказа."""
 
     model = order_models.Order
@@ -312,11 +382,13 @@ class RejectOrder(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.UpdateV
     form_class = store_forms.UpdateOrderStatusForm
 
     def test_func(self):
+        """Функция проверяет прова на отмену заказа."""
         user = self.request.user
         order = self.get_object()
         return True if user == order.user else False
 
     def post(self, request, *args, **kwargs):
+        """POST-функция для изменения статуса заказа на ОТМЕНЕН."""
         order = self.get_object()
         form = store_forms.UpdateOrderStatusForm(request.POST)
         if form.is_valid():
@@ -324,6 +396,8 @@ class RejectOrder(CustomerOnlyMixin, mixins.UserPassesTestMixin, generic.UpdateV
             order.status = status
             order.order_items.update(status="deactivated")
             order.save()
-            messages.add_message(self.request, messages.INFO, f"{order} отменен")
+            messages.add_message(
+                self.request, messages.INFO, f"{order} отменен"
+            )
             path = self.request.META.get("HTTP_REFERER")
             return redirect(path)

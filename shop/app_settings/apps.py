@@ -1,3 +1,4 @@
+"""Модуль содержит имя приложения Настроки(app_settings)."""
 from django.apps import AppConfig
 
 

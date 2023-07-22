@@ -1,12 +1,8 @@
+"""Модуль содержит таск-функции по работе с заказами."""
 from time import sleep
-
-from celery import Celery
-from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
-from django.db import transaction, IntegrityError
-from django.db.models import Sum, F
-from django.shortcuts import redirect
+
+from django.db import transaction
 
 # models
 from app_order import models as order_models
@@ -17,13 +13,13 @@ from app_item import models as item_models
 from app_order.services import order_services
 
 # others
-from shop.settings import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from celery import shared_task
 from shop.celery import app
 
 
 @shared_task
-def paying(order_id, number, pay):
+def paying(order_id: int, number: int, pay: str):
+    """Функция дл яоплаты заказа."""
     sleep(2)
     if number % 2 != 0 or number % 10 == 0:
         error = order_services.Payment.error_generator()
@@ -63,7 +59,8 @@ def paying(order_id, number, pay):
 
 
 @app.task
-def check_order_status(order_id):
+def check_order_status(order_id: int):
+    """Функция меняет статус заказа - ДОСТАВЛЯЕТСЯ."""
     sleep(3)
     try:
         order = order_models.Order.objects.get(id=order_id)

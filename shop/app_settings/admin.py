@@ -1,3 +1,4 @@
+"""Модуль для работы с настройками сайта в админке."""
 from django.contrib import admin
 from django.db import ProgrammingError
 

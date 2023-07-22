@@ -1,3 +1,4 @@
+"""Модуль содержит контекст-процессоры категорий и тегов."""
 from django.db.models import Q
 
 from app_item.models import Category, Tag

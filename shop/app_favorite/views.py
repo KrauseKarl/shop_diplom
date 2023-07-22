@@ -1,3 +1,4 @@
+"""Модуль содержит классы-предстывления для работы со списком избранное."""
 from django.shortcuts import render, redirect
 from django.views import generic
 
@@ -6,21 +7,23 @@ from app_item import models as item_models
 
 
 class FavoriteAddItem(generic.TemplateView):
-    """Класс-представление для добавления товара в избранное"""
+    """Класс-представление для добавления товара в избранное."""
 
     model = item_models.Item
 
     def get(self, request, *args, **kwargs):
+        """GET-функция для добавления товара в список избранное."""
         Favorite(request).add(str(kwargs["pk"]))
         return redirect(request.META.get("HTTP_REFERER"))
 
 
 class FavoriteRemoveItem(generic.TemplateView):
-    """Класс-представление для удаления товара из корзины"""
+    """Класс-представление для удаления товара из корзины."""
 
     model = item_models.Item
 
     def get(self, request, *args, **kwargs):
+        """GET-функция для удаления товара в список избранное."""
         Favorite(request).remove(kwargs["pk"])
         return redirect(request.META.get("HTTP_REFERER"))
 
@@ -32,12 +35,7 @@ class FavoriteDetailView(generic.DetailView):
     template_name = "app_favorite/favorites_list.html"
 
     def get(self, request, *args, **kwargs):
-        """
-        Функция-get для отображения корзины.
-        возвращает на страницу корзины
-        :return: корзину и id пользователя
-        :rtype: dict
-        """
+        """Функция-get для отображения списка избранных товаров."""
         object_list = Favorite(request).all()
         value_list = object_list.values_list("feature_value", flat=True)
         compare_mode = bool(request.GET.get("compare"))
@@ -59,22 +57,4 @@ class FavoriteDetailView(generic.DetailView):
                 values__in=value_list
             ).distinct()
         context = {"object_list": object_list, "unique": unique}
-        return render(request, self.template_name, context=context)
-
-
-class CompareItemView(generic.DetailView):
-    """Класс-представление для отображения корзины корзины"""
-
-    model = item_models.Item
-    template_name = "app_favorite/favoriets_list.html"
-    queryset = item_models.Item.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        favorites = request.session["favorites"].keys()
-        favorites_id = [int(item) for item in favorites]
-        queryset = self.queryset.filter(id__in=favorites_id)
-        sort = None
-        favorites = Favorite(request)
-        context = {"favorites": queryset, "order_by": sort}
-
         return render(request, self.template_name, context=context)

@@ -18,7 +18,9 @@ class Migration(migrations.Migration):
             model_name="order",
             name="store",
             field=models.ManyToManyField(
-                related_name="orders", to="app_store.Store", verbose_name="магазины"
+                related_name="orders",
+                to="app_store.Store",
+                verbose_name="магазины",
             ),
         ),
         migrations.AddField(

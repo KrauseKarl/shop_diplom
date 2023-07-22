@@ -51,7 +51,8 @@ class Migration(migrations.Migration):
                 (
                     "number",
                     models.CharField(
-                        max_length=20, verbose_name="номер платежного документа"
+                        max_length=20,
+                        verbose_name="номер платежного документа",
                     ),
                 ),
                 (
