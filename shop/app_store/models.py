@@ -1,3 +1,4 @@
+"""Модуль содержит модель Магазина."""
 import os
 
 from django.conf import settings
@@ -17,10 +18,15 @@ class Store(models.Model):
     DEFAULT_IMAGE = "default_images/store.png"
 
     title = models.CharField(
-        max_length=200, db_index=True, verbose_name="название магазина"
+        max_length=200,
+        db_index=True,
+        verbose_name="название магазина"
     )
     slug = models.SlugField(
-        max_length=100, db_index=True, allow_unicode=False, verbose_name="slug"
+        max_length=100,
+        db_index=True,
+        allow_unicode=False,
+        verbose_name="slug"
     )
     owner = models.ForeignKey(
         User,
@@ -40,14 +46,24 @@ class Store(models.Model):
         validators=[MinValueValidator(0)],
     )
     description = models.TextField(
-        default="", blank=True, verbose_name="Описание магазина"
+        default="",
+        blank=True,
+        verbose_name="Описание магазина"
     )
     logo = models.ImageField(
-        upload_to="store/logo/", default="default_images/default_store.jpg", blank=True
+        upload_to="store/logo/",
+        default="default_images/default_store.jpg",
+        blank=True
     )
     is_active = models.BooleanField(default=False)
-    created = models.DateTimeField(auto_now_add=True, verbose_name="дата создания")
-    updated = models.DateTimeField(auto_now_add=True, verbose_name="дата обновления")
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="дата создания"
+    )
+    updated = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="дата обновления"
+    )
 
     objects = models.Manager()
     active_stores = StoreIsActiveManager()
@@ -59,6 +75,7 @@ class Store(models.Model):
         verbose_name_plural = "магазины"
 
     def __str__(self):
+        """Метод для отображения информации об объекте класса Store."""
         return self.title
 
     def save(self, *args, **kwargs):
@@ -69,7 +86,9 @@ class Store(models.Model):
     @property
     def get_logo(self):
         """
-        Функция возвращает URL изображения категории
+        Метод возвращает URL-изображения категории.
+
+        Возвращает URL-изображения
         или дефолтное изображение.
         """
         if self.logo:
@@ -78,21 +97,22 @@ class Store(models.Model):
             return os.path.join(settings.MEDIA_URL, self.DEFAULT_IMAGE)
 
     def get_absolute_url(self):
+        """Метод возвращает абсолютный путь до магазина."""
         return reverse("app_item:store_list", kwargs={"slug": self.slug})
 
     @property
     def store_items(self):
-        """Функция возвращает все товары магазина."""
+        """Метод возвращает все товары магазина."""
         return self.items.all()
 
     @property
     def all_orders(self):
-        """Функция возвращает все заказы магазина."""
+        """Метод возвращает все заказы магазина."""
         return self.orders.count()
 
     @property
     def cash(self):
-        """Функция возвращает сумму всех заказов."""
+        """Метод возвращает сумму всех заказов."""
         return (
             self.orders.filter(order_items__item__item__store=self.id)
             .aggregate(total=Sum("order_items__item__total"))
@@ -101,7 +121,7 @@ class Store(models.Model):
 
     @property
     def paid_item(self):
-        """Функция возвращает кол-во всех заказов."""
+        """Метод возвращает кол-во всех заказов."""
         return (
             self.orders.filter(order_items__item__item__store=self.id)
             .aggregate(total=Sum("order_items__quantity"))

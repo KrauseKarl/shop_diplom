@@ -1,3 +1,40 @@
+"""
+Модуль содержит классы-предстывления для работы с магазинами.
+
+    1. SellerDashBoardView - для отображения панели продавца,
+    классы-представления для работы с магазином:
+        2. StoreList - для отображения списка магазинов,
+        3. StoreDetail - для отображения одного магазина,
+        4. StoreCreate - для отображения создания магазина,
+        5. StoreUpdate - для отображения редакирования магазина,
+    классы-представления для работы с товарами:
+        6. ItemCreate - для создания товара,
+        7. ItemUpdate - для редакирования товара,
+        8. ItemDelete - для де(активации) товара,
+    классы-представления для работы с тегами:
+        9. TagList - для отображения списка тегов,
+        10. AddTag - для добавления тега в карточку товара,
+        11. RemoveTag - для удаления тега из карточки товара,
+    классы-представления для работы с тегами:
+        12. RemoveValue - для удаления значение характеристики товара,
+    классы-представления для работы с изображением:
+        13. DeleteImage - для удаления изображения из карточки товара,
+        14. MakeImageAsMain - для выбора изображения главным,
+    классы-представления для работы с заказами:
+        15. DeliveryList - для отображения списка заказов,
+        16. DeliveryDetail - для отображения одного заказа,
+        17. DeliveryUpdate - для редактирования заказа,
+        18. OrderItemUpdate - для редактирования товаров в заказе,
+        19. SentPurchase - для отправки заказа,
+    классы-представления для работы с комментариями:
+        20. CommentList - для отображения списка комментариев.
+        21. CommentDetail - для отображения одного комментария.
+    функции для работы с фикстурами:
+        22. export_data_to_csv - для экспорта данных из БД в CVS формат,
+        23. import_data_from_cvs - для импорта данных в БД в CVS формат,
+        24. handle_uploaded_file - для создания файла с фикстурами.
+"""
+
 import csv
 from datetime import datetime
 from django.contrib import messages
@@ -12,37 +49,40 @@ from django.views import generic
 from django.http import HttpResponse
 
 # models
-from app_item import models as item_models
-from app_order import models as order_models
-from app_store import models as store_models
+from app_item import models as itm
+from app_order import models as orm
+from app_store import models as stm
 
 # services
-from app_item.services import comment_services
-from app_order.services import order_services
-from app_item.services import item_services
-from app_store.services import store_services
+from app_item.services import comment_services as com_src
+from app_order.services import order_services as ord_src
+from app_item.services import item_services as itm_src
+from app_store.services import store_services as str_src
 
 # forms
-from app_order import forms as order_form
-from app_store import forms as store_forms
+from app_order import forms as ord_frm
+from app_store import forms as str_frm
 
 # other
 from utils.my_utils import MixinPaginator, SellerOnlyMixin
 from app_order import tasks
 
 
-class SellerDashBoardView(SellerOnlyMixin, generic.TemplateView):
+class SellerDashBoard(SellerOnlyMixin, generic.TemplateView):
+    """Класс-представление для отображения главной страницы продавца."""
+
     template_name = "app_store/dashboard.html"
 
     def get(self, request, *args, **kwargs):
+        """GET-функция для рендеренга главной страницы продавца."""
         context = self.get_context_data(**kwargs)
-        context["comments"] = comment_services.CommentHandler.seller_stores_comments(
+        context["comments"] = com_src.CommentHandler.seller_stores_comments(
             request.user
         )
-        context["orders"] = order_services.SellerOrderHAndler.get_seller_order_list(
+        context["orders"] = ord_src.SellerOrderHAndler.get_seller_order_list(
             request.user.id
         ).count()
-        context["stores"] = store_services.StoreHandler.get_all_story_by_owner(
+        context["stores"] = str_src.StoreHandler.get_all_story_by_owner(
             request.user
         ).count()
 
@@ -50,40 +90,39 @@ class SellerDashBoardView(SellerOnlyMixin, generic.TemplateView):
 
 
 # STORE VIEWS #
-class StoreListView(SellerOnlyMixin, generic.ListView):
-    """Класс-представление для отображения списка всех магазинов продавца."""
+class StoreList(SellerOnlyMixin, generic.ListView):
+    """Класс-представление для отображения списка магазинов продавца."""
 
-    model = store_models.Store
+    model = stm.Store
     template_name = "app_store/store/store_list.html"
     context_object_name = "stores"
 
-    def queryset(self):
+    def get_queryset(self):
+        """Функция возвращает queryset магазинов."""
         owner = self.request.user
-        queryset = store_services.StoreHandler.get_all_story_by_owner(owner)
+        queryset = str_src.StoreHandler.get_all_story_by_owner(owner)
         return queryset
 
 
-class StoreDetailView(UserPassesTestMixin, generic.DetailView, MixinPaginator):
+class StoreDetail(UserPassesTestMixin, generic.DetailView, MixinPaginator):
     """Класс-представление для отображения одного магазина."""
 
-    model = store_models.Store
+    model = stm.Store
     template_name = "app_store/store/store_detail.html"
     context_object_name = "store"
     paginate_by = 7
 
     def test_func(self):
+        """Функция проверяет прова на просмотр магазина."""
         user = self.request.user
         store = self.get_object()
         return True if user == store.owner else False
 
-    def get(self, request, *args, category=None, **kwargs):
+    def get(self, request, *args, category=None, **kwargs) -> HttpResponse:
         """
-        Функция возвращает экземпляр магазина,
-        object_list - список товаров этого магазина,
-        categories - категории товаров,
-        total_profit - сумма всех проданных  товаров,
-        message- сообщение о параметрах сортировки
-        :param request: request
+        Функция возвращает экземпляр магазина.
+
+        :param request: HttpRequest
         :param category: категория товара
         :param kwargs: 'order_by' параметр сортировки товаров
         :return: response
@@ -95,7 +134,7 @@ class StoreDetailView(UserPassesTestMixin, generic.DetailView, MixinPaginator):
 
         try:
             category_slug = kwargs["slug"]
-            category = item_services.CategoryHandler.get_categories(category_slug)
+            category = itm_src.CategoryHandler.get_categories(category_slug)
             items = all_items.filter(category=category)
         except (ObjectDoesNotExist, KeyError):
             items = all_items
@@ -106,37 +145,43 @@ class StoreDetailView(UserPassesTestMixin, generic.DetailView, MixinPaginator):
             items = (
                 all_items.select_related("category", "store")
                 .prefetch_related("tag", "views", "images", "feature_value")
-                .filter(Q(title__icontains=title) | Q(title__icontains=lower))
+                .filter(
+                    Q(title__icontains=title) |
+                    Q(title__icontains=lower)
+                )
                 .distinct()
             )
         if request.GET.get("order_by", None):
             order_by = request.GET.get("order_by")
-            items = store_services.StoreHandler.ordering_store_items(
+            items = str_src.StoreHandler.ordering_store_items(
                 queryset=items, order_by=order_by
             )
-            context["message"] = store_services.StoreHandler.ordering_message(
+            context["message"] = str_src.StoreHandler.ordering_message(
                 order_by=order_by
             )
-
-        context[
-            "categories"
-        ] = item_services.CategoryHandler.get_categories_in_items_set(all_items)
-        context["object_list"] = MixinPaginator(
+        categories = itm_src.CategoryHandler.get_categories_in_items_set(
+            all_items
+        )
+        object_list = MixinPaginator(
             items, self.request, self.paginate_by
         ).my_paginator()
-        context["total_profit"] = store_services.StoreHandler.total_profit_store(store)
+        total_profit = str_src.StoreHandler.total_profit_store(store)
+        context["categories"] = categories
+        context["object_list"] = object_list
+        context["total_profit"] = total_profit
 
         return self.render_to_response(context)
 
 
-class StoreCreateView(SellerOnlyMixin, generic.CreateView):
+class StoreCreate(SellerOnlyMixin, generic.CreateView):
     """Класс-представление для создания магазина."""
 
-    model = store_models.Store
+    model = stm.Store
     template_name = "app_store/store/create_store.html"
-    form_class = store_forms.CreateStoreForm
+    form_class = str_frm.CreateStoreForm
 
     def form_valid(self, form):
+        """Функция валидации формы для создания магазина."""
         store = form.save()
         store.is_active = True
         store.owner = self.request.user
@@ -144,75 +189,82 @@ class StoreCreateView(SellerOnlyMixin, generic.CreateView):
         return redirect("app_store:store_detail", store.pk)
 
     def form_invalid(self, form):
-        form = store_forms.CreateStoreForm(self.request.POST, self.request.FILES)
+        """Функция инвалидации формы для создания магазина."""
+        form = str_frm.CreateStoreForm(self.request.POST, self.request.FILES)
         messages.add_message(
             self.request,
             messages.ERROR,
-            f"Ошибка. Магазин не создан. Повторите попытку.",
+            "Ошибка. Магазин не создан. Повторите попытку.",
         )
         return super().form_invalid(form)
 
 
-class StoreUpdateViews(UserPassesTestMixin, generic.UpdateView):
+class StoreUpdate(UserPassesTestMixin, generic.UpdateView):
     """Класс-представление для обновления магазина."""
 
-    model = store_models.Store
+    model = stm.Store
     template_name = "app_store/store/store_edit.html"
     context_object_name = "store"
-    form_class = store_forms.UpdateStoreForm
+    form_class = str_frm.UpdateStoreForm
     message = "Данные магазтина обновлены"
 
     def test_func(self):
+        """Функция проверяет прова на редактирования магазина."""
         user = self.request.user
         store = self.get_object()
         return True if user == store.owner else False
 
     def get_success_url(self):
+        """Функция возвращает url-адрес успешного выполнения."""
         store = self.get_object()
         return redirect("app_store:store_edit", store.pk)
 
     def form_valid(self, form):
+        """Функция валидации формы для редактирования магазина."""
         form.save()
         messages.add_message(self.request, messages.SUCCESS, self.message)
         return self.get_success_url()
 
     def form_invalid(self, form):
+        """Функция инвалидации формы для редактирования магазина."""
         messages.add_message(self.request, messages.ERROR, self.message)
-        return super(StoreUpdateViews, self).form_invalid(form)
+        return super(StoreUpdate, self).form_invalid(form)
 
 
 # ITEM VIEWS #
-class ItemCreateView(SellerOnlyMixin, generic.CreateView):
+class ItemCreate(SellerOnlyMixin, generic.CreateView):
     """Класс-представление для создания и добавления товара в магазин."""
 
-    model = store_models.Store
+    model = stm.Store
     template_name = "app_store/item/add_item.html"
-    form_class = store_forms.AddItemImageForm
-    second_form_class = store_forms.TagFormSet
+    form_class = str_frm.AddItemImageForm
+    second_form_class = str_frm.TagFormSet
 
     def get_context_data(self, **kwargs):
-        formset_tag = store_forms.TagFormSet(queryset=item_models.Tag.objects.none())
-        formset_image = store_forms.ImageFormSet(
-            queryset=item_models.Image.objects.none()
+        """Функция возвращает context-словарь с данными для создания товара."""
+        formset_tag = str_frm.TagFormSet(queryset=itm.Tag.objects.none())
+        formset_image = str_frm.ImageFormSet(
+            queryset=itm.Image.objects.none()
         )
         context = {
             "tag_formset": formset_tag,
             "image_formset": formset_image,
             "form": self.form_class,
             "store": self.get_object(),
-            "colors": item_services.ItemHandler.colors,
-            "category_set": item_models.Category.objects.all(),
+            "colors": itm_src.ItemHandler.colors,
+            "category_set": itm.Category.objects.all(),
         }
         return context
 
     def form_valid(self, form):
+        """Функция валидации формы для создания товара."""
         with transaction.atomic():
             item = form.save(commit=False)
             item.is_active = True
             item.save()
             images = self.request.FILES.getlist("image")
             tag_list = form.cleaned_data.get("tag")
-            item_services.ItemHandler.update_item(
+            itm_src.ItemHandler.update_item(
                 item=item, images=images, tag_list=tag_list
             )
             messages.add_message(
@@ -221,86 +273,101 @@ class ItemCreateView(SellerOnlyMixin, generic.CreateView):
             messages.add_message(
                 self.request,
                 messages.INFO,
-                "Новый товар еще не активирован. Активируйте товар на странице товара",
+                """Новый товар еще не активирован."""
+                """Активируйте товар на странице товара."""
             )
         return redirect("app_store:store_detail", self.kwargs["pk"])
 
     def form_invalid(self, form):
-        form = store_forms.AddItemImageForm(self.request.POST, self.request.FILES)
+        """Функция инвалидации формы для создания товара."""
+        form = str_frm.AddItemImageForm(self.request.POST, self.request.FILES)
         messages.add_message(
-            self.request, messages.ERROR, f"Ошибка. Товар не создан. Повторите попытку."
+            self.request,
+            messages.ERROR,
+            "Ошибка. Товар не создан. Повторите попытку."
         )
         return super().form_invalid(form)
 
 
-class ItemUpdateView(UserPassesTestMixin, generic.UpdateView):
+class ItemUpdate(UserPassesTestMixin, generic.UpdateView):
     """Класс-представление для обновления товара."""
 
-    model = item_models.Item
+    model = itm.Item
     template_name = "app_store/item/edit_item.html"
-    form_class = store_forms.UpdateItemForm
+    form_class = str_frm.UpdateItemForm
 
     def test_func(self):
+        """Функция проверяет прова на редактирования товара."""
         user = self.request.user
         item = self.get_object()
         return True if user == item.store.owner else False
 
     def get(self, *args, **kwargs):
-        formset_tag = store_forms.TagFormSet(queryset=item_models.Tag.objects.none())
-        formset_image = store_forms.ImageFormSet(
-            queryset=item_models.Image.objects.none()
+        """Функция возвращает context-словарь для редактирования товара."""
+        formset_tag = str_frm.TagFormSet(queryset=itm.Tag.objects.none())
+        formset_image = str_frm.ImageFormSet(
+            queryset=itm.Image.objects.none()
         )
         context = {
             "tag_formset": formset_tag,
             "image_formset": formset_image,
             "form": self.form_class,
-            "colors": item_services.get_colors(item_models.Item.objects.all()),
+            "colors": itm_src.get_colors(itm.Item.objects.all()),
             "item": self.get_object(),
         }
         return self.render_to_response(context=context)
 
     def form_valid(self, form):
+        """Функция валидации формы для редактирования товара."""
         instance = self.get_object()
         values = self.request.POST.getlist("value")
         images = self.request.FILES.getlist("image")
         data = self.request.POST
-        form = store_forms.UpdateItemForm(
+        form = str_frm.UpdateItemForm(
             data=data,
             instance=instance,
         )
         form.save()
-        item_services.ItemHandler.create_item(
+        itm_src.ItemHandler.create_item(
             instance=instance, values=values, images=images
         )
         messages.add_message(
-            self.request, messages.SUCCESS, f"Данные о товаре {instance} обновлены"
+            self.request,
+            messages.SUCCESS,
+            f"Данные о товаре {instance} обновлены"
         )
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        form = store_forms.UpdateItemForm(self.request.POST, self.request.FILES)
-        messages.add_message(self.request, messages.ERROR, f"Ошибка.Товар не обновлен")
+        """Функция валидации формы для редактирования товара."""
+        form = str_frm.UpdateItemForm(self.request.POST, self.request.FILES)
+        messages.add_message(
+            self.request, messages.ERROR, "Ошибка.Товар не обновлен."
+        )
         return super().form_invalid(form)
 
     def get_success_url(self):
+        """Функция возвращает url-адрес успешного выполнения."""
         item = self.get_object()
         store_id = item.store.id
         return reverse("app_store:store_detail", kwargs={"pk": store_id})
 
 
-class ItemDeleteView(UserPassesTestMixin, generic.DeleteView):
-    """Класс-представление для удаления товара."""
+class ItemDelete(UserPassesTestMixin, generic.DeleteView):
+    """Класс-представление для удаления/воостановления товара."""
 
-    model = item_models.Item
+    model = itm.Item
 
     def test_func(self):
+        """Функция проверяет прова на удаления/воостановления товара."""
         user = self.request.user
         item = self.get_object()
         return True if user == item.store.owner else False
 
     def get(self, request, *args, **kwargs):
+        """GET-функция для удаления/воостановления товара."""
         try:
-            item = item_models.Item.objects.get(id=kwargs["pk"])
+            item = itm.Item.objects.get(id=kwargs["pk"])
             if item.is_active:
                 item.is_active = False
                 item.is_available = True
@@ -317,22 +384,33 @@ class ItemDeleteView(UserPassesTestMixin, generic.DeleteView):
 
 
 # TAG VIEWS #
-class TagListView(SellerOnlyMixin, generic.ListView, MixinPaginator):
-    """Класс-представление для отображения списка всех тегов товаров."""
+class TagList(SellerOnlyMixin, generic.ListView, MixinPaginator):
+    """Класс-представление для отображения списка тегов товаров."""
 
-    model = item_models.Tag
+    model = itm.Tag
     template_name = "app_store/tag/tag_list.html"
     paginate_by = 20
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        """
+        GET-функция для рендеренга страницы с тегами.
+
+        Отображает список тегов
+        с сортировкой их по алфовиту и
+        строкой поиска.
+        """
         alphabet_list = sorted(
-            set([tag.title[0] for tag in item_models.Tag.objects.order_by("title")])
+            set(
+                [tag.title[0] for tag in itm.Tag.objects.order_by("title")]
+            )
         )
         sort_by_letter = request.GET.get("sort_by_letter")
         if sort_by_letter:
-            tag_set = item_models.Tag.objects.filter(title__istartswith=sort_by_letter)
+            tag_set = itm.Tag.objects.filter(
+                title__istartswith=sort_by_letter
+            )
         else:
-            tag_set = item_models.Tag.objects.all()
+            tag_set = itm.Tag.objects.all()
         object_list = MixinPaginator(
             tag_set, self.request, self.paginate_by
         ).my_paginator()
@@ -340,40 +418,43 @@ class TagListView(SellerOnlyMixin, generic.ListView, MixinPaginator):
         return render(request, self.template_name, context)
 
 
-class AddTagToItem(SellerOnlyMixin, generic.UpdateView):
-    """Класс-представление для  добавления тега в карточку товара."""
+class AddTag(SellerOnlyMixin, generic.UpdateView):
+    """Класс-представление для добавления тега в карточку товара."""
 
-    model = item_models.Item
+    model = itm.Item
     context_object_name = "item"
     template_name = "app_store/tag/add_tag.html"
-    form_class = store_forms.AddTagForm
+    form_class = str_frm.AddTagForm
     MESSAGE = "Новый тег(и) успешно добавлен(ы)"
 
     def form_valid(self, form):
+        """Функция валидации формы для добавления тега к товару."""
         tag_list = form.cleaned_data.get("tag")
-        item = item_models.Item.objects.get(id=self.kwargs["pk"])
+        item = itm.Item.objects.get(id=self.kwargs["pk"])
         for t in tag_list:
-            tag = item_models.Tag.objects.get(id=t.id)
+            tag = itm.Tag.objects.get(id=t.id)
             item.tag.add(tag)
             item.save()
         messages.add_message(self.request, messages.INFO, self.MESSAGE)
         return redirect("app_store:edit_item", item.pk)
 
     def form_invalid(self, form):
+        """Функция инвалидации формы для добавления тега к товару."""
         messages.add_message(self.request, messages.ERROR, f"{form.errors}")
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class RemoveTagFromItem(generic.DeleteView):
-    """Класс-представление для удаления тега из карточки товара"""
+class RemoveTag(generic.DeleteView):
+    """Класс-представление для удаления тега из карточки товара."""
 
-    model = item_models.Tag
+    model = itm.Tag
 
     def get(self, request, *args, **kwargs):
+        """Функция удаления тега из карточки товара."""
         item_id = kwargs["item_id"]
-        item = item_models.Item.objects.get(id=item_id)
+        item = itm.Item.objects.get(id=item_id)
         tag_id = kwargs["tag_id"]
-        tag = item_models.Tag.objects.get(id=tag_id)
+        tag = itm.Tag.objects.get(id=tag_id)
         if tag in item.tag.all():
             item.tag.remove(tag)
         item.save()
@@ -384,58 +465,72 @@ class RemoveTagFromItem(generic.DeleteView):
 
 
 # FEATURE VALUE
-class RemoveFeatureValueView(SellerOnlyMixin, generic.DeleteView):
-    model = item_models.FeatureValue
+class RemoveValue(UserPassesTestMixin, SellerOnlyMixin, generic.DeleteView):
+    """Класс-представление для удаления значение характеристики товара."""
 
-    def get(self, request, *args, **kwargs):  # TODO  RemoveFeatureValueView
-        # value = self.get_object()
-        # item = image.item_images.first()
-        # if image in item.images.all():
-        #     item.images.remove(image)
-        #     item_models.Image.objects.filter(id=image.id).delete()
-        # item.save()
-        # messages.add_message(self.request, messages.WARNING, self.MESSAGE)
-        # return redirect('app_store:edit_item', item.pk)
-        pass
+    model = itm.Item
+    MESSAGE = "Значение характеристики удалено."
+
+    def test_func(self):
+        """Функция проверяет прова на удаления значение характеристики."""
+        user = self.request.user
+        item = self.get_object()
+        owner = item.store.owner
+        return True if user == owner else False
+
+    def get(self, request, *args, **kwargs):
+        """Функция для удаления значение характеристики товара."""
+        item = self.get_object()
+        value = itm.FeatureValue.objects.get(slug=kwargs['slug'])
+        if value in item.feature_value.all():
+            item.feature_value.remove(value)
+        item.save()
+        messages.add_message(self.request, messages.WARNING, self.MESSAGE)
+
+        return redirect('app_store:edit_item', item.pk)
 
 
 # IMAGE VIEWS #
-class DeleteImage(UserPassesTestMixin, generic.DeleteView):
-    """Класс-представление для удаления изображения из карточки товара"""
+class DeleteImage(UserPassesTestMixin, SellerOnlyMixin, generic.DeleteView):
+    """Класс-представление для удаления изображения из карточки товара."""
 
-    model = item_models.Image
+    model = itm.Image
     MESSAGE = "Изображение успешно удалено"
 
     def test_func(self):
+        """Функция проверяет прова на удаления изображения."""
         user = self.request.user
         image = self.get_object()
         owner = image.item_images.first().store.owner
         return True if user == owner else False
 
     def get(self, request, *args, **kwargs):
+        """Функция для удаления изображения из карточки товара."""
         image = self.get_object()
         item = image.item_images.first()
         if image in item.images.all():
             item.images.remove(image)
-            item_models.Image.objects.filter(id=image.id).delete()
+            itm.Image.objects.filter(id=image.id).delete()
         item.save()
         messages.add_message(self.request, messages.WARNING, self.MESSAGE)
         return redirect("app_store:edit_item", item.pk)
 
 
 class MakeImageAsMain(UserPassesTestMixin, generic.UpdateView):
-    """Класс-представление для  выбора изображения как главного в карточке товара"""
+    """Класс-представление для выбора изображения главным."""
 
-    model = item_models.Image
+    model = itm.Image
     MESSAGE = "Изображение выбранно как гланое"
 
     def test_func(self):
+        """Функция проверяет прова на управление изображением."""
         user = self.request.user
         image = self.get_object()
         owner = image.item_images.first().store.owner
         return True if user == owner else False
 
     def get(self, request, *args, **kwargs):
+        """Функция определяет изображение главным."""
         image = self.get_object()
         item = image.item_images.first()
         if image in item.images.all():
@@ -453,22 +548,24 @@ class MakeImageAsMain(UserPassesTestMixin, generic.UpdateView):
 
 
 # DELIVERY VIEWS #
-class DeliveryListView(SellerOnlyMixin, generic.ListView):
+class DeliveryList(SellerOnlyMixin, generic.ListView):
     """Класс-представление для отображения списка всех заказов продавца."""
 
-    model = order_models.Order
+    model = orm.Order
     template_name = "app_store/delivery/delivery_list.html"
     context_object_name = "orders"
-    STATUS_LIST = order_models.Order().STATUS
+    STATUS_LIST = orm.Order().STATUS
     paginate_by = 4
 
     def get_queryset(self):
-        queryset = order_services.SellerOrderHAndler.get_seller_order_list(
+        """Функция возвращает queryset заказов."""
+        queryset = ord_src.SellerOrderHAndler.get_seller_order_list(
             owner=self.request.user
         )
         return queryset
 
     def get(self, request, status=None, **kwargs):
+        """GET-функция для отображения списка всех заказов продавца."""
         super().get(request, **kwargs)
         object_list = self.get_queryset()
         if self.request.GET:
@@ -487,7 +584,6 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
         object_list = MixinPaginator(
             request=request, object_list=object_list, per_page=self.paginate_by
         ).my_paginator()
-        print(object_list)
         context = {
             "object_list": object_list,
             "stores": request.user.store.all(),
@@ -496,127 +592,160 @@ class DeliveryListView(SellerOnlyMixin, generic.ListView):
         return render(request, self.template_name, context=context)
 
 
-class DeliveryDetailView(UserPassesTestMixin, generic.DetailView):
-    """Класс-представление для отображения одного заказа в магазине продавца."""
+class DeliveryDetail(
+    SellerOnlyMixin, UserPassesTestMixin, generic.DetailView
+):
+    """Класс-представление для отображения одного заказа в магазине."""
 
-    model = order_models.Order
+    model = orm.Order
     template_name = "app_store/delivery/delivery_detail.html"
     context_object_name = "order"
-    STATUS_LIST_ORDER = order_models.Order().STATUS
-    STATUS_LIST_ITEM = order_models.OrderItem().STATUS
+    STATUS_LIST_ORDER = orm.Order().STATUS
+    STATUS_LIST_ITEM = orm.OrderItem().STATUS
 
     def test_func(self):
-        # user = self.request.user
-        # order = self.get_object()
-        return True  # if user == order.store.all()  else False
+        """Функция проверяет прова на просмотр заказа."""
+        user = self.request.user
+        order = self.get_object()
+        return True if user == order.store.first().owner else False
 
     def get(self, request, *args, category=None, **kwargs):
+        """GET-функция для рендеринга одног заказа."""
         super().get(request, *args, **kwargs)
         context = self.get_context_data(object=self.object)
         stores = request.user.store.all()
         order = self.get_object()
-        context["items"] = order.order_items.filter(item__item__store__in=stores)
+        context["items"] = order.order_items.filter(
+            item__item__store__in=stores
+        )
         context["total"] = (
-            context["items"].aggregate(total_cost=Sum("total")).get("total_cost")
+            context["items"].aggregate(
+                total_cost=Sum("total")).get("total_cost")
         )
         context["status_list"] = self.STATUS_LIST_ORDER
         context["status_list_item"] = self.STATUS_LIST_ITEM
         return self.render_to_response(context)
 
 
-class DeliveryUpdateView(UserPassesTestMixin, generic.UpdateView):
-    model = order_models.Order
+class DeliveryUpdate(UserPassesTestMixin, generic.UpdateView):
+    """Класс-представление для редактирования заказа."""
+
+    model = orm.Order
     template_name = "app_store/delivery/delivery_edit.html"
     context_object_name = "order"
-    form_class = order_form.OrderItemUpdateForm
+    form_class = ord_frm.OrderItemUpdateForm
     MESSAGE_SUCCESS = "Данные заказа успешно обновлены"
     MESSAGE_ERROR = "Ошибка обновления данных заказа"
 
     def test_func(self):
+        """Функция проверяет прова на редактирования заказа."""
         user = self.request.user
         order = self.get_object()
         return True if user == order.store.first().owner else False
 
     def form_valid(self, form):
+        """Функция валидации формы для редактирования заказа."""
         form.save()
         order = self.get_object()
-        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
+        messages.add_message(
+            self.request, messages.SUCCESS, self.MESSAGE_SUCCESS
+        )
         return redirect("app_store:delivery_detail", order.pk)
 
     def form_invalid(self, form):
-        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
+        """Функция инвалидации формы для редактирования заказа."""
+        messages.add_message(
+            self.request, messages.ERROR, self.MESSAGE_ERROR
+        )
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class OrderItemUpdateView(generic.UpdateView):
+class OrderItemUpdate(generic.UpdateView):
     """Класс-представление для обновления кол-во товаров в заказе."""
 
-    model = order_models.OrderItem
+    model = orm.OrderItem
     template_name = "app_store/delivery/delivery_edit.html"
-    form_class = order_form.OrderItemUpdateForm
+    form_class = ord_frm.OrderItemUpdateForm
     context_object_name = "order_item"
     MESSAGE_SUCCESS = "Количество товара обновлено."
     MESSAGE_ERROR = "Произошла ошибка при обновлении количества товара."
 
     def form_valid(self, form):
-        order_services.SellerOrderHAndler.update_item_in_order(self.request, form)
-        messages.add_message(self.request, messages.SUCCESS, self.MESSAGE_SUCCESS)
+        """Функция валидации формы для редактирования заказа."""
+        ord_src.SellerOrderHAndler.update_item_in_order(
+            self.request, form
+        )
+        messages.add_message(
+            self.request, messages.SUCCESS, self.MESSAGE_SUCCESS
+        )
         return redirect("app_store:order_item_edit", self.get_object().pk)
 
     def form_invalid(self, form):
+        """Функция инвалидации формы для редактирования заказа."""
         order_item = self.get_object()
-        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
+        messages.add_message(
+            self.request, messages.ERROR, self.MESSAGE_ERROR
+        )
         return redirect("app_store:order_item_edit", order_item.pk)
 
 
 class SentPurchase(SellerOnlyMixin, generic.UpdateView):
     """Класс-представление для отправки товара покупателю."""
 
-    model = order_models.OrderItem
+    model = orm.OrderItem
     template_name = "app_store/delivery/delivery_detail.html"
     context_object_name = "order"
-    form_class = store_forms.UpdateOrderStatusForm
+    form_class = str_frm.UpdateOrderStatusForm
     MESSAGE_ERROR = "Произошла ошибка при отправки заказа."
 
     def form_valid(self, form):
+        """Функция валидации формы для отправки товара покупателю."""
         super().form_invalid(form)
         form.save()
         status = form.cleaned_data["status"]
         order_item_id = self.kwargs["pk"]
-        order_item = order_services.SellerOrderHAndler.sent_item(order_item_id, status)
+        order_item = ord_src.SellerOrderHAndler.sent_item(
+            order_item_id, status
+        )
         tasks.check_order_status.delay(order_item.order.id)
-        messages.add_message(self.request, messages.SUCCESS, f"{order_item} отправлен")
+        messages.add_message(
+            self.request, messages.SUCCESS, f"{order_item} отправлен"
+        )
         return redirect(self.request.META.get("HTTP_REFERER"))
 
     def form_invalid(self, form):
-        messages.add_message(self.request, messages.ERROR, self.MESSAGE_ERROR)
+        """Функция инвалидации формы для отправки товара покупателю."""
+        messages.add_message(
+            self.request, messages.ERROR, self.MESSAGE_ERROR
+        )
         return super().form_invalid(form)
 
 
-class CommentListView(SellerOnlyMixin, generic.ListView, MixinPaginator):
-    """Класс-представление для отображения списка всех комментариев продавца."""
+class CommentList(SellerOnlyMixin, generic.ListView, MixinPaginator):
+    """Класс-представление для отображения списка комментариев продавца."""
 
-    model = item_models.Comment
+    model = itm.Comment
     template_name = "app_store/comments/comment_list.html"
     context_object_name = "comments"
     paginate_by = 5
 
     def get(self, request, status=None, **kwargs):
+        """GET-функция отображает список комментариев продавца."""
         super().get(request, **kwargs)
-        object_list = order_services.SellerOrderHAndler.get_seller_comment_list(
+        object_list = ord_src.SellerOrderHAndler.get_seller_comment_list(
             user=request.user, param=request.GET
         )
         object_list = MixinPaginator(
             object_list, self.request, self.paginate_by
         ).my_paginator()
-
-        return render(request, self.template_name, {"object_list": object_list})
+        context = {"object_list": object_list}
+        return render(request, self.template_name, context)
 
 
 class CommentDetail(generic.DetailView):
     """Класс-представление для отображения одного комментария."""
 
-    model = item_models.Comment
+    model = itm.Comment
     template_name = "app_store/comments/comment_detail.html"
     context_object_name = "comment"
 
@@ -624,10 +753,9 @@ class CommentDetail(generic.DetailView):
 # EXPORT & IMPORT DATA-STORE FUNCTION #
 def export_data_to_csv(*args, **kwargs):
     """Функция для экспорта данных из магазина продавца в формате CSV."""
-
     store_id = kwargs["pk"]
-    store = store_models.Store.active_stores.get(id=store_id)
-    items = item_models.Item.objects.filter(store__id=store_id)
+    store = stm.Store.active_stores.get(id=store_id)
+    items = itm.Item.objects.filter(store__id=store_id)
     curr_date = datetime.now().strftime("%Y-%m-%d")
     response = HttpResponse()
     response[
@@ -651,21 +779,23 @@ def export_data_to_csv(*args, **kwargs):
 
 
 def import_data_from_cvs(request, **kwargs):
-    """Функция для импорта данных в магазин продавца и создание новых позиций товаров."""
+    """Функция для импорта данных в магазин продавца."""
     store = kwargs["pk"]
     if request.method == "POST" and request.FILES["file"]:
         # allowed_types = ['.cvs', ]
-        form = store_forms.ImportDataFromCVS(request.POST, request.FILES)
+        form = str_frm.ImportDataFromCVS(request.POST, request.FILES)
         if form.is_valid():
             upload_file = form.cleaned_data.get("file")
             file_name = upload_file.name.split(".")[0]
             handle_uploaded_file(upload_file, file_name)
-            with open(f"fixtures/{file_name}.txt", "r", encoding="utf-8") as file:
+            with open(
+                    f"fixtures/{file_name}.txt", "r", encoding="utf-8"
+            ) as file:
                 reader = csv.reader(file)
                 for row in reader:
-                    category = item_models.Category.objects.filter(id=row[5]).first()
-                    store = store_models.Store.objects.filter(id=row[6]).first()
-                    _, created = item_models.Item.objects.update_or_create(
+                    category = itm.Category.objects.filter(id=row[5]).first()
+                    store = stm.Store.objects.filter(id=row[6]).first()
+                    _, created = itm.Item.objects.update_or_create(
                         id=row[0],
                         title=row[1],
                         defaults={

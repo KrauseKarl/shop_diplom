@@ -1,3 +1,4 @@
+"""Модуль содержит имя приложения Пользователь(app_user)."""
 from django.apps import AppConfig
 
 

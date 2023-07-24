@@ -1,3 +1,4 @@
+"""Модуль содержит имя приложения Магазин(app_store)."""
 from django.apps import AppConfig
 
 

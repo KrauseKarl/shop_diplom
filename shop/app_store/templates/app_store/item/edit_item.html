@@ -195,8 +195,9 @@
                                     <label class="form-label">{{ features | lower }}
                                           {% for value in features.values.all %}
                                             {% if value in item.feature_value.all %}
-                                                <a href="{% url 'app_store:value_remove' slug=features.slug pk=item.id %}"
-                                                    class="danger-text">&#10060;
+                                                <a  class="danger-text"
+                                                    href="{% url 'app_store:value_del' slug=value.slug pk=item.id %}"
+                                                   >&#10060;
                                                 </a>
                                             {% endif %}
                                         {% endfor %}

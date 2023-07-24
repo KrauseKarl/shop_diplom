@@ -7,36 +7,11 @@ from django.template.defaultfilters import slugify as django_slugify
 from django.db import connection
 
 alphabet = {
-    "а": "a",
-    "б": "b",
-    "в": "v",
-    "г": "g",
-    "д": "d",
-    "е": "e",
-    "ё": "yo",
-    "ж": "zh",
-    "з": "z",
-    "и": "i",
-    "й": "j",
-    "к": "k",
-    "л": "l",
-    "м": "m",
-    "н": "n",
-    "о": "o",
-    "п": "p",
-    "р": "r",
-    "с": "s",
-    "т": "t",
-    "у": "u",
-    "ф": "f",
-    "х": "kh",
-    "ц": "ts",
-    "ч": "ch",
-    "ш": "sh",
-    "щ": "shch",
-    "ы": "i",
-    "э": "e",
-    "ю": "yu",
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e",
+    "ё": "yo", "ж": "zh", "з": "z", "и": "i", "й": "j", "к": "k",
+    "л": "l", "м": "m", "н": "n","о": "o", "п": "p", "р": "r",
+    "с": "s", "т": "t", "у": "u", "ф": "f", "х": "kh", "ц": "ts",
+    "ч": "ch", "ш": "sh", "щ": "shch", "ы": "i", "э": "e", "ю": "yu",
     "я": "ya",
 }
 
@@ -44,6 +19,7 @@ alphabet = {
 def slugify_for_cyrillic_text(string) -> str:
     """
     Функция преобразует строку из кириллицы в латиницу.
+
     :param: строка на кириллице
     :return string: строка на латинице
     """
@@ -53,13 +29,17 @@ def slugify_for_cyrillic_text(string) -> str:
 
 
 class MixinPaginator(Paginator):
+    """Класс для работы с пагинацией."""
+
     def __init__(self, object_list, request, per_page):
+        """Инициализаци объекта."""
         super().__init__(object_list, per_page)
         self.queryset = object_list
         self.request = request
         self.paginate_by = per_page
 
     def my_paginator(self):
+        """Функция пагинации."""
         try:
             page = int(self.request.GET.get("page", "1"))
         except ObjectDoesNotExist:
@@ -76,6 +56,8 @@ class MixinPaginator(Paginator):
 
 
 class CustomerOnlyMixin(LoginRequiredMixin):
+    """Класс-миксин проверяет состоит ли пользователь в группе."""
+
     login_url = "/accounts/login/"
     permission_denied_message = ""
     raise_exception = True
@@ -94,6 +76,8 @@ class CustomerOnlyMixin(LoginRequiredMixin):
 
 
 class SellerOnlyMixin(LoginRequiredMixin):
+    """Класс-миксин проверяет состоит ли пользователь в группе."""
+
     login_url = "/accounts/login/"
     permission_denied_message = ""
     raise_exception = True
@@ -112,6 +96,8 @@ class SellerOnlyMixin(LoginRequiredMixin):
 
 
 class AdminOnlyMixin(LoginRequiredMixin):
+    """Класс-миксин проверяет состоит ли пользователь в группе."""
+
     login_url = "/accounts/login/"
     permission_denied_message = ""
     raise_exception = True
@@ -140,21 +126,22 @@ def query_counter(func):
         try:
             folder_name = func.__module__.split(".")[-2]
             app_name = func.__module__.split(".")[-3]
-        except:
+        except ModuleNotFoundError:
             folder_name = "__"
             app_name = func.__module__.split(".")[-2]
 
         print(
-            "\n==========================================================================================="
+            "\n========================================================"
         )
         print(
             "ЗАПРОСОВ = ",
             len(connection.queries),
             "|",
-            f"FUNC - {func_name} | {class_name} | {file_name} | {folder_name} | {app_name}",
+            f"""FUNC - {func_name} | {class_name} |"""
+            f"""{file_name} | {folder_name} | {app_name}""",
         )
         print(
-            "=============================================================================================\n"
+            "\n========================================================"
         )
         return result
 

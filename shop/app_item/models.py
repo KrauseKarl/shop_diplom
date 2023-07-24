@@ -86,9 +86,7 @@ class Item(models.Model):
 
     title = models.CharField(
         max_length=100,
-        validators=[
-            MinLengthValidator,
-        ],
+        validators=[MinLengthValidator, ],
         db_index=True,
         verbose_name="название",
     )

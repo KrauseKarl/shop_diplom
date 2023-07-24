@@ -1,25 +1,18 @@
-import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+"""
+Сервисы работы с группами, созданием и редактированием пользователя.
 
+1. GroupHandler - класс для работы с группами пользователей.
+2. ProfileHandler - класс для работы с профилем пользователя.
+
+"""
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import Group
-from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 
+# services
 from app_cart.services import cart_services
-
+# models
 from app_user.models import Profile
-
-"""
-    Сервисы работы с группами, созданием и редактированием пользователя и верификаии профиля
-
-    #1 GroupHandler - класс для работы с группами пользователей.
-    #2 ProfileHandler - класс для работы с профилем пользователя.
-    #3 SendVerificationMail - класс для верификации пользователя. Отправка письма.
-
-"""
 
 
 class GroupHandler:
@@ -53,15 +46,19 @@ class ProfileHandler:
         user.save(update_fields=["first_name", "last_name"])
 
         # присвоение группы для пользователя
-        GroupHandler().set_group(user=user, group=form.cleaned_data.get("group"))
+        GroupHandler().set_group(
+            user=user, group=form.cleaned_data.get("group")
+        )
 
         # создание расширенного профиля пользователя
         ProfileHandler().create_profile(
-            user=user,
-            telephone=form.cleaned_data.get("telephone"),
+            user=user, telephone=form.cleaned_data.get("telephone"),
         )
-        #  находим анонимную корзину и присваиваем ее вновь созданному пользователю.
-        cart_services.identify_cart(user=request.user, session=request.session)
+        #  находим анонимную корзину и
+        #  присваиваем ее вновь созданному пользователю.
+        cart_services.identify_cart(
+            user=request.user, session=request.session
+        )
 
         user = authenticate(
             request,
@@ -78,7 +75,8 @@ class ProfileHandler:
             else reverse("app_user:account", kwargs={"pk": user.pk})
         )
 
-        # удаление данных об анонимной корзине из COOKIES  при создании нового пользователя
+        # удаление данных об анонимной корзине из COOKIES
+        # при создании нового пользователя
         response = cart_services.delete_cart_cookies(request, path)
         return response
 
@@ -115,40 +113,9 @@ class ProfileHandler:
 
         user_form = UpdateUserForm(data=request.POST, instance=request.user)
         profile_form = UpdateProfileForm(
-            data=request.POST, files=request.FILES, instance=request.user.profile
+            data=request.POST,
+            files=request.FILES,
+            instance=request.user.profile,
         )
         user_form.save()
         profile_form.save()
-
-
-class SendVerificationMail:
-    """Класс для верификации пользователя. Отправка письма."""
-
-    @staticmethod
-    def get_current_site(request):
-        """Функция возвращет доменное имя сайта."""
-        return get_current_site(request).domain
-
-    @staticmethod
-    def send_mail(request, email):
-        """Функция отправляет письмо для верификации профиля."""
-
-        domain = SendVerificationMail.get_current_site(request)
-        username = os.environ.get("FROM_MAIL")
-        password = os.environ.get("PASSWORD")
-        code = f"<p> Ваша учетная запись на сайте {domain} успешно создана.</p>"
-        user_email = email
-
-        try:
-            msg = MIMEMultipart()
-            msg["subject"] = "Verification code"
-            msg["from"] = username
-            msg["to"] = user_email
-            msg.attach(MIMEText(code, "plain", "utf-8"))
-
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-                smtp.login(username, password)
-                smtp.send_message(msg)
-                smtp.quit()
-        except Exception as e:
-            print(e)

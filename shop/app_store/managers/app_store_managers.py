@@ -1,5 +1,5 @@
+"""Модуль содержит менеджеры для работы с набором запросов магазинов."""
 from django.db import models
-from django.db.models import Q
 
 
 class StoreIsActiveManager(models.Manager):

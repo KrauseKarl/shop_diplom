@@ -16,10 +16,7 @@ class CommentHandler:
 
     @staticmethod
     def get_all_comments():
-        """
-
-        :return:
-        """
+        """Функция возвращает все комментраии на сайте."""
         return item_models.Comment.objects.all()
 
     @staticmethod

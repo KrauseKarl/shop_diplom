@@ -1,12 +1,14 @@
 """
 Модуль содержит классы-предстывления для работы с настроками сайта.
 
-классы-представления для работы с панели управления администратора:
+    классы-представления для работы с панели управления администратора:
+
     1. AdminDashBoardView - отображения панели администратора,
     2. SettingsView - отображения сновных настороек сайта,
     3. SettingsUpdatedView - редактирования сновных настороек сайта,
 
-классы-представления для работы с пользователями:
+    классы-представления для работы с пользователями:
+
     4. CustomerListView - для списка покупателей,
     5. CustomerDeleteView - для (де)активации покупатель,
     6. SellerListView - для списока продавцов,
@@ -14,32 +16,37 @@
     8. StoreListView - для списока магазинов,
     9. ProductListView - для списка тоаров,
 
-классы-представления для работы с категориями:
+    классы-представления для работы с категориями:
+
     10. CategoryListView - для списка категорий,
     11. CategoryCreateView - для создания категории,
     12. CategoryUpdateView - для редактировании категории,
     13. CategoryDeleteView - для (де)активации каетгории,
 
-классы-представления для работы с тегами:
+    классы-представления для работы с тегами:
+
     14. TagListView - для списка тегов,
     15. TagCreateView - для создания тега,
     16. TagUpdateView - для редактировании тега,
     17. TagDeleteView - для (де)активации тега,
 
-классы-представления для работы с характеристиками:
+    классы-представления для работы с характеристиками:
+
     18. FeatureListView - для списка характеристик,
     19. FeatureCreateView - для создания характеристики,
     20. FeatureUpdateView - для редактировании характеристики,
     21. FeatureDeleteView - для (де)активации характеристики,
     22. ValueCreateView - для создания значения характеристики,
 
-классы-представления для работы с комментариями:
+    классы-представления для работы с комментариями:
+
     23. CommentListView - для списка комментариев,
     24. CommentDetail - для одного комментария,
     25. CommentDelete - для удаления комментария,
     26. CommentModerate - для модерациия комментария,
 
-классы-представления для работы с заказами:
+    классы-представления для работы с заказами:
+
     27.OrderListView - для списка заказов,
     28.OrderDetailView - для одного заказа.
 """
@@ -61,7 +68,7 @@ from app_store import models as store_modals
 
 # forms
 from app_settings import forms as admin_forms
-from app_store import forms as store_forms
+from app_settings import forms as settings_form
 
 # services
 from app_item.services import comment_services
@@ -440,7 +447,7 @@ class TagCreateView(AdminOnlyMixin, generic.CreateView):
 
     model = item_models.Category
     template_name = "app_settings/tag/tag_edit.html"
-    form_class = store_forms.CreateTagForm
+    form_class = settings_form.CreateTagForm
 
     def form_valid(self, form):
         """Функция валидации формы создания тега."""
@@ -453,7 +460,7 @@ class TagCreateView(AdminOnlyMixin, generic.CreateView):
 
     def form_invalid(self, form):
         """Функция инвалидации формы создания тега."""
-        form = store_forms.CreateTagForm(self.request.POST)
+        form = settings_form.CreateTagForm(self.request.POST)
         return super(TagCreateView, self).form_invalid(form)
 
 
@@ -462,7 +469,7 @@ class TagUpdateView(AdminOnlyMixin, generic.UpdateView):
 
     model = item_models.Tag
     template_name = "app_settings/tag/tag_edit.html"
-    form_class = store_forms.CreateTagForm
+    form_class = settings_form.CreateTagForm
 
     def form_valid(self, form):
         """Функция валидации формы редактирования тега."""
@@ -477,7 +484,7 @@ class TagUpdateView(AdminOnlyMixin, generic.UpdateView):
 
     def form_invalid(self, form):
         """Функция инвалидации формы редактирования тега."""
-        form = store_forms.CreateTagForm(self.request.POST)
+        form = settings_form.CreateTagForm(self.request.POST)
         return super(TagUpdateView, self).form_invalid(form)
 
 
@@ -538,7 +545,7 @@ class FeatureCreateView(AdminOnlyMixin, generic.CreateView):
 
     model = item_models.Feature
     template_name = "app_settings/feature/feature_create.html"
-    form_class = store_forms.CreateFeatureForm
+    form_class = settings_form.CreateFeatureForm
 
     def get(self, request, *args, **kwargs):
         """GET-функция возвращает context-словарь."""
@@ -563,7 +570,7 @@ class FeatureCreateView(AdminOnlyMixin, generic.CreateView):
 
     def form_invalid(self, form):
         """Функция инвалидации формы для создания характеристики."""
-        form = store_forms.CreateFeatureForm(self.request.POST)
+        form = settings_form.CreateFeatureForm(self.request.POST)
         messages.add_message(
             self.request,
             messages.ERROR,
@@ -633,7 +640,7 @@ class ValueCreateView(AdminOnlyMixin, generic.CreateView):
 
     model = item_models.FeatureValue
     template_name = "app_settings/feature/value_create.html"
-    form_class = store_forms.CreateValueForm
+    form_class = settings_form.CreateValueForm
 
     def get(self, request, *args, **kwargs):
         """GET-функция context-словарь с данными."""
@@ -662,7 +669,7 @@ class ValueCreateView(AdminOnlyMixin, generic.CreateView):
 
     def form_invalid(self, form):
         """Функция инвалидации формы для создания значения характеристики."""
-        form = store_forms.CreateValueForm(self.request.POST)
+        form = settings_form.CreateValueForm(self.request.POST)
         feature_id = self.kwargs.get("pk")
         messages.add_message(
             self.request, messages.ERROR, f"{form.errors.get('value')}"

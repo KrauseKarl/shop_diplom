@@ -1,3 +1,17 @@
+"""
+Модуль содержит формы для работы с магазинами.
+
+1. CreateStoreForm - форма для создания магазина,
+2. UpdateStoreForm - форма для редактирования магазина,
+3. AddItemForm - форма для создания товара,
+4. AddItemImageForm - форма для создания изображения товара,
+5. UpdateItemForm - форма для редактирования товара,
+6. UpdateItemImageForm - форма для редактирования изображения товара,
+7. CreateTagForm - форма для создания тега,
+8. AddTagForm - форма для добавления тега,
+9. ImportDataFromCVS - форма для импорта данных,
+10. UpdateOrderStatusForm - форма для отправки заказа.
+"""
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import modelformset_factory
@@ -43,7 +57,10 @@ class UpdateStoreForm(forms.ModelForm):
 
 
 class CustomMMCF(forms.ModelMultipleChoiceField):
+    """Форма для множественного выбора тега."""
+
     def label_from_instance(self, tag):
+        """Метод возвращает название тега."""
         return f"{tag.title}"
 
 
@@ -75,7 +92,9 @@ def file_size(value):
     """Функция валидирует размер загружаемого файла."""
     limit = 2 * 1024 * 1024
     if value.size > limit:
-        raise ValidationError("Файл слишком большой. Размер не должен превышать 2 МБ.")
+        raise ValidationError(
+            "Файл слишком большой. Размер не должен превышать 2 МБ."
+        )
 
 
 class AddItemImageForm(forms.ModelForm):
@@ -124,7 +143,6 @@ class UpdateItemImageForm(forms.ModelForm):
 
     def clean_image_size(self):
         """Функция валидирует размер загружаемого файла."""
-
         limit = 2 * 1024 * 1024
         img = self.cleaned_data.get("image")
         if img.size > limit:
@@ -133,73 +151,34 @@ class UpdateItemImageForm(forms.ModelForm):
 
 
 TagFormSet = modelformset_factory(
-    item_models.Tag, fields=("title",), extra=1, error_messages="Укажите тег"
+    item_models.Tag,
+    fields=("title",),
+    extra=1,
+    error_messages="Укажите тег"
 )
-ImageFormSet = modelformset_factory(item_models.Image, fields=("image",), extra=1)
+ImageFormSet = modelformset_factory(
+    item_models.Image,
+    fields=("image",),
+    extra=1
+)
 FeatureFormSet = modelformset_factory(
-    item_models.FeatureValue, fields=("value",), extra=1
+    item_models.FeatureValue,
+    fields=("value",),
+    extra=1
 )
-
-
-class CreateTagForm(forms.ModelForm):
-    """Форма для создания тега."""
-
-    class Meta:
-        model = item_models.Tag
-        fields = ("title",)
-
-    def clean_tag(self):
-        """Функция валидирует сущетвование тег в базе данных."""
-
-        tag = self.cleaned_data.get("category").lower()
-        if item_models.Tag.objects.get(title=tag).exist():
-            raise ValidationError("Такая категория уже существует")
-        return tag
 
 
 class AddTagForm(forms.ModelForm):
     """Форма для добавления тега в карточку товара."""
 
     tag = CustomMMCF(
-        queryset=item_models.Tag.objects.all(), widget=forms.CheckboxSelectMultiple
+        queryset=item_models.Tag.objects.all(),
+        widget=forms.CheckboxSelectMultiple
     )
 
     class Meta:
         model = item_models.Item
         fields = ("tag",)
-
-
-class CreateFeatureForm(forms.ModelForm):
-    """Форма для создания характеристики."""
-
-    class Meta:
-        model = item_models.Feature
-        fields = ("title",)
-
-    def clean_feature(self):
-        """Функция валидирует сущетвование характеристики в базе данных."""
-
-        feature = self.cleaned_data.get("title").lower()
-        if item_models.Feature.objects.get(title=feature).exist():
-            raise ValidationError("Такая характеристика уже существует")
-        return feature
-
-
-class CreateValueForm(forms.ModelForm):
-    """Форма для создания характеристики."""
-
-    class Meta:
-        model = item_models.FeatureValue
-        fields = ("value",)
-
-    def clean_value(self):
-        """Функция валидирует сущетвование значене характеристики в базе данных"""
-
-        value = self.cleaned_data.get("value").lower()
-        if item_models.FeatureValue.objects.filter(value=value).first():
-            raise ValidationError("Такое значение  уже существует")
-        else:
-            return value
 
 
 class ImportDataFromCVS(forms.Form):
@@ -214,21 +193,3 @@ class UpdateOrderStatusForm(forms.ModelForm):
     class Meta:
         model = order_models.Order
         fields = ("status",)
-
-
-class OrderSearchForm(forms.ModelForm):
-    start = forms.DateTimeField(required=False)
-    finish = forms.DateTimeField(required=False)
-    store = forms.CharField(required=False)
-    status = forms.CharField(required=False)
-    search = forms.CharField(required=False)
-
-    class Meta:
-        model = order_models.Order
-        fields = (
-            "status",
-            "search",
-            "store",
-            "start",
-            "finish",
-        )
